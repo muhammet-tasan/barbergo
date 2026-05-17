@@ -1,0 +1,47 @@
+---
+description: barbergo project standards, autonomous workflow, stack, and ntfy notifications
+alwaysApply: true
+---
+
+# barbergo — always follow
+
+Authoritative details: `docs/project-rules.md`. Apply on every task in this repo.
+
+## Semi-autonomous workflow
+
+- Continue with sensible defaults; do not stop for unnecessary questions.
+- Only ask the user when: security-sensitive actions, destructive ops, unclear major architecture, materially different tech choices, credentials/API keys/accounts needed, or library choices that strongly affect future architecture.
+- For small UI, naming, folders, or details: pick a reasonable default, document it briefly, keep going.
+- Prefer iterative MVP progress and high momentum.
+
+## Notifications (required, from project root)
+
+Pause for required user input:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/notify-custom.ps1 "User input required"
+```
+
+Major task completed (prefer contextual message):
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/notify-custom.ps1 "Task description"
+```
+
+Otherwise:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/notify-done.ps1
+```
+
+Do not skip. Examples: `"Expo setup completed"`, `"Navigation implemented"`, `"Backend endpoints completed"`.
+
+## Architecture & philosophy
+
+- **Mobile:** Expo, TypeScript, Expo Router, NativeWind | **Backend:** Spring Boot, PostgreSQL
+- Simple MVP; beginner-friendly; avoid paid APIs unless requested; reusable components; clean folders
+- Ship working MVP fast; concise explanations; explain important decisions **after** implementation, not before blocking
+
+## Workflow
+
+- Small steps; mock data before heavy backend; update docs when setup/behavior changes

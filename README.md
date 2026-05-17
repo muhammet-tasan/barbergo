@@ -68,6 +68,12 @@ barbergo/
   README.md
 ```
 
+## Project rules (Cursor)
+
+Standards for stack, workflow, and notifications: [docs/project-rules.md](docs/project-rules.md).
+
+They apply automatically in Agent chats via `.cursor/rules/barbergo-project.mdc` (`alwaysApply: true`).
+
 ## More details
 
 See [docs/setup-notes.md](docs/setup-notes.md) for why we chose ntfy over WhatsApp and how this fits into Cursor workflows.
