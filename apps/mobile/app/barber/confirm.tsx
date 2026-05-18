@@ -11,6 +11,7 @@ import { formatChf } from '@/constants/pricing';
 import { defaultProvider, services } from '@/data/mockData';
 import { getBookingById, getServiceById } from '@/services/bookings';
 import { openBarberWhatsAppBooking } from '@/services/whatsapp';
+import { formatSwissDate } from '@/utils/date';
 
 function DetailRow({ label, value }: { label: string; value: string }) {
   return (
@@ -75,7 +76,7 @@ export default function BookingConfirmScreen() {
 
         <AppCard className="mb-6">
           <DetailRow label="Service" value={service.name} />
-          <DetailRow label="Date" value={booking.appointmentDate} />
+          <DetailRow label="Date" value={formatSwissDate(booking.appointmentDate)} />
           <DetailRow label="Time" value={booking.appointmentTime} />
           <DetailRow label="Address" value={booking.address} />
           <DetailRow label="Total" value={formatChf(booking.totalChf)} />

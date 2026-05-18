@@ -82,7 +82,13 @@ providers 1 ── * bookings
 services  1 ── * bookings
 ```
 
-## Supabase SQL sketch (when ready)
+## Supabase SQL
+
+The executable SQL lives in [`../supabase/migrations/0001_initial_schema.sql`](../supabase/migrations/0001_initial_schema.sql).
+Run that file in the Supabase SQL editor, then run [`../supabase/seed.sql`](../supabase/seed.sql)
+for the Basel MVP provider and services.
+
+## Supabase SQL sketch
 
 ```sql
 -- Run in Supabase SQL editor after project creation (simplified MVP)

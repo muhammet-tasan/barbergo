@@ -13,6 +13,7 @@ import { getBookingById, getServiceById, updateBookingStatus } from '@/services/
 import { openAddressInMaps } from '@/services/maps';
 import { openCustomerWhatsApp } from '@/services/whatsapp';
 import type { BookingStatus } from '@/types/domain';
+import { formatSwissDate } from '@/utils/date';
 
 function DetailRow({ label, value }: { label: string; value: string }) {
   return (
@@ -64,7 +65,7 @@ export default function AdminBookingDetailScreen() {
   const customerMessage = [
     `Hi ${booking.customerName},`,
     '',
-    `Your barbergo appointment (${service?.name ?? 'service'}) on ${booking.appointmentDate} at ${booking.appointmentTime} is ${booking.status}.`,
+    `Your barbergo appointment (${service?.name ?? 'service'}) on ${formatSwissDate(booking.appointmentDate)} at ${booking.appointmentTime} is ${booking.status}.`,
     '',
     `Address: ${booking.address}`,
     `Total: ${formatChf(booking.totalChf)}`,
@@ -84,7 +85,7 @@ export default function AdminBookingDetailScreen() {
           <DetailRow label="Service" value={service?.name ?? '—'} />
           <DetailRow
             label="When"
-            value={`${booking.appointmentDate} · ${booking.appointmentTime}`}
+            value={`${formatSwissDate(booking.appointmentDate)} · ${booking.appointmentTime}`}
           />
           <DetailRow label="Address" value={booking.address} />
           {booking.note ? <DetailRow label="Note" value={booking.note} /> : null}

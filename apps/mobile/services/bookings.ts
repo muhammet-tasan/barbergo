@@ -1,6 +1,7 @@
 import { mockBookings } from '@/data/mockData';
 import { calculateBookingTotal } from '@/constants/pricing';
 import type { Booking, BookingStatus, Service } from '@/types/domain';
+import { parseSwissDateToIso } from '@/utils/date';
 
 function generateId(): string {
   return `booking-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
@@ -45,7 +46,7 @@ export function createBooking(input: CreateBookingInput): Booking {
     customerName: input.customerName.trim(),
     phone: input.phone.trim(),
     address: input.address.trim(),
-    appointmentDate: input.appointmentDate.trim(),
+    appointmentDate: parseSwissDateToIso(input.appointmentDate) ?? input.appointmentDate.trim(),
     appointmentTime: input.appointmentTime.trim(),
     note: input.note?.trim() || undefined,
     servicePriceChf: input.service.priceChf,

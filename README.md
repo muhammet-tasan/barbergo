@@ -41,7 +41,7 @@ Scan the QR code with **Expo Go** on Android, or press `a` for an emulator.
 1. Create a project at [supabase.com](https://supabase.com).
 2. Copy `apps/mobile/.env.example` → `apps/mobile/.env`.
 3. Set `EXPO_PUBLIC_SUPABASE_URL` and `EXPO_PUBLIC_SUPABASE_ANON_KEY`.
-4. Run SQL from [docs/data-model.md](docs/data-model.md).
+4. Run `supabase/migrations/0001_initial_schema.sql`, then `supabase/seed.sql`.
 5. Install client: `npm install @supabase/supabase-js` and finish `services/supabase.ts` TODOs.
 
 Until then, the app reads from `data/mockData.ts`.

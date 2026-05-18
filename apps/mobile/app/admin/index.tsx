@@ -8,6 +8,7 @@ import { StatusBadge } from '@/components/StatusBadge';
 import { formatChf } from '@/constants/pricing';
 import { services } from '@/data/mockData';
 import { listBookings, getServiceById } from '@/services/bookings';
+import { formatSwissDate } from '@/utils/date';
 
 export default function AdminBookingListScreen() {
   const router = useRouter();
@@ -49,7 +50,7 @@ export default function AdminBookingListScreen() {
                     <StatusBadge status={booking.status} />
                   </View>
                   <Text className="text-slate-400 text-sm">
-                    {service?.name ?? 'Service'} · {booking.appointmentDate} ·{' '}
+                    {service?.name ?? 'Service'} · {formatSwissDate(booking.appointmentDate)} ·{' '}
                     {booking.appointmentTime}
                   </Text>
                   <Text className="text-brand-gold font-medium mt-2">

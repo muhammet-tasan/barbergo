@@ -2,9 +2,11 @@ import * as Linking from 'expo-linking';
 
 import type { Booking } from '@/types/domain';
 import { formatChf } from '@/constants/pricing';
+import { formatSwissDate } from '@/utils/date';
 
-/** Barber WhatsApp — replace with real number before production */
-const BARBER_WHATSAPP_E164 = '41791234567';
+const DEFAULT_DEMO_BARBER_WHATSAPP_E164 = '41791234567';
+const barberWhatsapp =
+  process.env.EXPO_PUBLIC_BARBER_WHATSAPP ?? DEFAULT_DEMO_BARBER_WHATSAPP_E164;
 
 function digitsOnly(phone: string): string {
   return phone.replace(/\D/g, '');
@@ -20,7 +22,7 @@ function buildBookingMessage(
     '',
     'New barbergo booking request:',
     `• Service: ${serviceName}`,
-    `• Date: ${booking.appointmentDate}`,
+    `• Date: ${formatSwissDate(booking.appointmentDate)}`,
     `• Time: ${booking.appointmentTime}`,
     `• Customer: ${booking.customerName}`,
     `• Phone: ${booking.phone}`,
@@ -55,7 +57,7 @@ export async function openBarberWhatsAppBooking(
   providerName: string
 ): Promise<boolean> {
   const message = buildBookingMessage(booking, serviceName, providerName);
-  return openWhatsAppChat(BARBER_WHATSAPP_E164, message);
+  return openWhatsAppChat(barberWhatsapp, message);
 }
 
 export async function openCustomerWhatsApp(phone: string, message: string): Promise<boolean> {

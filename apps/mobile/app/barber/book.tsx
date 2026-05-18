@@ -133,7 +133,7 @@ export default function BookingFormScreen() {
             value={appointmentDate}
             onChangeText={setAppointmentDate}
             error={errors.appointmentDate}
-            placeholder="2026-05-20"
+            placeholder="20.05.2026"
             keyboardType="numbers-and-punctuation"
           />
           <AppInput

@@ -19,6 +19,7 @@
 
 - [x] Architecture docs + data model
 - [x] `services/supabase.ts` placeholder
+- [x] Supabase SQL migration + seed files prepared
 - [ ] Supabase project + env vars (waiting on credentials)
 - [ ] Run SQL schema from `docs/data-model.md`
 - [ ] Row Level Security policies
