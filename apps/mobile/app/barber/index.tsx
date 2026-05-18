@@ -15,7 +15,7 @@ export default function BarberProfileScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-brand-dark" edges={['top']}>
-      <ScreenHeader title="Your barber" />
+      <ScreenHeader title="Dein Barber" />
       <ScrollView className="flex-1 px-4" contentContainerClassName="pb-8">
         <View className="items-center py-8">
           <View className="w-24 h-24 rounded-full bg-brand-surface border-2 border-brand-gold items-center justify-center">
@@ -31,12 +31,12 @@ export default function BarberProfileScreen() {
           <Text className="text-base text-slate-200 leading-relaxed">{provider.description}</Text>
           <View className="flex-row items-center mt-4 pt-4 border-t border-slate-700">
             <Ionicons name="home-outline" size={20} color={colors.textMuted} />
-            <Text className="text-slate-400 ml-2 text-sm">Home visits — we come to you</Text>
+            <Text className="text-slate-400 ml-2 text-sm">Hausbesuche - wir kommen zu dir</Text>
           </View>
         </AppCard>
 
         <AppButton
-          label="Choose a service"
+          label="Service auswählen"
           onPress={() => router.push('/barber/services')}
         />
       </ScrollView>

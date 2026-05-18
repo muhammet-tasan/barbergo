@@ -7,22 +7,22 @@ const statusConfig: Record<
   { label: string; container: string; text: string }
 > = {
   pending: {
-    label: 'Pending',
+    label: 'Offen',
     container: 'bg-amber-900/40 border-amber-600',
     text: 'text-amber-300',
   },
   confirmed: {
-    label: 'Confirmed',
+    label: 'Bestätigt',
     container: 'bg-emerald-900/40 border-emerald-600',
     text: 'text-emerald-300',
   },
   completed: {
-    label: 'Completed',
+    label: 'Abgeschlossen',
     container: 'bg-slate-700/60 border-slate-500',
     text: 'text-slate-300',
   },
   cancelled: {
-    label: 'Cancelled',
+    label: 'Storniert',
     container: 'bg-red-900/40 border-red-600',
     text: 'text-red-300',
   },

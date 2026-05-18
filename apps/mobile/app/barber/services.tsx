@@ -16,9 +16,9 @@ export default function ServiceSelectionScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-brand-dark" edges={['top']}>
-      <ScreenHeader title="Select service" />
+      <ScreenHeader title="Service auswählen" />
       <ScrollView className="flex-1 px-4 pt-4" contentContainerClassName="pb-8">
-        <Text className="text-slate-400 mb-4">All prices in CHF. +CHF 1 service fee at checkout.</Text>
+        <Text className="text-slate-400 mb-4">Alle Preise in CHF. +CHF 1 Servicegebühr beim Buchen.</Text>
 
         {sorted.map((service) => (
           <ServiceCard
@@ -31,7 +31,7 @@ export default function ServiceSelectionScreen() {
 
         <View className="mt-4">
           <AppButton
-            label="Continue to booking"
+            label="Weiter zur Buchung"
             disabled={!selectedId}
             onPress={() =>
               router.push({

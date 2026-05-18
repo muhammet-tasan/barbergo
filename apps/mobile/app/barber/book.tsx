@@ -38,10 +38,10 @@ export default function BookingFormScreen() {
   if (!service) {
     return (
       <SafeAreaView className="flex-1 bg-brand-dark" edges={['top']}>
-        <ScreenHeader title="Book appointment" />
+        <ScreenHeader title="Termin buchen" />
         <View className="flex-1 px-6 justify-center">
-          <Text className="text-white text-center mb-6">Service not found. Go back and pick a service.</Text>
-          <AppButton label="Select service" onPress={() => router.replace('/barber/services')} />
+          <Text className="text-white text-center mb-6">Service nicht gefunden. Bitte wähle einen Service aus.</Text>
+          <AppButton label="Service auswählen" onPress={() => router.replace('/barber/services')} />
         </View>
       </SafeAreaView>
     );
@@ -76,7 +76,7 @@ export default function BookingFormScreen() {
         params: { bookingId: booking.id },
       });
     } catch {
-      Alert.alert('Error', 'Could not save booking. Please try again.');
+      Alert.alert('Fehler', 'Die Buchung konnte nicht gespeichert werden. Bitte versuche es erneut.');
     } finally {
       setSubmitting(false);
     }
@@ -84,7 +84,7 @@ export default function BookingFormScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-brand-dark" edges={['top']}>
-      <ScreenHeader title="Book appointment" />
+      <ScreenHeader title="Termin buchen" />
       <KeyboardAvoidingView
         className="flex-1"
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -92,20 +92,20 @@ export default function BookingFormScreen() {
         <ScrollView className="flex-1 px-4 pt-4" keyboardShouldPersistTaps="handled">
           <AppCard className="mb-4">
             <Text className="text-white font-semibold text-lg">{service.name}</Text>
-            <Text className="text-slate-400 mt-1">{service.durationMinutes} minutes</Text>
+            <Text className="text-slate-400 mt-1">{service.durationMinutes} Minuten</Text>
             {totals ? (
               <Text className="text-brand-gold font-bold mt-2 text-lg">
-                {formatChf(totals.totalChf)} total
+                {formatChf(totals.totalChf)} gesamt
                 <Text className="text-slate-400 font-normal text-sm">
                   {' '}
-                  (incl. {formatChf(totals.serviceFeeChf)} fee)
+                  (inkl. {formatChf(totals.serviceFeeChf)} Gebühr)
                 </Text>
               </Text>
             ) : null}
           </AppCard>
 
           <AppInput
-            label="Your name"
+            label="Dein Name"
             value={customerName}
             onChangeText={setCustomerName}
             error={errors.customerName}
@@ -113,7 +113,7 @@ export default function BookingFormScreen() {
             placeholder="Max Mustermann"
           />
           <AppInput
-            label="Phone (WhatsApp)"
+            label="Telefon (WhatsApp)"
             value={phone}
             onChangeText={setPhone}
             error={errors.phone}
@@ -121,7 +121,7 @@ export default function BookingFormScreen() {
             placeholder="+41 79 123 45 67"
           />
           <AppInput
-            label="Home address"
+            label="Adresse"
             value={address}
             onChangeText={setAddress}
             error={errors.address}
@@ -129,7 +129,7 @@ export default function BookingFormScreen() {
             multiline
           />
           <AppInput
-            label="Date"
+            label="Datum"
             value={appointmentDate}
             onChangeText={setAppointmentDate}
             error={errors.appointmentDate}
@@ -137,7 +137,7 @@ export default function BookingFormScreen() {
             keyboardType="numbers-and-punctuation"
           />
           <AppInput
-            label="Time"
+            label="Uhrzeit"
             value={appointmentTime}
             onChangeText={setAppointmentTime}
             error={errors.appointmentTime}
@@ -145,16 +145,16 @@ export default function BookingFormScreen() {
             keyboardType="numbers-and-punctuation"
           />
           <AppInput
-            label="Note (optional)"
+            label="Notiz (optional)"
             value={note}
             onChangeText={setNote}
-            placeholder="Ring at the door, etc."
+            placeholder="Bitte klingeln, usw."
             multiline
           />
 
           <View className="mb-8">
             <AppButton
-              label="Confirm booking"
+              label="Buchung bestätigen"
               onPress={handleSubmit}
               loading={submitting}
             />

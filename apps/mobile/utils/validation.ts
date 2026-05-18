@@ -19,30 +19,30 @@ export function validateBookingForm(fields: BookingFormFields): BookingFormError
   const errors: BookingFormErrors = {};
 
   if (!isNonEmpty(fields.customerName)) {
-    errors.customerName = 'Name is required';
+    errors.customerName = 'Name ist erforderlich';
   }
 
   const phone = fields.phone.trim();
   if (!isNonEmpty(phone)) {
-    errors.phone = 'Phone number is required';
+    errors.phone = 'Telefonnummer ist erforderlich';
   } else if (!PHONE_RE.test(phone.replace(/\s/g, ''))) {
-    errors.phone = 'Use a Swiss number (e.g. +41 79 123 45 67)';
+    errors.phone = 'Bitte eine Schweizer Nummer verwenden (z. B. +41 79 123 45 67)';
   }
 
   if (!isNonEmpty(fields.address)) {
-    errors.address = 'Address is required';
+    errors.address = 'Adresse ist erforderlich';
   }
 
   if (!isNonEmpty(fields.appointmentDate)) {
-    errors.appointmentDate = 'Date is required';
+    errors.appointmentDate = 'Datum ist erforderlich';
   } else if (!isSwissDate(fields.appointmentDate)) {
-    errors.appointmentDate = 'Use DD.MM.YYYY (e.g. 20.05.2026)';
+    errors.appointmentDate = 'Bitte TT.MM.JJJJ verwenden (z. B. 20.05.2026)';
   }
 
   if (!isNonEmpty(fields.appointmentTime)) {
-    errors.appointmentTime = 'Time is required';
+    errors.appointmentTime = 'Uhrzeit ist erforderlich';
   } else if (!TIME_RE.test(fields.appointmentTime.trim())) {
-    errors.appointmentTime = 'Use 24h format (e.g. 14:30)';
+    errors.appointmentTime = 'Bitte 24h-Format verwenden (z. B. 14:30)';
   }
 
   return errors;

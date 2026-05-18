@@ -1,6 +1,6 @@
 # barbergo — Current Status
 
-Last updated: 2026-05-18
+Last updated: 2026-05-19
 
 ## Completed
 
@@ -13,6 +13,7 @@ Last updated: 2026-05-18
   - booking form with Swiss date input (`DD.MM.YYYY`)
   - booking confirmation
   - WhatsApp deeplink
+- Visible app UI copy, validation messages, and WhatsApp messages are German.
 - Admin demo flow is implemented:
   - booking list
   - booking detail
@@ -27,11 +28,11 @@ Last updated: 2026-05-18
 - Supabase credentials are not configured yet.
 - Bookings are stored in memory for the current app session.
 - Dates are displayed in Swiss format and stored internally as ISO strings for Supabase compatibility.
-- `main` has been pushed through commit `fe1793a`.
+- `main` has been pushed through commit `f82d1c5`.
 
 ## Next Recommended Tasks
 
-1. Run the app on Expo Go and manually test the full customer + admin flow.
+1. Run the app on Expo Go and manually test the full German customer + admin flow.
 2. Create a Supabase project and run `supabase/migrations/0001_initial_schema.sql`, then `supabase/seed.sql`.
 3. Add `apps/mobile/.env` from `.env.example` with Supabase URL, anon key, and real barber WhatsApp number.
 4. Install `@supabase/supabase-js` and replace mock provider/service reads with Supabase queries.

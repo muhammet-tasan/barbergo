@@ -12,8 +12,8 @@ export const useMockData = !isSupabaseConfigured();
 export const defaultProvider: Provider = {
   id: 'provider-1',
   name: 'Muhammet',
-  description: 'Mobile barber — professional cuts at your home in Basel.',
-  serviceArea: 'Basel & surroundings',
+  description: 'Mobiler Barber - professionelle Haarschnitte bei dir zu Hause in Basel.',
+  serviceArea: 'Basel & Umgebung',
   isActive: true,
 };
 
@@ -21,7 +21,7 @@ export const services: Service[] = [
   {
     id: 'service-1',
     providerId: defaultProvider.id,
-    name: "Men's haircut",
+    name: 'Herrenhaarschnitt',
     priceChf: 45,
     durationMinutes: 30,
     sortOrder: 1,
@@ -29,7 +29,7 @@ export const services: Service[] = [
   {
     id: 'service-2',
     providerId: defaultProvider.id,
-    name: 'Beard trim',
+    name: 'Bart trimmen',
     priceChf: 25,
     durationMinutes: 20,
     sortOrder: 2,
@@ -37,7 +37,7 @@ export const services: Service[] = [
   {
     id: 'service-3',
     providerId: defaultProvider.id,
-    name: 'Haircut + beard',
+    name: 'Haarschnitt + Bart',
     priceChf: 60,
     durationMinutes: 45,
     sortOrder: 3,
@@ -45,7 +45,7 @@ export const services: Service[] = [
   {
     id: 'service-4',
     providerId: defaultProvider.id,
-    name: 'Kids haircut',
+    name: 'Kinderhaarschnitt',
     priceChf: 35,
     durationMinutes: 25,
     sortOrder: 4,
@@ -68,7 +68,7 @@ export const mockBookings: Booking[] = [
     address: 'Musterstrasse 12, 4051 Basel',
     appointmentDate: tomorrow,
     appointmentTime: '14:30',
-    note: 'Please ring twice.',
+    note: 'Bitte zweimal klingeln.',
     servicePriceChf: services[0].priceChf,
     serviceFeeChf: haircutTotal.serviceFeeChf,
     totalChf: haircutTotal.totalChf,

@@ -9,8 +9,8 @@ insert into public.providers (
 ) values (
   '11111111-1111-1111-1111-111111111111',
   'Muhammet',
-  'Mobile barber - professional cuts at your home in Basel.',
-  'Basel & surroundings',
+  'Mobiler Barber - professionelle Haarschnitte bei dir zu Hause in Basel.',
+  'Basel & Umgebung',
   true
 )
 on conflict (id) do update set
@@ -31,7 +31,7 @@ insert into public.services (
   (
     '22222222-2222-2222-2222-222222222221',
     '11111111-1111-1111-1111-111111111111',
-    'Men''s haircut',
+    'Herrenhaarschnitt',
     45,
     30,
     1,
@@ -40,7 +40,7 @@ insert into public.services (
   (
     '22222222-2222-2222-2222-222222222222',
     '11111111-1111-1111-1111-111111111111',
-    'Beard trim',
+    'Bart trimmen',
     25,
     20,
     2,
@@ -49,7 +49,7 @@ insert into public.services (
   (
     '22222222-2222-2222-2222-222222222223',
     '11111111-1111-1111-1111-111111111111',
-    'Haircut + beard',
+    'Haarschnitt + Bart',
     60,
     45,
     3,
@@ -58,7 +58,7 @@ insert into public.services (
   (
     '22222222-2222-2222-2222-222222222224',
     '11111111-1111-1111-1111-111111111111',
-    'Kids haircut',
+    'Kinderhaarschnitt',
     35,
     25,
     4,

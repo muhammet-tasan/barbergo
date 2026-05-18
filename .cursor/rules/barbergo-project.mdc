@@ -39,6 +39,7 @@ Otherwise: `scripts/notify-done.ps1`. Do not skip.
 - **Comms:** WhatsApp + Google Maps deeplinks only
 - **Future only (do not build):** n8n, Coolify, optional Spring Boot — document only
 - Simple MVP; avoid paid APIs; mock data first; see `docs/data-model.md`
+- App product language is **German**. Visible mobile UI copy, validation messages, and WhatsApp messages should be German.
 
 ## After every major step (required summary)
 

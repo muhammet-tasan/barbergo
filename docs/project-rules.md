@@ -116,6 +116,7 @@ Rules:
 
 - Keep the MVP simple
 - Prefer clean and beginner-friendly code
+- App product language is **German** from now on; all visible mobile UI copy, validation messages, and customer/barber WhatsApp messages should be German.
 - Avoid overengineering
 - Avoid paid APIs and paid services where possible (Supabase free tier is OK)
 - Use reusable components

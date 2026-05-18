@@ -14,6 +14,7 @@
 - [x] Admin booking list + detail (Maps + WhatsApp)
 - [x] Reusable UI components (cards, inputs, badges)
 - [x] Mock data + pricing constants (`constants/pricing.ts`)
+- [x] German app language for visible UI and WhatsApp messages
 
 ### Backend (Supabase)
 
@@ -29,7 +30,7 @@
 
 ### Next recommended tasks
 
-- [ ] Manually test customer + admin flow with Expo Go
+- [ ] Manually test German customer + admin flow with Expo Go
 - [ ] Create Supabase project and run `supabase/migrations/0001_initial_schema.sql`
 - [ ] Run `supabase/seed.sql`
 - [ ] Configure `apps/mobile/.env`

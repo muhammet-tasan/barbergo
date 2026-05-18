@@ -8,6 +8,13 @@ const DEFAULT_DEMO_BARBER_WHATSAPP_E164 = '41791234567';
 const barberWhatsapp =
   process.env.EXPO_PUBLIC_BARBER_WHATSAPP ?? DEFAULT_DEMO_BARBER_WHATSAPP_E164;
 
+const bookingStatusLabel = {
+  pending: 'offen',
+  confirmed: 'bestätigt',
+  completed: 'abgeschlossen',
+  cancelled: 'storniert',
+} as const;
+
 function digitsOnly(phone: string): string {
   return phone.replace(/\D/g, '');
 }
@@ -18,23 +25,24 @@ function buildBookingMessage(
   providerName: string
 ): string {
   const lines = [
-    `Hi ${providerName},`,
+    `Hallo ${providerName},`,
     '',
-    'New barbergo booking request:',
+    'Neue barbergo Buchungsanfrage:',
     `• Service: ${serviceName}`,
-    `• Date: ${formatSwissDate(booking.appointmentDate)}`,
-    `• Time: ${booking.appointmentTime}`,
-    `• Customer: ${booking.customerName}`,
-    `• Phone: ${booking.phone}`,
-    `• Address: ${booking.address}`,
-    `• Total: ${formatChf(booking.totalChf)} (incl. ${formatChf(booking.serviceFeeChf)} fee)`,
+    `• Datum: ${formatSwissDate(booking.appointmentDate)}`,
+    `• Uhrzeit: ${booking.appointmentTime}`,
+    `• Kunde: ${booking.customerName}`,
+    `• Telefon: ${booking.phone}`,
+    `• Adresse: ${booking.address}`,
+    `• Status: ${bookingStatusLabel[booking.status]}`,
+    `• Gesamt: ${formatChf(booking.totalChf)} (inkl. ${formatChf(booking.serviceFeeChf)} Gebühr)`,
   ];
 
   if (booking.note) {
-    lines.push(`• Note: ${booking.note}`);
+    lines.push(`• Notiz: ${booking.note}`);
   }
 
-  lines.push('', 'Sent via barbergo app');
+  lines.push('', 'Gesendet mit der barbergo App');
   return lines.join('\n');
 }
 

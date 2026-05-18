@@ -16,16 +16,16 @@ export default function AdminBookingListScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-brand-dark" edges={['top']}>
-      <ScreenHeader title="Admin — bookings" onBack={() => router.replace('/')} />
+      <ScreenHeader title="Admin - Buchungen" onBack={() => router.replace('/')} />
       <ScrollView className="flex-1 px-4 pt-4" contentContainerClassName="pb-8">
         <Text className="text-slate-400 mb-4">
-          Demo view for the barber. Tap a booking for details, Maps, and WhatsApp.
+          Demo-Ansicht für den Barber. Tippe auf eine Buchung für Details, Maps und WhatsApp.
         </Text>
 
         {bookings.length === 0 ? (
           <AppCard>
             <Text className="text-slate-300 text-center">
-              No bookings yet. Create one via Book appointment on the home screen.
+              Noch keine Buchungen. Erstelle eine über Termin buchen auf der Startseite.
             </Text>
           </AppCard>
         ) : (

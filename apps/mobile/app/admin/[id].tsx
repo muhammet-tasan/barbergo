@@ -15,6 +15,13 @@ import { openCustomerWhatsApp } from '@/services/whatsapp';
 import type { BookingStatus } from '@/types/domain';
 import { formatSwissDate } from '@/utils/date';
 
+const bookingStatusText: Record<BookingStatus, string> = {
+  pending: 'offen',
+  confirmed: 'bestätigt',
+  completed: 'abgeschlossen',
+  cancelled: 'storniert',
+};
+
 function DetailRow({ label, value }: { label: string; value: string }) {
   return (
     <View className="py-2 border-b border-slate-700/80">
@@ -38,10 +45,10 @@ export default function AdminBookingDetailScreen() {
   if (!booking) {
     return (
       <SafeAreaView className="flex-1 bg-brand-dark" edges={['top']}>
-        <ScreenHeader title="Booking" />
+        <ScreenHeader title="Buchung" />
         <View className="flex-1 px-6 justify-center">
-          <Text className="text-white text-center mb-6">Booking not found.</Text>
-          <AppButton label="Back to list" onPress={() => router.back()} />
+          <Text className="text-white text-center mb-6">Buchung nicht gefunden.</Text>
+          <AppButton label="Zur Liste" onPress={() => router.back()} />
         </View>
       </SafeAreaView>
     );
@@ -56,61 +63,61 @@ export default function AdminBookingDetailScreen() {
     setActionLoading(key);
     try {
       const ok = await fn();
-      if (!ok) Alert.alert('Error', errorMsg);
+      if (!ok) Alert.alert('Fehler', errorMsg);
     } finally {
       setActionLoading(null);
     }
   };
 
   const customerMessage = [
-    `Hi ${booking.customerName},`,
+    `Hallo ${booking.customerName},`,
     '',
-    `Your barbergo appointment (${service?.name ?? 'service'}) on ${formatSwissDate(booking.appointmentDate)} at ${booking.appointmentTime} is ${booking.status}.`,
+    `Dein barbergo Termin (${service?.name ?? 'Service'}) am ${formatSwissDate(booking.appointmentDate)} um ${booking.appointmentTime} ist ${bookingStatusText[booking.status]}.`,
     '',
-    `Address: ${booking.address}`,
-    `Total: ${formatChf(booking.totalChf)}`,
+    `Adresse: ${booking.address}`,
+    `Gesamt: ${formatChf(booking.totalChf)}`,
   ].join('\n');
 
   return (
     <SafeAreaView className="flex-1 bg-brand-dark" edges={['top']}>
-      <ScreenHeader title="Booking detail" />
+      <ScreenHeader title="Buchungsdetails" />
       <ScrollView className="flex-1 px-4 pt-4" contentContainerClassName="pb-8">
         <View className="mb-4">
           <StatusBadge status={booking.status} />
         </View>
 
         <AppCard className="mb-4">
-          <DetailRow label="Customer" value={booking.customerName} />
-          <DetailRow label="Phone" value={booking.phone} />
+          <DetailRow label="Kunde" value={booking.customerName} />
+          <DetailRow label="Telefon" value={booking.phone} />
           <DetailRow label="Service" value={service?.name ?? '—'} />
           <DetailRow
-            label="When"
+            label="Wann"
             value={`${formatSwissDate(booking.appointmentDate)} · ${booking.appointmentTime}`}
           />
-          <DetailRow label="Address" value={booking.address} />
-          {booking.note ? <DetailRow label="Note" value={booking.note} /> : null}
-          <DetailRow label="Total" value={formatChf(booking.totalChf)} />
+          <DetailRow label="Adresse" value={booking.address} />
+          {booking.note ? <DetailRow label="Notiz" value={booking.note} /> : null}
+          <DetailRow label="Gesamt" value={formatChf(booking.totalChf)} />
         </AppCard>
 
-        <Text className="text-slate-400 text-sm mb-2 uppercase tracking-wide">Actions</Text>
+        <Text className="text-slate-400 text-sm mb-2 uppercase tracking-wide">Aktionen</Text>
         <View className="gap-3 mb-6">
           <AppButton
-            label="Open address in Maps"
+            label="Adresse in Maps öffnen"
             variant="secondary"
             loading={actionLoading === 'maps'}
             onPress={() =>
-              runAction('maps', () => openAddressInMaps(booking.address), 'Could not open Maps.')
+              runAction('maps', () => openAddressInMaps(booking.address), 'Maps konnte nicht geöffnet werden.')
             }
           />
           <AppButton
-            label="Message customer on WhatsApp"
+            label="Kunde per WhatsApp anschreiben"
             variant="secondary"
             loading={actionLoading === 'whatsapp'}
             onPress={() =>
               runAction(
                 'whatsapp',
                 () => openCustomerWhatsApp(booking.phone, customerMessage),
-                'Could not open WhatsApp.'
+                'WhatsApp konnte nicht geöffnet werden.'
               )
             }
           />
@@ -120,16 +127,16 @@ export default function AdminBookingDetailScreen() {
         <View className="gap-2">
           {booking.status === 'pending' ? (
             <AppButton
-              label="Mark confirmed"
+              label="Als bestätigt markieren"
               onPress={() => setStatus('confirmed')}
             />
           ) : null}
           {booking.status === 'confirmed' ? (
-            <AppButton label="Mark completed" onPress={() => setStatus('completed')} />
+            <AppButton label="Als abgeschlossen markieren" onPress={() => setStatus('completed')} />
           ) : null}
           {booking.status !== 'cancelled' && booking.status !== 'completed' ? (
             <AppButton
-              label="Cancel booking"
+              label="Buchung stornieren"
               variant="ghost"
               onPress={() => setStatus('cancelled')}
             />

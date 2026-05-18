@@ -4,6 +4,7 @@ All Cursor agent work in this repository must follow **`docs/project-rules.md`**
 
 - **MVP backend:** Supabase (use mock data until credentials exist).
 - **Not active MVP:** Spring Boot, n8n, Coolify.
+- **App language:** German for visible mobile UI copy, validation messages, and WhatsApp messages.
 
 Project rules are enforced via **`.cursor/rules/barbergo-project.mdc`** (`alwaysApply: true`).
 

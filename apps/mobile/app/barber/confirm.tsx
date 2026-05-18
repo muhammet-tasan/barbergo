@@ -38,10 +38,10 @@ export default function BookingConfirmScreen() {
   if (!booking || !service) {
     return (
       <SafeAreaView className="flex-1 bg-brand-dark" edges={['top']}>
-        <ScreenHeader title="Confirmation" showBack={false} />
+        <ScreenHeader title="Bestätigung" showBack={false} />
         <View className="flex-1 px-6 justify-center">
-          <Text className="text-white text-center mb-6">Booking not found.</Text>
-          <AppButton label="Back to home" onPress={() => router.replace('/')} />
+          <Text className="text-white text-center mb-6">Buchung nicht gefunden.</Text>
+          <AppButton label="Zur Startseite" onPress={() => router.replace('/')} />
         </View>
       </SafeAreaView>
     );
@@ -52,7 +52,7 @@ export default function BookingConfirmScreen() {
     try {
       const ok = await openBarberWhatsAppBooking(booking, service.name, defaultProvider.name);
       if (!ok) {
-        Alert.alert('WhatsApp', 'Could not open WhatsApp. Install the app or check the link.');
+        Alert.alert('WhatsApp', 'WhatsApp konnte nicht geöffnet werden. Bitte installiere die App oder prüfe den Link.');
       }
     } finally {
       setWhatsappLoading(false);
@@ -61,13 +61,13 @@ export default function BookingConfirmScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-brand-dark" edges={['top']}>
-      <ScreenHeader title="Booking confirmed" showBack={false} />
+      <ScreenHeader title="Buchung bestätigt" showBack={false} />
       <ScrollView className="flex-1 px-4 pt-4" contentContainerClassName="pb-8">
         <View className="items-center mb-6">
           <Text className="text-3xl mb-2">✓</Text>
-          <Text className="text-xl font-bold text-white text-center">Request sent</Text>
+          <Text className="text-xl font-bold text-white text-center">Anfrage gesendet</Text>
           <Text className="text-slate-400 text-center mt-2 px-4">
-            Your appointment is pending. Notify {defaultProvider.name} on WhatsApp to confirm faster.
+            Dein Termin ist angefragt. Schreibe {defaultProvider.name} auf WhatsApp, damit er schneller bestätigen kann.
           </Text>
           <View className="mt-3">
             <StatusBadge status={booking.status} />
@@ -76,20 +76,20 @@ export default function BookingConfirmScreen() {
 
         <AppCard className="mb-6">
           <DetailRow label="Service" value={service.name} />
-          <DetailRow label="Date" value={formatSwissDate(booking.appointmentDate)} />
-          <DetailRow label="Time" value={booking.appointmentTime} />
-          <DetailRow label="Address" value={booking.address} />
-          <DetailRow label="Total" value={formatChf(booking.totalChf)} />
+          <DetailRow label="Datum" value={formatSwissDate(booking.appointmentDate)} />
+          <DetailRow label="Uhrzeit" value={booking.appointmentTime} />
+          <DetailRow label="Adresse" value={booking.address} />
+          <DetailRow label="Gesamt" value={formatChf(booking.totalChf)} />
         </AppCard>
 
         <View className="gap-3">
           <AppButton
-            label="Send via WhatsApp"
+            label="Per WhatsApp senden"
             onPress={handleWhatsApp}
             loading={whatsappLoading}
           />
           <AppButton
-            label="Done"
+            label="Fertig"
             variant="secondary"
             onPress={() => router.replace('/')}
           />
