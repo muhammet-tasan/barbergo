@@ -140,6 +140,13 @@ When a milestone is finished (feature, screen group, setup, refactor, or docs mi
 2. **Important code changes** — what was built or wired, key functions/components, and how they connect (beginner-friendly, no wall of identifiers)
 3. **Architecture decisions** — brief why (trade-offs, defaults chosen, what was deferred)
 
+Also update project tracking before stopping:
+
+- update `TODO.md`
+- update `docs/current-status.md`
+- mark completed tasks
+- add next recommended tasks
+
 Keep it concise. Then send ntfy, suggest what to test, and suggest a commit message if the milestone is stable (do not commit unless the user asks).
 
 ## Workflow Philosophy

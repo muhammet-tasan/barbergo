@@ -46,6 +46,8 @@ Otherwise: `scripts/notify-done.ps1`. Do not skip.
 2. **Important code changes** — what was built and how pieces connect  
 3. **Architecture decisions** — brief why and what was deferred  
 
+Before stopping, also update `TODO.md` and `docs/current-status.md`, mark completed tasks, and add next recommended tasks.
+
 Then: ntfy notification, what to test, suggested commit message (no auto-commit).
 
 ## Philosophy

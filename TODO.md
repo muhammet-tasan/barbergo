@@ -20,11 +20,21 @@
 - [x] Architecture docs + data model
 - [x] `services/supabase.ts` placeholder
 - [x] Supabase SQL migration + seed files prepared
+- [x] Current status tracking document (`docs/current-status.md`)
 - [ ] Supabase project + env vars (waiting on credentials)
 - [ ] Run SQL schema from `docs/data-model.md`
 - [ ] Row Level Security policies
 - [ ] Replace mock repositories with Supabase queries
 - [ ] Optional: Supabase Auth for barber admin
+
+### Next recommended tasks
+
+- [ ] Manually test customer + admin flow with Expo Go
+- [ ] Create Supabase project and run `supabase/migrations/0001_initial_schema.sql`
+- [ ] Run `supabase/seed.sql`
+- [ ] Configure `apps/mobile/.env`
+- [ ] Install `@supabase/supabase-js`
+- [ ] Replace mock provider/service reads with Supabase queries
 
 ### Not in MVP
 
