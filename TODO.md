@@ -7,13 +7,13 @@
 - [x] Monorepo folders (`apps/mobile`, `backend/`, `scripts/`, `docs/`)
 - [x] Expo + TypeScript + Expo Router + NativeWind
 - [x] Home screen
-- [ ] Barber profile screen
-- [ ] Service selection screen
-- [ ] Booking form + validation
-- [ ] Booking confirmation + WhatsApp deeplink
-- [ ] Admin booking list + detail (Maps + WhatsApp)
-- [ ] Reusable UI components (cards, inputs, badges)
-- [ ] Mock data + pricing constants (`constants/pricing.ts`)
+- [x] Barber profile screen
+- [x] Service selection screen
+- [x] Booking form + validation
+- [x] Booking confirmation + WhatsApp deeplink
+- [x] Admin booking list + detail (Maps + WhatsApp)
+- [x] Reusable UI components (cards, inputs, badges)
+- [x] Mock data + pricing constants (`constants/pricing.ts`)
 
 ### Backend (Supabase)
 

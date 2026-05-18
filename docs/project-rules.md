@@ -129,9 +129,18 @@ Rules:
 - This file is applied automatically via `.cursor/rules/barbergo-project.mdc` and `AGENTS.md` — no need to @-mention it each chat
 - Read and follow this file for all future tasks
 - Prefer smaller implementation steps
-- Explain what was implemented after each major task
 - Keep documentation updated
 - Use mock data first; wire Supabase when `EXPO_PUBLIC_SUPABASE_*` env vars are available
+
+### After every major implementation step
+
+When a milestone is finished (feature, screen group, setup, refactor, or docs migration), end the response with a short structured summary:
+
+1. **Changed files** — list paths added, updated, or removed (group by area: `apps/mobile/`, `docs/`, etc.)
+2. **Important code changes** — what was built or wired, key functions/components, and how they connect (beginner-friendly, no wall of identifiers)
+3. **Architecture decisions** — brief why (trade-offs, defaults chosen, what was deferred)
+
+Keep it concise. Then send ntfy, suggest what to test, and suggest a commit message if the milestone is stable (do not commit unless the user asks).
 
 ## Workflow Philosophy
 

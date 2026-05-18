@@ -40,6 +40,14 @@ Otherwise: `scripts/notify-done.ps1`. Do not skip.
 - **Future only (do not build):** n8n, Coolify, optional Spring Boot — document only
 - Simple MVP; avoid paid APIs; mock data first; see `docs/data-model.md`
 
+## After every major step (required summary)
+
+1. **Changed files** — paths added/updated/removed, grouped by folder  
+2. **Important code changes** — what was built and how pieces connect  
+3. **Architecture decisions** — brief why and what was deferred  
+
+Then: ntfy notification, what to test, suggested commit message (no auto-commit).
+
 ## Philosophy
 
 - Ship working MVP fast; explain decisions after implementation; update docs when architecture changes
