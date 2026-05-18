@@ -24,11 +24,32 @@
 
 ## Notifications
 
-Whenever implementation pauses because user input is truly required:
+### User interaction required (send immediately before stopping)
+
+Whenever you need user interaction, approval, clarification, terminal permission, dependency approval, or hit a blocking issue: **send ntfy first, then stop**. Do not wait for the user to notice you paused.
+
+Base command (use a specific message when possible):
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File scripts/notify-custom.ps1 "User input required"
+powershell -ExecutionPolicy Bypass -File scripts/notify-custom.ps1 "User interaction required"
 ```
+
+Contextual examples:
+
+- `User interaction required` (generic)
+- `Terminal approval required`
+- `Dependency installation approval required`
+- `Architecture decision required`
+- `Build failed`
+- `Manual testing required`
+
+Also notify before stopping when:
+
+- security-sensitive or destructive actions need approval
+- credentials, API keys, or accounts are required
+- important architecture or library choices are unclear
+
+### Major task completed
 
 Whenever a major task is completed:
 
@@ -57,30 +78,51 @@ Send notifications after:
 - successful builds
 - important fixes
 - larger refactors
-- pausing because user input is truly required
+- pausing because user interaction is required (notify **before** stopping)
 
-Do not skip notifications.
+Do not skip notifications. Never stop for the user without sending the interaction notification first.
 
 ## Architecture
 
 Tech stack:
 
+**Mobile**
+
 - React Native with Expo
 - TypeScript
 - Expo Router
 - NativeWind
-- Spring Boot
-- PostgreSQL
+
+**Backend / auth / database (MVP)**
+
+- Supabase (PostgreSQL, Auth, API)
+
+**Communication**
+
+- WhatsApp deeplinks only
+- Google Maps deeplinks only
+
+**Developer notifications**
+
+- ntfy.sh PowerShell scripts
+
+**Future only (do not implement in MVP)**
+
+- n8n automation
+- Coolify hosting
+- optional Spring Boot services if logic becomes complex
 
 Rules:
 
 - Keep the MVP simple
 - Prefer clean and beginner-friendly code
 - Avoid overengineering
-- Avoid paid APIs and paid services where possible
+- Avoid paid APIs and paid services where possible (Supabase free tier is OK)
 - Use reusable components
 - Use clean folder structures
 - Keep future scalability in mind
+- Use **mock data** until Supabase credentials are provided; integrate via `apps/mobile/services/supabase.ts`
+- See `docs/architecture.md` and `docs/data-model.md`
 
 ## Workflow
 
@@ -89,7 +131,7 @@ Rules:
 - Prefer smaller implementation steps
 - Explain what was implemented after each major task
 - Keep documentation updated
-- Use mock data first before complex backend integrations
+- Use mock data first; wire Supabase when `EXPO_PUBLIC_SUPABASE_*` env vars are available
 
 ## Workflow Philosophy
 

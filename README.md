@@ -1,79 +1,74 @@
 # barbergo
 
-Developer notification setup for the **barbergo** project. When Cursor finishes a larger coding task on your Windows PC, you can get a push notification on your Android phone—no backend, no API keys.
+Mobile barber booking MVP — home service haircuts in **Basel, Switzerland**.
 
-## What is ntfy?
+A customer books a mobile barber at home; the barber manages appointments via an admin demo flow. Communication uses **WhatsApp** and **Google Maps** deeplinks (no paid messaging APIs).
 
-[ntfy](https://ntfy.sh) is a free, open-source notification service. You publish a message to a **topic** (like a channel name), and any device subscribed to that topic receives a push notification. No account is required for basic use.
+## Architecture overview
 
-- Website: https://ntfy.sh  
-- Public server: `https://ntfy.sh`
+| Layer | Stack |
+|-------|--------|
+| Mobile | React Native, Expo, TypeScript, Expo Router, NativeWind |
+| Backend | **Supabase** (Postgres, Auth, API) |
+| Dev alerts | ntfy.sh + PowerShell (`scripts/`) |
 
-## Android setup
+Details: [docs/architecture.md](docs/architecture.md) · Data model: [docs/data-model.md](docs/data-model.md)
 
-1. Install **ntfy** from the [Google Play Store](https://play.google.com/store/apps/details?id=io.heckel.ntfy) (or [F-Droid](https://f-droid.org/packages/io.heckel.ntfy/)).
-2. Open the app and tap **+** to add a subscription.
-3. Enter the topic name:
+**MVP uses mock data** until Supabase URL and anon key are added (`apps/mobile/.env.example`).
 
-   ```
-   barbergo-muhammet
-   ```
-
-4. Confirm. You should see the topic in your list. Leave notifications enabled for the app in Android settings.
-
-> **Privacy note:** Anyone who knows your topic name can send messages to it. Use a unique, hard-to-guess topic (as we do here) and do not share it publicly.
-
-## Manual test (Windows)
-
-Open PowerShell in the project folder (`barbergo`) and run:
-
-### Default “task finished” message
-
-```powershell
-powershell -ExecutionPolicy Bypass -File scripts/notify-done.ps1
-```
-
-### Custom message
-
-```powershell
-powershell -ExecutionPolicy Bypass -File scripts/notify-custom.ps1 "Backend completed"
-```
-
-You can also test from the browser or with `curl`:
-
-```powershell
-Invoke-RestMethod -Uri "https://ntfy.sh/barbergo-muhammet" -Method Post -Body "Hello from PowerShell"
-```
-
-Within a few seconds, your phone should show the notification.
-
-## Scripts
-
-| Script | Purpose |
-|--------|---------|
-| `scripts/notify-done.ps1` | Sends the standard barbergo “Cursor task finished” message |
-| `scripts/notify-custom.ps1` | Sends any message you pass as the first argument |
-
-Both scripts use only built-in PowerShell (`Invoke-RestMethod`). No Node.js or extra modules required.
-
-## Project layout
+## Monorepo layout
 
 ```
 barbergo/
-  scripts/
-    notify-done.ps1
-    notify-custom.ps1
-  docs/
-    setup-notes.md
-  README.md
+  apps/mobile/       # Expo app
+  backend/           # Placeholder — optional Spring Boot later (not active MVP)
+  scripts/           # ntfy notifications
+  docs/              # Rules, architecture, setup
 ```
+
+## Run the mobile app
+
+```powershell
+cd apps/mobile
+npm install
+npx expo start
+```
+
+Scan the QR code with **Expo Go** on Android, or press `a` for an emulator.
+
+### Supabase (when ready)
+
+1. Create a project at [supabase.com](https://supabase.com).
+2. Copy `apps/mobile/.env.example` → `apps/mobile/.env`.
+3. Set `EXPO_PUBLIC_SUPABASE_URL` and `EXPO_PUBLIC_SUPABASE_ANON_KEY`.
+4. Run SQL from [docs/data-model.md](docs/data-model.md).
+5. Install client: `npm install @supabase/supabase-js` and finish `services/supabase.ts` TODOs.
+
+Until then, the app reads from `data/mockData.ts`.
+
+## Developer notifications (ntfy)
+
+When Cursor finishes a task, notify your phone:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/notify-done.ps1
+powershell -ExecutionPolicy Bypass -File scripts/notify-custom.ps1 "Your message"
+```
+
+Subscribe in the [ntfy Android app](https://ntfy.sh) to topic: `barbergo-muhammet`
 
 ## Project rules (Cursor)
 
-Standards for stack, workflow, and notifications: [docs/project-rules.md](docs/project-rules.md).
+[docs/project-rules.md](docs/project-rules.md) — applied automatically via `.cursor/rules/barbergo-project.mdc`.
 
-They apply automatically in Agent chats via `.cursor/rules/barbergo-project.mdc` (`alwaysApply: true`).
+## Roadmap (not MVP)
 
-## More details
+- n8n automation
+- Coolify self-hosting
+- Optional custom Spring Boot services
 
-See [docs/setup-notes.md](docs/setup-notes.md) for why we chose ntfy over WhatsApp and how this fits into Cursor workflows.
+See [TODO.md](TODO.md).
+
+## More
+
+[docs/setup-notes.md](docs/setup-notes.md) — why Expo, NativeWind, Supabase, and deferred tools.

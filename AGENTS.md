@@ -1,7 +1,10 @@
 # barbergo — agent instructions
 
-All Cursor agent work in this repository must follow **`docs/project-rules.md`**.
+All Cursor agent work in this repository must follow **`docs/project-rules.md`** and **`docs/architecture.md`**.
 
-Project rules are also enforced automatically via **`.cursor/rules/barbergo-project.mdc`** (`alwaysApply: true`).
+- **MVP backend:** Supabase (use mock data until credentials exist).
+- **Not active MVP:** Spring Boot, n8n, Coolify.
+
+Project rules are enforced via **`.cursor/rules/barbergo-project.mdc`** (`alwaysApply: true`).
 
 After larger tasks, run the PowerShell notification scripts under `scripts/` from the repo root (see project rules).
