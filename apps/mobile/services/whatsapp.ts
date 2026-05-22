@@ -6,7 +6,9 @@ import { formatSwissDate } from '@/utils/date';
 
 const DEFAULT_DEMO_BARBER_WHATSAPP_E164 = '41791234567';
 const barberWhatsapp =
-  process.env.EXPO_PUBLIC_BARBER_WHATSAPP ?? DEFAULT_DEMO_BARBER_WHATSAPP_E164;
+  process.env.EXPO_PUBLIC_WHATSAPP_PHONE ??
+  process.env.EXPO_PUBLIC_BARBER_WHATSAPP ??
+  DEFAULT_DEMO_BARBER_WHATSAPP_E164;
 
 const bookingStatusLabel = {
   pending: 'offen',

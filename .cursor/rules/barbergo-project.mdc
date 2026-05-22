@@ -5,7 +5,7 @@ alwaysApply: true
 
 # barbergo — always follow
 
-Authoritative details: `docs/project-rules.md`, `docs/architecture.md`. Apply on every task in this repo.
+Authoritative details: `docs/project-rules.md`, `docs/coding-guidelines.md`, `docs/architecture.md`. Apply on every task in this repo.
 
 ## Semi-autonomous workflow
 
@@ -38,7 +38,7 @@ Otherwise: `scripts/notify-done.ps1`. Do not skip.
 - **MVP backend:** Supabase (not Spring Boot). Mock data until `EXPO_PUBLIC_SUPABASE_*` env vars exist. Client: `apps/mobile/services/supabase.ts`
 - **Comms:** WhatsApp + Google Maps deeplinks only
 - **Future only (do not build):** n8n, Coolify, optional Spring Boot — document only
-- Simple MVP; avoid paid APIs; mock data first; see `docs/data-model.md`
+- Simple MVP; avoid paid APIs; Supabase + mock fallback; see `docs/coding-guidelines.md` and `docs/data-model.md`
 - App product language is **German**. Visible mobile UI copy, validation messages, and WhatsApp messages should be German.
 
 ## After every major step (required summary)

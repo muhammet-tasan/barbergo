@@ -1,34 +1,52 @@
 # barbergo Project Rules
 
-## Autonomous / Semi-Autonomous Workflow
+How humans and AI agents work in this repository: workflow, notifications, architecture boundaries, and documentation duties.
+
+**Engineering style (code structure, Supabase, UI, errors):** [coding-guidelines.md](./coding-guidelines.md)
+
+**System design:** [architecture.md](./architecture.md) · **Entities:** [data-model.md](./data-model.md) · **Status:** [current-status.md](./current-status.md)
+
+---
+
+## Philosophy
+
+- **Ship a working MVP fast** — booking flow, Supabase persistence, admin list, WhatsApp/Maps deeplinks.
+- **Do not create messy code** — prefer boring, readable solutions ([coding-guidelines.md](./coding-guidelines.md)).
+- **Minimize unnecessary interruptions** — semi-autonomous implementation with sensible defaults.
+- **Explain important decisions** after implementation instead of blocking on every small choice.
+- **Keep the app running** after every major step.
+
+---
+
+## Semi-autonomous workflow
 
 - Prefer continuing implementation with sensible defaults instead of stopping for unnecessary questions.
-- Work semi-autonomously whenever possible.
-- Make reasonable technical assumptions and continue implementation.
+- Make reasonable technical assumptions and continue.
 - Only stop and ask for confirmation when:
-  - security-sensitive actions are required
-  - destructive actions may happen
-  - important architecture decisions are unclear
-  - multiple significantly different technology choices exist
-  - credentials, API keys, or accounts are required
-  - package/library choice could strongly affect the future architecture
+  - **Security-sensitive** actions are required
+  - **Destructive** actions may happen
+  - **Major architecture** is unclear (e.g. replacing Supabase with a custom API)
+  - **Materially different** technology choices exist
+  - **Credentials**, API keys, or external accounts are required
+  - A **library choice** could strongly affect future architecture
 
-- For small UI, naming, folder, or implementation details:
-  - choose a reasonable default
-  - document the choice
-  - continue implementation without asking
+For small UI, naming, folder, or implementation details:
 
-- Prefer iterative progress over waiting for perfect clarification.
-- Prefer small working MVP implementations.
-- Keep implementation momentum high.
+- choose a reasonable default (see [coding-guidelines.md](./coding-guidelines.md))
+- document the choice briefly
+- continue without asking
 
-## Notifications
+Prefer **iterative progress** and **small working increments** over perfect upfront design.
 
-### User interaction required (send immediately before stopping)
+---
 
-Whenever you need user interaction, approval, clarification, terminal permission, dependency approval, or hit a blocking issue: **send ntfy first, then stop**. Do not wait for the user to notice you paused.
+## Notifications (ntfy)
 
-Base command (use a specific message when possible):
+Run from **repository root**. Topic: `barbergo-muhammet` (see [README.md](../README.md)).
+
+### User interaction required — send **before** stopping
+
+Whenever you need user interaction, approval, clarification, terminal permission, dependency approval, or hit a blocking issue:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts/notify-custom.ps1 "User interaction required"
@@ -36,124 +54,114 @@ powershell -ExecutionPolicy Bypass -File scripts/notify-custom.ps1 "User interac
 
 Contextual examples:
 
-- `User interaction required` (generic)
+- `User interaction required`
 - `Terminal approval required`
 - `Dependency installation approval required`
 - `Architecture decision required`
 - `Build failed`
 - `Manual testing required`
+- `Cursor needs your attention`
 
-Also notify before stopping when:
+Also notify before stopping when security-sensitive or destructive actions need approval, credentials are required, or important architecture choices are unclear.
 
-- security-sensitive or destructive actions need approval
-- credentials, API keys, or accounts are required
-- important architecture or library choices are unclear
+**Do not** stop for the user without sending the interaction notification first.
 
 ### Major task completed
-
-Whenever a major task is completed:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts/notify-custom.ps1 "Task description"
 ```
 
-Examples:
+Examples: `Supabase integration completed`, `Booking flow completed`, `Docs updated`.
 
-- "Expo setup completed"
-- "Navigation implemented"
-- "Backend endpoints completed"
-- "Booking flow completed"
-
-Default notification (when no specific label is needed):
+Default when no specific label is needed:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts/notify-done.ps1
 ```
 
-Send notifications after:
+Send notifications after: feature completion, setup completion, successful builds, important fixes, larger refactors, and before pausing for user input.
 
-- feature completion
-- setup completion
-- dependency installation
-- successful builds
-- important fixes
-- larger refactors
-- pausing because user interaction is required (notify **before** stopping)
+---
 
-Do not skip notifications. Never stop for the user without sending the interaction notification first.
+## Architecture (MVP)
 
-## Architecture
+| Area | Choice |
+|------|--------|
+| Mobile | React Native, **Expo**, TypeScript, **Expo Router**, **NativeWind** |
+| Backend / DB | **Supabase** (PostgreSQL, API; Auth later) |
+| Communication | **WhatsApp** + **Google Maps** deeplinks only |
+| Dev alerts | ntfy.sh + `scripts/*.ps1` |
+| Fallback data | `apps/mobile/data/mockData.ts` when Supabase fails or env missing |
 
-Tech stack:
+**Client entry:** `apps/mobile/services/supabase.ts`
 
-**Mobile**
+**Not in MVP (do not implement unless requested):**
 
-- React Native with Expo
-- TypeScript
-- Expo Router
-- NativeWind
+- n8n, Coolify, Spring Boot (`backend/` is placeholder only)
+- Production Auth + strict RLS
+- Payments, admin web panel, push notifications
 
-**Backend / auth / database (MVP)**
+See [architecture.md](./architecture.md) and [coding-guidelines.md](./coding-guidelines.md#time-to-market-rule).
 
-- Supabase (PostgreSQL, Auth, API)
+### Product language
 
-**Communication**
+- **German** for all visible mobile UI, validation messages, and WhatsApp/Maps-related user copy.
 
-- WhatsApp deeplinks only
-- Google Maps deeplinks only
+### Supabase status
 
-**Developer notifications**
+- Env: `EXPO_PUBLIC_SUPABASE_URL`, `EXPO_PUBLIC_SUPABASE_ANON_KEY` in `apps/mobile/.env`
+- Data layer: `services/providers.ts`, `services/catalog.ts`, `services/bookings.ts`
+- **Temporary MVP note:** admin demo may require relaxed RLS on `bookings` until Auth exists — document in [current-status.md](./current-status.md), do not hide.
 
-- ntfy.sh PowerShell scripts
+---
 
-**Future only (do not implement in MVP)**
-
-- n8n automation
-- Coolify hosting
-- optional Spring Boot services if logic becomes complex
-
-Rules:
-
-- Keep the MVP simple
-- Prefer clean and beginner-friendly code
-- App product language is **German** from now on; all visible mobile UI copy, validation messages, and customer/barber WhatsApp messages should be German.
-- Avoid overengineering
-- Avoid paid APIs and paid services where possible (Supabase free tier is OK)
-- Use reusable components
-- Use clean folder structures
-- Keep future scalability in mind
-- Use **mock data** until Supabase credentials are provided; integrate via `apps/mobile/services/supabase.ts`
-- See `docs/architecture.md` and `docs/data-model.md`
-
-## Workflow
-
-- This file is applied automatically via `.cursor/rules/barbergo-project.mdc` and `AGENTS.md` — no need to @-mention it each chat
-- Read and follow this file for all future tasks
-- Prefer smaller implementation steps
-- Keep documentation updated
-- Use mock data first; wire Supabase when `EXPO_PUBLIC_SUPABASE_*` env vars are available
+## Documentation duties
 
 ### After every major implementation step
 
-When a milestone is finished (feature, screen group, setup, refactor, or docs migration), end the response with a short structured summary:
+End the response with:
 
-1. **Changed files** — list paths added, updated, or removed (group by area: `apps/mobile/`, `docs/`, etc.)
-2. **Important code changes** — what was built or wired, key functions/components, and how they connect (beginner-friendly, no wall of identifiers)
-3. **Architecture decisions** — brief why (trade-offs, defaults chosen, what was deferred)
+1. **Changed files** — paths added/updated/removed (group by `apps/mobile/`, `docs/`, etc.)
+2. **Important code changes** — what was built and how pieces connect (beginner-friendly)
+3. **Architecture decisions** — brief why and what was deferred
 
-Also update project tracking before stopping:
+Before stopping, update:
 
-- update `TODO.md`
-- update `docs/current-status.md`
-- mark completed tasks
-- add next recommended tasks
+- **`TODO.md`** — mark completed tasks, add next recommended tasks
+- **`docs/current-status.md`** — must include: current working state, completed features, known issues, next steps, important technical decisions
 
-Keep it concise. Then send ntfy, suggest what to test, and suggest a commit message if the milestone is stable (do not commit unless the user asks).
+Keep summaries **concise**. Then: ntfy notification, what to test, **suggested commit message** (do **not** commit unless the user asks).
 
-## Workflow Philosophy
+### When changing engineering standards
 
-- Keep development fast and practical.
-- Prefer shipping a working MVP over overengineering.
-- Minimize unnecessary interruptions.
-- Keep explanations concise but useful.
-- Explain important decisions after implementation instead of blocking beforehand.
+- Update **[coding-guidelines.md](./coding-guidelines.md)** for code/UI/Supabase/git conventions.
+- Update **this file** for workflow, notifications, and agent behaviour.
+
+---
+
+## Git rules
+
+- Do **not** automatically **commit** or **push**.
+- After stable milestones, suggest a meaningful commit message and summarize changed files first.
+- Keep commits small: `feat:`, `fix:`, `docs:`, `refactor:` (see [coding-guidelines.md](./coding-guidelines.md#git-rules)).
+
+---
+
+## Cursor / agent integration
+
+- This file is applied via **`.cursor/rules/barbergo-project.mdc`** and **[AGENTS.md](../AGENTS.md)** (`alwaysApply: true`).
+- Read **this file** + **[coding-guidelines.md](./coding-guidelines.md)** for all tasks in this repo.
+- Prefer smaller implementation steps; wire Supabase through `services/` only ([coding-guidelines.md](./coding-guidelines.md#supabase-guidelines)).
+
+---
+
+## Quick reference — what to read when
+
+| Task | Read first |
+|------|------------|
+| New screen or UI | [coding-guidelines.md](./coding-guidelines.md) (UI, Expo, components) |
+| Supabase / data | [coding-guidelines.md](./coding-guidelines.md) (Supabase, domain model) + [data-model.md](./data-model.md) |
+| Agent workflow / notify | This file |
+| Stack overview | [architecture.md](./architecture.md) |
+| What's done / next | [current-status.md](./current-status.md), [TODO.md](../TODO.md) |

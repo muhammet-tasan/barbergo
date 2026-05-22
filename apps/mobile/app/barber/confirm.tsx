@@ -1,4 +1,4 @@
-import { Alert, ScrollView, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
@@ -8,8 +8,11 @@ import { AppCard } from '@/components/AppCard';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { StatusBadge } from '@/components/StatusBadge';
 import { formatChf } from '@/constants/pricing';
-import { defaultProvider, services } from '@/data/mockData';
-import { getBookingById, getServiceById } from '@/services/bookings';
+import { colors } from '@/constants/theme';
+import { useBooking } from '@/hooks/use-booking';
+import { useProvider } from '@/hooks/use-provider';
+import { useServices } from '@/hooks/use-services';
+import { getServiceById } from '@/services/bookings';
 import { openBarberWhatsAppBooking } from '@/services/whatsapp';
 import { formatSwissDate } from '@/utils/date';
 
@@ -25,17 +28,27 @@ function DetailRow({ label, value }: { label: string; value: string }) {
 export default function BookingConfirmScreen() {
   const router = useRouter();
   const { bookingId } = useLocalSearchParams<{ bookingId: string }>();
-  const booking = useMemo(
-    () => (bookingId ? getBookingById(bookingId) : undefined),
-    [bookingId]
-  );
-  const service = useMemo(
-    () => (booking ? getServiceById(booking.serviceId, services) : undefined),
-    [booking]
-  );
+  const { booking, loading: bookingLoading } = useBooking(bookingId);
+  const { provider, loading: providerLoading } = useProvider();
+  const { services, loading: servicesLoading } = useServices(provider?.id);
   const [whatsappLoading, setWhatsappLoading] = useState(false);
 
-  if (!booking || !service) {
+  const service = useMemo(
+    () => (booking ? getServiceById(booking.serviceId, services) : undefined),
+    [booking, services]
+  );
+
+  const loading = bookingLoading || providerLoading || servicesLoading;
+
+  if (loading) {
+    return (
+      <SafeAreaView className="flex-1 bg-brand-dark items-center justify-center" edges={['top']}>
+        <ActivityIndicator color={colors.accent} />
+      </SafeAreaView>
+    );
+  }
+
+  if (!booking || !service || !provider) {
     return (
       <SafeAreaView className="flex-1 bg-brand-dark" edges={['top']}>
         <ScreenHeader title="Bestätigung" showBack={false} />
@@ -50,9 +63,12 @@ export default function BookingConfirmScreen() {
   const handleWhatsApp = async () => {
     setWhatsappLoading(true);
     try {
-      const ok = await openBarberWhatsAppBooking(booking, service.name, defaultProvider.name);
+      const ok = await openBarberWhatsAppBooking(booking, service.name, provider.name);
       if (!ok) {
-        Alert.alert('WhatsApp', 'WhatsApp konnte nicht geöffnet werden. Bitte installiere die App oder prüfe den Link.');
+        Alert.alert(
+          'WhatsApp',
+          'WhatsApp konnte nicht geöffnet werden. Bitte installiere die App oder prüfe den Link.'
+        );
       }
     } finally {
       setWhatsappLoading(false);
@@ -67,7 +83,8 @@ export default function BookingConfirmScreen() {
           <Text className="text-3xl mb-2">✓</Text>
           <Text className="text-xl font-bold text-white text-center">Anfrage gesendet</Text>
           <Text className="text-slate-400 text-center mt-2 px-4">
-            Dein Termin ist angefragt. Schreibe {defaultProvider.name} auf WhatsApp, damit er schneller bestätigen kann.
+            Dein Termin ist angefragt. Schreibe {provider.name} auf WhatsApp, damit er schneller
+            bestätigen kann.
           </Text>
           <View className="mt-3">
             <StatusBadge status={booking.status} />
@@ -88,11 +105,7 @@ export default function BookingConfirmScreen() {
             onPress={handleWhatsApp}
             loading={whatsappLoading}
           />
-          <AppButton
-            label="Fertig"
-            variant="secondary"
-            onPress={() => router.replace('/')}
-          />
+          <AppButton label="Fertig" variant="secondary" onPress={() => router.replace('/')} />
         </View>
       </ScrollView>
     </SafeAreaView>

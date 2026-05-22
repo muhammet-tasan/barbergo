@@ -1,4 +1,4 @@
-import { ScrollView, Text, View } from 'react-native';
+import { ActivityIndicator, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -6,12 +6,20 @@ import { Ionicons } from '@expo/vector-icons';
 import { AppButton } from '@/components/AppButton';
 import { AppCard } from '@/components/AppCard';
 import { ScreenHeader } from '@/components/ScreenHeader';
-import { defaultProvider } from '@/data/mockData';
 import { colors } from '@/constants/theme';
+import { useProvider } from '@/hooks/use-provider';
 
 export default function BarberProfileScreen() {
   const router = useRouter();
-  const provider = defaultProvider;
+  const { provider, loading } = useProvider();
+
+  if (loading || !provider) {
+    return (
+      <SafeAreaView className="flex-1 bg-brand-dark items-center justify-center" edges={['top']}>
+        <ActivityIndicator color={colors.accent} />
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView className="flex-1 bg-brand-dark" edges={['top']}>

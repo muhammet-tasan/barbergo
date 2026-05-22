@@ -1,6 +1,6 @@
 # barbergo — agent instructions
 
-All Cursor agent work in this repository must follow **`docs/project-rules.md`** and **`docs/architecture.md`**.
+All Cursor agent work in this repository must follow **`docs/project-rules.md`**, **`docs/coding-guidelines.md`**, and **`docs/architecture.md`**.
 
 - **MVP backend:** Supabase (use mock data until credentials exist).
 - **Not active MVP:** Spring Boot, n8n, Coolify.

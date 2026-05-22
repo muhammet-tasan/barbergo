@@ -59,7 +59,10 @@ Subscribe in the [ntfy Android app](https://ntfy.sh) to topic: `barbergo-muhamme
 
 ## Project rules (Cursor)
 
-[docs/project-rules.md](docs/project-rules.md) — applied automatically via `.cursor/rules/barbergo-project.mdc`.
+- [docs/project-rules.md](docs/project-rules.md) — workflow, notifications, documentation duties
+- [docs/coding-guidelines.md](docs/coding-guidelines.md) — engineering standards (Expo, Supabase, UI, errors, git)
+
+Applied automatically via `.cursor/rules/barbergo-project.mdc`.
 
 ## Roadmap (not MVP)
 

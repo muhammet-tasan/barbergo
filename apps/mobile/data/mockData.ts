@@ -1,13 +1,11 @@
 import type { Booking, Provider, Service } from '@/types/domain';
 
-import { isSupabaseConfigured } from '@/services/supabase';
 import { calculateBookingTotal } from '@/constants/pricing';
 
 /**
- * Mock data — used until Supabase env vars are configured.
- * Replace reads with Supabase queries in services/ when live.
+ * Mock data — fallback when Supabase is unavailable or queries fail.
+ * Live reads/writes go through services/providers, catalog, and bookings.
  */
-export const useMockData = !isSupabaseConfigured();
 
 export const defaultProvider: Provider = {
   id: 'provider-1',

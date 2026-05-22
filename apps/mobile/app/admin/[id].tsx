@@ -1,4 +1,4 @@
-import { Alert, ScrollView, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
@@ -8,8 +8,10 @@ import { AppCard } from '@/components/AppCard';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { StatusBadge } from '@/components/StatusBadge';
 import { formatChf } from '@/constants/pricing';
-import { services } from '@/data/mockData';
-import { getBookingById, getServiceById, updateBookingStatus } from '@/services/bookings';
+import { colors } from '@/constants/theme';
+import { useBooking } from '@/hooks/use-booking';
+import { useServices } from '@/hooks/use-services';
+import { getServiceById, updateBookingStatus } from '@/services/bookings';
 import { openAddressInMaps } from '@/services/maps';
 import { openCustomerWhatsApp } from '@/services/whatsapp';
 import type { BookingStatus } from '@/types/domain';
@@ -34,13 +36,22 @@ function DetailRow({ label, value }: { label: string; value: string }) {
 export default function AdminBookingDetailScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
-  const initial = useMemo(() => (id ? getBookingById(id) : undefined), [id]);
-  const [booking, setBooking] = useState(initial);
+  const { booking, loading, setBooking } = useBooking(id);
+  const { services, loading: servicesLoading } = useServices();
   const service = useMemo(
     () => (booking ? getServiceById(booking.serviceId, services) : undefined),
-    [booking]
+    [booking, services]
   );
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [statusLoading, setStatusLoading] = useState(false);
+
+  if (loading || servicesLoading) {
+    return (
+      <SafeAreaView className="flex-1 bg-brand-dark items-center justify-center" edges={['top']}>
+        <ActivityIndicator color={colors.accent} />
+      </SafeAreaView>
+    );
+  }
 
   if (!booking) {
     return (
@@ -54,9 +65,29 @@ export default function AdminBookingDetailScreen() {
     );
   }
 
-  const setStatus = (status: BookingStatus) => {
-    const updated = updateBookingStatus(booking.id, status);
-    if (updated) setBooking({ ...updated });
+  const setStatus = async (status: BookingStatus) => {
+    setStatusLoading(true);
+    try {
+      const result = await updateBookingStatus(booking.id, status);
+      if (!result.booking) {
+        Alert.alert(
+          'Fehler',
+          result.error ?? 'Status konnte nicht aktualisiert werden.'
+        );
+        return;
+      }
+
+      if (result.source === 'mock' && result.error) {
+        Alert.alert(
+          'Offline-Modus',
+          'Supabase war nicht erreichbar. Der Status wurde nur lokal geändert.'
+        );
+      }
+
+      setBooking(result.booking);
+    } finally {
+      setStatusLoading(false);
+    }
   };
 
   const runAction = async (key: string, fn: () => Promise<boolean>, errorMsg: string) => {
@@ -128,16 +159,22 @@ export default function AdminBookingDetailScreen() {
           {booking.status === 'pending' ? (
             <AppButton
               label="Als bestätigt markieren"
+              loading={statusLoading}
               onPress={() => setStatus('confirmed')}
             />
           ) : null}
           {booking.status === 'confirmed' ? (
-            <AppButton label="Als abgeschlossen markieren" onPress={() => setStatus('completed')} />
+            <AppButton
+              label="Als abgeschlossen markieren"
+              loading={statusLoading}
+              onPress={() => setStatus('completed')}
+            />
           ) : null}
           {booking.status !== 'cancelled' && booking.status !== 'completed' ? (
             <AppButton
               label="Buchung stornieren"
               variant="ghost"
+              loading={statusLoading}
               onPress={() => setStatus('cancelled')}
             />
           ) : null}

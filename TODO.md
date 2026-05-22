@@ -15,27 +15,31 @@
 - [x] Reusable UI components (cards, inputs, badges)
 - [x] Mock data + pricing constants (`constants/pricing.ts`)
 - [x] German app language for visible UI and WhatsApp messages
+- [x] Async data hooks for provider, services, and bookings
 
 ### Backend (Supabase)
 
 - [x] Architecture docs + data model
-- [x] `services/supabase.ts` placeholder
+- [x] Supabase client activated (`services/supabase.ts`)
+- [x] Row mappers (`services/supabase-mappers.ts`)
+- [x] Provider + services + bookings repositories with mock fallback
 - [x] Supabase SQL migration + seed files prepared
 - [x] Current status tracking document (`docs/current-status.md`)
-- [ ] Supabase project + env vars (waiting on credentials)
-- [ ] Run SQL schema from `docs/data-model.md`
-- [ ] Row Level Security policies
-- [ ] Replace mock repositories with Supabase queries
+- [x] Supabase project + env vars configured
+- [x] `@supabase/supabase-js` installed
+- [x] Load providers/services/bookings from Supabase
+- [x] Persist new bookings and status updates to Supabase
+- [ ] Manually test full flow on Expo Go with live Supabase data
+- [ ] Verify admin list/detail works with your Supabase RLS settings (see `docs/current-status.md`)
+- [ ] Row Level Security policies (production hardening)
 - [ ] Optional: Supabase Auth for barber admin
 
 ### Next recommended tasks
 
-- [ ] Manually test German customer + admin flow with Expo Go
-- [ ] Create Supabase project and run `supabase/migrations/0001_initial_schema.sql`
-- [ ] Run `supabase/seed.sql`
-- [ ] Configure `apps/mobile/.env`
-- [ ] Install `@supabase/supabase-js`
-- [ ] Replace mock provider/service reads with Supabase queries
+- [ ] Manually test German customer + admin flow with Expo Go against live Supabase
+- [ ] Confirm bookings appear in Supabase Table Editor after customer booking
+- [ ] If admin list is empty: adjust RLS or disable RLS on `bookings` for MVP demo (no auth yet)
+- [ ] Add pull-to-refresh on admin booking list (optional UX)
 
 ### Not in MVP
 

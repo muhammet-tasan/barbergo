@@ -1,4 +1,12 @@
-import { Alert, KeyboardAvoidingView, Platform, ScrollView, Text, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  Text,
+  View,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
@@ -8,7 +16,9 @@ import { AppCard } from '@/components/AppCard';
 import { AppInput } from '@/components/AppInput';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { calculateBookingTotal, formatChf } from '@/constants/pricing';
-import { defaultProvider, services } from '@/data/mockData';
+import { colors } from '@/constants/theme';
+import { useProvider } from '@/hooks/use-provider';
+import { useServices } from '@/hooks/use-services';
 import { createBooking, getServiceById } from '@/services/bookings';
 import {
   hasFormErrors,
@@ -19,9 +29,12 @@ import {
 export default function BookingFormScreen() {
   const router = useRouter();
   const { serviceId } = useLocalSearchParams<{ serviceId: string }>();
+  const { provider, loading: providerLoading } = useProvider();
+  const { services, loading: servicesLoading } = useServices(provider?.id);
+
   const service = useMemo(
     () => (serviceId ? getServiceById(serviceId, services) : undefined),
-    [serviceId]
+    [serviceId, services]
   );
 
   const [customerName, setCustomerName] = useState('');
@@ -34,20 +47,31 @@ export default function BookingFormScreen() {
   const [submitting, setSubmitting] = useState(false);
 
   const totals = service ? calculateBookingTotal(service.priceChf) : null;
+  const loading = providerLoading || servicesLoading;
 
-  if (!service) {
+  if (loading) {
+    return (
+      <SafeAreaView className="flex-1 bg-brand-dark items-center justify-center" edges={['top']}>
+        <ActivityIndicator color={colors.accent} />
+      </SafeAreaView>
+    );
+  }
+
+  if (!service || !provider) {
     return (
       <SafeAreaView className="flex-1 bg-brand-dark" edges={['top']}>
         <ScreenHeader title="Termin buchen" />
         <View className="flex-1 px-6 justify-center">
-          <Text className="text-white text-center mb-6">Service nicht gefunden. Bitte wähle einen Service aus.</Text>
+          <Text className="text-white text-center mb-6">
+            Service nicht gefunden. Bitte wähle einen Service aus.
+          </Text>
           <AppButton label="Service auswählen" onPress={() => router.replace('/barber/services')} />
         </View>
       </SafeAreaView>
     );
   }
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const formErrors = validateBookingForm({
       customerName,
       phone,
@@ -61,8 +85,8 @@ export default function BookingFormScreen() {
 
     setSubmitting(true);
     try {
-      const booking = createBooking({
-        providerId: defaultProvider.id,
+      const result = await createBooking({
+        providerId: provider.id,
         service,
         customerName,
         phone,
@@ -71,9 +95,25 @@ export default function BookingFormScreen() {
         appointmentTime,
         note,
       });
+
+      if (!result.booking) {
+        Alert.alert(
+          'Fehler',
+          result.error ?? 'Die Buchung konnte nicht gespeichert werden. Bitte versuche es erneut.'
+        );
+        return;
+      }
+
+      if (result.source === 'mock' && result.error) {
+        Alert.alert(
+          'Offline-Modus',
+          'Supabase war nicht erreichbar. Die Buchung wurde nur lokal gespeichert und geht nach einem Neustart verloren.'
+        );
+      }
+
       router.replace({
         pathname: '/barber/confirm',
-        params: { bookingId: booking.id },
+        params: { bookingId: result.booking.id },
       });
     } catch {
       Alert.alert('Fehler', 'Die Buchung konnte nicht gespeichert werden. Bitte versuche es erneut.');
@@ -153,11 +193,7 @@ export default function BookingFormScreen() {
           />
 
           <View className="mb-8">
-            <AppButton
-              label="Buchung bestätigen"
-              onPress={handleSubmit}
-              loading={submitting}
-            />
+            <AppButton label="Buchung bestätigen" onPress={handleSubmit} loading={submitting} />
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
