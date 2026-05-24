@@ -1,6 +1,5 @@
 import {
   ActivityIndicator,
-  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -9,7 +8,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 
 import { AppButton } from '@/components/AppButton';
 import { AppCard } from '@/components/AppCard';
@@ -20,6 +19,9 @@ import { colors } from '@/constants/theme';
 import { useProvider } from '@/hooks/use-provider';
 import { useServices } from '@/hooks/use-services';
 import { createBooking, getServiceById } from '@/services/bookings';
+import { showUserMessage } from '@/utils/show-message';
+import { resolveCatalogDisplayError } from '@/utils/catalog-error-display';
+import { isMockCatalogId, isValidUuid } from '@/utils/uuid';
 import {
   hasFormErrors,
   validateBookingForm,
@@ -29,8 +31,14 @@ import {
 export default function BookingFormScreen() {
   const router = useRouter();
   const { serviceId } = useLocalSearchParams<{ serviceId: string }>();
-  const { provider, loading: providerLoading } = useProvider();
-  const { services, loading: servicesLoading } = useServices(provider?.id);
+  const { provider, loading: providerLoading, usingFallback, error: providerError } = useProvider();
+  const providerIdForServices =
+    provider && isValidUuid(provider.id) ? provider.id : undefined;
+  const { services, loading: servicesLoading, error: servicesError } =
+    useServices(providerIdForServices);
+  const catalogError = resolveCatalogDisplayError(provider, providerError, servicesError);
+  const catalogBlocked = usingFallback || !!catalogError;
+  const scrollRef = useRef<ScrollView>(null);
 
   const service = useMemo(
     () => (serviceId ? getServiceById(serviceId, services) : undefined),
@@ -45,6 +53,7 @@ export default function BookingFormScreen() {
   const [note, setNote] = useState('');
   const [errors, setErrors] = useState<BookingFormErrors>({});
   const [submitting, setSubmitting] = useState(false);
+  const [submitBanner, setSubmitBanner] = useState<string | null>(null);
 
   const totals = service ? calculateBookingTotal(service.priceChf) : null;
   const loading = providerLoading || servicesLoading;
@@ -72,6 +81,25 @@ export default function BookingFormScreen() {
   }
 
   const handleSubmit = async () => {
+    setSubmitBanner(null);
+
+    if (catalogBlocked) {
+      const msg =
+        catalogError ||
+        'Barber und Services müssen aus Supabase geladen werden, bevor du buchen kannst.';
+      setSubmitBanner(msg);
+      showUserMessage('Supabase nicht bereit', msg);
+      scrollRef.current?.scrollTo({ y: 0, animated: true });
+      return;
+    }
+
+    if (!isValidUuid(provider.id) || !isValidUuid(service.id) || isMockCatalogId(provider.id) || isMockCatalogId(service.id)) {
+      const msg = catalogError || 'Ungültige Barber-/Service-IDs — bitte Supabase-Daten laden.';
+      setSubmitBanner(msg);
+      showUserMessage('Ungültige IDs', msg);
+      return;
+    }
+
     const formErrors = validateBookingForm({
       customerName,
       phone,
@@ -81,7 +109,13 @@ export default function BookingFormScreen() {
       note,
     });
     setErrors(formErrors);
-    if (hasFormErrors(formErrors)) return;
+    if (hasFormErrors(formErrors)) {
+      const msg = 'Bitte markierte Felder prüfen (Datum: TT.MM.JJJJ, Uhrzeit: HH:MM).';
+      setSubmitBanner(msg);
+      showUserMessage('Formular unvollständig', msg);
+      scrollRef.current?.scrollTo({ y: 0, animated: true });
+      return;
+    }
 
     setSubmitting(true);
     try {
@@ -97,26 +131,33 @@ export default function BookingFormScreen() {
       });
 
       if (!result.booking) {
-        Alert.alert(
-          'Fehler',
-          result.error ?? 'Die Buchung konnte nicht gespeichert werden. Bitte versuche es erneut.'
-        );
+        const msg =
+          result.error ?? 'Die Buchung konnte nicht gespeichert werden. Bitte versuche es erneut.';
+        setSubmitBanner(msg);
+        showUserMessage('Fehler', msg);
         return;
       }
 
-      if (result.source === 'mock' && result.error) {
-        Alert.alert(
-          'Offline-Modus',
-          'Supabase war nicht erreichbar. Die Buchung wurde nur lokal gespeichert und geht nach einem Neustart verloren.'
-        );
+      if (result.source === 'mock') {
+        const msg =
+          result.error ??
+          'Die Buchung wurde nur temporär im Demo-Modus angezeigt und geht nach einem Neustart verloren.';
+        setSubmitBanner(msg);
+        showUserMessage('Nicht in Supabase gespeichert', msg);
+        return;
       }
 
       router.replace({
         pathname: '/barber/confirm',
         params: { bookingId: result.booking.id },
       });
-    } catch {
-      Alert.alert('Fehler', 'Die Buchung konnte nicht gespeichert werden. Bitte versuche es erneut.');
+    } catch (err) {
+      const msg =
+        err instanceof Error
+          ? err.message
+          : 'Die Buchung konnte nicht gespeichert werden. Bitte versuche es erneut.';
+      setSubmitBanner(msg);
+      showUserMessage('Fehler', msg);
     } finally {
       setSubmitting(false);
     }
@@ -129,7 +170,28 @@ export default function BookingFormScreen() {
         className="flex-1"
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
-        <ScrollView className="flex-1 px-4 pt-4" keyboardShouldPersistTaps="handled">
+        <ScrollView
+          ref={scrollRef}
+          className="flex-1 px-4 pt-4"
+          keyboardShouldPersistTaps="always"
+        >
+          {catalogBlocked ? (
+            <View className="mb-4 rounded-xl border border-amber-500/60 bg-amber-500/10 px-4 py-3">
+              <Text className="text-amber-200 font-semibold">Buchung blockiert</Text>
+              <Text className="text-amber-100/80 text-sm mt-1">
+                {catalogError ||
+                  'Provider/Services kommen nicht aus Supabase. Prüfe .env, Migration 0001/0002 und seed.sql.'}
+              </Text>
+            </View>
+          ) : null}
+
+          {submitBanner ? (
+            <View className="mb-4 rounded-xl border border-red-500/60 bg-red-500/10 px-4 py-3">
+              <Text className="text-red-200 font-semibold">Hinweis</Text>
+              <Text className="text-red-100/90 text-sm mt-1">{submitBanner}</Text>
+            </View>
+          ) : null}
+
           <AppCard className="mb-4">
             <Text className="text-white font-semibold text-lg">{service.name}</Text>
             <Text className="text-slate-400 mt-1">{service.durationMinutes} Minuten</Text>
@@ -193,7 +255,12 @@ export default function BookingFormScreen() {
           />
 
           <View className="mb-8">
-            <AppButton label="Buchung bestätigen" onPress={handleSubmit} loading={submitting} />
+            <AppButton
+              label="Buchung bestätigen"
+              onPress={handleSubmit}
+              loading={submitting}
+              disabled={catalogBlocked}
+            />
           </View>
         </ScrollView>
       </KeyboardAvoidingView>

@@ -11,12 +11,27 @@ import { useProvider } from '@/hooks/use-provider';
 
 export default function BarberProfileScreen() {
   const router = useRouter();
-  const { provider, loading } = useProvider();
+  const { provider, loading, error } = useProvider();
 
-  if (loading || !provider) {
+  if (loading) {
     return (
       <SafeAreaView className="flex-1 bg-brand-dark items-center justify-center" edges={['top']}>
         <ActivityIndicator color={colors.accent} />
+      </SafeAreaView>
+    );
+  }
+
+  if (!provider) {
+    return (
+      <SafeAreaView className="flex-1 bg-brand-dark" edges={['top']}>
+        <ScreenHeader title="Dein Barber" />
+        <View className="flex-1 px-6 justify-center">
+          <Text className="text-white text-center mb-4">Barber konnte nicht geladen werden.</Text>
+          {error ? (
+            <Text className="text-red-300 text-center text-sm mb-6">{error}</Text>
+          ) : null}
+          <AppButton label="Zur Startseite" onPress={() => router.replace('/')} />
+        </View>
       </SafeAreaView>
     );
   }

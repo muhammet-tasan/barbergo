@@ -1,4 +1,4 @@
-import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { useCallback } from 'react';
@@ -15,7 +15,7 @@ import { formatSwissDate } from '@/utils/date';
 
 export default function AdminBookingListScreen() {
   const router = useRouter();
-  const { bookings, loading, reload } = useBookings();
+  const { bookings, loading, reload, usingFallback, error } = useBookings();
   const { services } = useServices();
 
   useFocusEffect(
@@ -23,6 +23,8 @@ export default function AdminBookingListScreen() {
       reload();
     }, [reload])
   );
+
+  const showDataWarning = !loading && (usingFallback || !!error);
 
   return (
     <SafeAreaView className="flex-1 bg-brand-dark" edges={['top']}>
@@ -33,6 +35,25 @@ export default function AdminBookingListScreen() {
         </View>
       ) : (
         <ScrollView className="flex-1 px-4 pt-4" contentContainerClassName="pb-8">
+          {showDataWarning ? (
+            <Pressable
+              onPress={() =>
+                Alert.alert(
+                  'Supabase-Verbindung',
+                  error ??
+                    'Buchungen kommen aus dem Demo-Modus, nicht aus der Datenbank. Prüfe apps/mobile/.env, führe supabase/migrations/0002_bookings_anon_mvp_policies.sql aus und starte Expo mit npx expo start -c neu.'
+                )
+              }
+              className="mb-4 rounded-xl border border-amber-500/60 bg-amber-500/10 px-4 py-3 active:opacity-90"
+            >
+              <Text className="text-amber-200 font-semibold">Demo-Daten (nicht Supabase)</Text>
+              <Text className="text-amber-100/80 text-sm mt-1">
+                Tippen für Hinweise — echte Buchungen erscheinen erst nach SQL-Migration 0002 und
+                gültiger .env.
+              </Text>
+            </Pressable>
+          ) : null}
+
           <Text className="text-slate-400 mb-4">
             Demo-Ansicht für den Barber. Tippe auf eine Buchung für Details, Maps und WhatsApp.
           </Text>

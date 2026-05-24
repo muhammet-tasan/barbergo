@@ -1,13 +1,18 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL ?? '';
-const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? '';
+import { getSupabaseEnvSnapshot, getSupabaseEnvVars } from './supabase-env';
 
 let client: SupabaseClient | null = null;
+let cachedEnvKey = '';
 
-/** True when both public env vars are set. */
+function getEnvCacheKey(): string {
+  const { url, anonKey } = getSupabaseEnvVars();
+  return `${url}|${anonKey}`;
+}
+
+/** True when both public env vars are set (process.env or expo extra). */
 export function isSupabaseConfigured(): boolean {
-  return supabaseUrl.length > 0 && supabaseAnonKey.length > 0;
+  return getSupabaseEnvSnapshot().configured;
 }
 
 /**
@@ -16,18 +21,24 @@ export function isSupabaseConfigured(): boolean {
  */
 export function getSupabaseClient(): SupabaseClient | null {
   if (!isSupabaseConfigured()) {
+    client = null;
+    cachedEnvKey = '';
     return null;
   }
 
-  if (!client) {
-    client = createClient(supabaseUrl, supabaseAnonKey, {
-      auth: {
-        persistSession: false,
-        autoRefreshToken: false,
-      },
-    });
+  const envKey = getEnvCacheKey();
+  if (client && cachedEnvKey === envKey) {
+    return client;
   }
 
+  const { url, anonKey } = getSupabaseEnvVars();
+  client = createClient(url, anonKey, {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+    },
+  });
+  cachedEnvKey = envKey;
   return client;
 }
 

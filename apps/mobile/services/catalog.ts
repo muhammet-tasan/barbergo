@@ -1,6 +1,13 @@
-import { services as mockServices } from '@/data/mockData';
 import type { Service } from '@/types/domain';
+import { isMockCatalogId } from '@/utils/uuid';
 
+import {
+  classifySupabaseError,
+  formatCatalogErrorMessage,
+  getEnvConfigStatus,
+  type CatalogFailureReason,
+} from './catalog-errors';
+import { logSupabaseCatalogDiagnostics, runSupabaseCatalogDiagnostics } from './supabase-catalog-debug';
 import { getSupabaseClient, SupabaseTables } from './supabase';
 import { mapService, sortServices, type ServiceRow } from './supabase-mappers';
 
@@ -8,15 +15,31 @@ export type ServicesLoadResult = {
   services: Service[];
   source: 'supabase' | 'mock';
   error?: string;
+  failureReason?: CatalogFailureReason;
 };
 
 export async function fetchServices(providerId?: string): Promise<ServicesLoadResult> {
+  const env = getEnvConfigStatus();
   const client = getSupabaseClient();
+
   if (!client) {
-    const filtered = providerId
-      ? mockServices.filter((s) => s.providerId === providerId)
-      : mockServices;
-    return { services: sortServices(filtered), source: 'mock' };
+    const diag = await runSupabaseCatalogDiagnostics(providerId);
+    logSupabaseCatalogDiagnostics(diag);
+    return {
+      services: [],
+      source: 'mock',
+      failureReason: 'env_missing',
+      error: formatCatalogErrorMessage('env_missing', { missingEnv: env.missing }),
+    };
+  }
+
+  if (providerId && isMockCatalogId(providerId)) {
+    return {
+      services: [],
+      source: 'supabase',
+      failureReason: 'mock_provider_id',
+      error: formatCatalogErrorMessage('mock_provider_id'),
+    };
   }
 
   try {
@@ -37,24 +60,27 @@ export async function fetchServices(providerId?: string): Promise<ServicesLoadRe
 
     const rows = (data ?? []) as ServiceRow[];
     if (rows.length === 0) {
-      console.warn('[barbergo] No services in Supabase — using mock services.');
-      const filtered = providerId
-        ? mockServices.filter((s) => s.providerId === providerId)
-        : mockServices;
+      console.warn('[barbergo] services table empty for provider', providerId ?? '(all)');
       return {
-        services: sortServices(filtered),
-        source: 'mock',
-        error: 'Keine Services in der Datenbank.',
+        services: [],
+        source: 'supabase',
+        failureReason: 'services_empty',
+        error: formatCatalogErrorMessage('services_empty'),
       };
     }
 
-    return { services: sortServices(rows.map(mapService)), source: 'supabase' };
+    const mapped = sortServices(rows.map(mapService));
+    const diag = await runSupabaseCatalogDiagnostics(providerId);
+    logSupabaseCatalogDiagnostics(diag);
+    return { services: mapped, source: 'supabase' };
   } catch (err) {
-    const message = err instanceof Error ? err.message : 'Services konnten nicht geladen werden.';
-    console.warn('[barbergo] fetchServices fallback:', message);
-    const filtered = providerId
-      ? mockServices.filter((s) => s.providerId === providerId)
-      : mockServices;
-    return { services: sortServices(filtered), source: 'mock', error: message };
+    const { reason, detail } = classifySupabaseError(err);
+    console.warn('[barbergo] fetchServices failed:', detail);
+    return {
+      services: [],
+      source: 'supabase',
+      failureReason: reason,
+      error: formatCatalogErrorMessage(reason, { table: 'services', detail }),
+    };
   }
 }

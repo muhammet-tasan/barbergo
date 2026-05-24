@@ -1,19 +1,34 @@
-import { defaultProvider } from '@/data/mockData';
 import type { Provider } from '@/types/domain';
 
+import {
+  classifySupabaseError,
+  formatCatalogErrorMessage,
+  getEnvConfigStatus,
+  type CatalogFailureReason,
+} from './catalog-errors';
+import { logSupabaseCatalogDiagnostics, runSupabaseCatalogDiagnostics } from './supabase-catalog-debug';
 import { getSupabaseClient, SupabaseTables } from './supabase';
 import { mapProvider, type ProviderRow } from './supabase-mappers';
 
 export type ProviderLoadResult = {
-  provider: Provider;
+  provider?: Provider;
   source: 'supabase' | 'mock';
   error?: string;
+  failureReason?: CatalogFailureReason;
 };
 
 export async function fetchDefaultProvider(): Promise<ProviderLoadResult> {
+  const env = getEnvConfigStatus();
   const client = getSupabaseClient();
+
   if (!client) {
-    return { provider: defaultProvider, source: 'mock' };
+    const diag = await runSupabaseCatalogDiagnostics();
+    logSupabaseCatalogDiagnostics(diag);
+    return {
+      source: 'mock',
+      failureReason: 'env_missing',
+      error: formatCatalogErrorMessage('env_missing', { missingEnv: env.missing }),
+    };
   }
 
   try {
@@ -30,14 +45,27 @@ export async function fetchDefaultProvider(): Promise<ProviderLoadResult> {
 
     const row = data?.[0] as ProviderRow | undefined;
     if (!row) {
-      console.warn('[barbergo] No active provider in Supabase — using mock provider.');
-      return { provider: defaultProvider, source: 'mock', error: 'Kein aktiver Barber in der Datenbank.' };
+      console.warn('[barbergo] providers table empty or no active row');
+      const diag = await runSupabaseCatalogDiagnostics();
+      logSupabaseCatalogDiagnostics(diag);
+      return {
+        source: 'supabase',
+        failureReason: 'providers_empty',
+        error: formatCatalogErrorMessage('providers_empty'),
+      };
     }
 
-    return { provider: mapProvider(row), source: 'supabase' };
+    const mapped = mapProvider(row);
+    const diag = await runSupabaseCatalogDiagnostics(mapped.id);
+    logSupabaseCatalogDiagnostics(diag);
+    return { provider: mapped, source: 'supabase' };
   } catch (err) {
-    const message = err instanceof Error ? err.message : 'Provider konnte nicht geladen werden.';
-    console.warn('[barbergo] fetchDefaultProvider fallback:', message);
-    return { provider: defaultProvider, source: 'mock', error: message };
+    const { reason, detail } = classifySupabaseError(err);
+    console.warn('[barbergo] fetchDefaultProvider failed:', detail);
+    return {
+      source: 'supabase',
+      failureReason: reason,
+      error: formatCatalogErrorMessage(reason, { table: 'providers', detail }),
+    };
   }
 }

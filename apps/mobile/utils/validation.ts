@@ -1,5 +1,8 @@
-import { isNonEmpty } from '@/utils/index';
 import { isSwissDate } from '@/utils/date';
+
+function isNonEmpty(value: string): boolean {
+  return value.trim().length > 0;
+}
 
 export type BookingFormFields = {
   customerName: string;

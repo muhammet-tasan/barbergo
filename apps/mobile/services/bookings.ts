@@ -3,6 +3,9 @@ import { calculateBookingTotal } from '@/constants/pricing';
 import type { Booking, BookingStatus, Service } from '@/types/domain';
 import { parseSwissDateToIso } from '@/utils/date';
 
+import { isMockCatalogId, isValidUuid } from '@/utils/uuid';
+
+import { formatBookingIdError, formatCatalogErrorMessage, getEnvConfigStatus } from './catalog-errors';
 import { getSupabaseClient, SupabaseTables } from './supabase';
 import { mapBooking, sortBookings, type BookingRow } from './supabase-mappers';
 
@@ -159,7 +162,26 @@ function buildMockBooking(input: CreateBookingInput): Booking {
 export async function createBooking(input: CreateBookingInput): Promise<BookingMutationResult> {
   const client = getSupabaseClient();
   if (!client) {
-    return { booking: buildMockBooking(input), source: 'mock' };
+    const env = getEnvConfigStatus();
+    return {
+      booking: buildMockBooking(input),
+      source: 'mock',
+      error: formatCatalogErrorMessage('env_missing', { missingEnv: env.missing }),
+    };
+  }
+
+  if (isMockCatalogId(input.providerId) || isMockCatalogId(input.service.id)) {
+    return {
+      source: 'mock',
+      error: formatBookingIdError(input.providerId, input.service.id),
+    };
+  }
+
+  if (!isValidUuid(input.providerId) || !isValidUuid(input.service.id)) {
+    return {
+      source: 'mock',
+      error: formatBookingIdError(input.providerId, input.service.id),
+    };
   }
 
   try {
@@ -179,8 +201,8 @@ export async function createBooking(input: CreateBookingInput): Promise<BookingM
     return { booking: mapBooking(data as BookingRow), source: 'supabase' };
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Buchung konnte nicht gespeichert werden.';
-    console.warn('[barbergo] createBooking fallback:', message);
-    return { booking: buildMockBooking(input), source: 'mock', error: message };
+    console.warn('[barbergo] createBooking failed:', message);
+    return { source: 'mock', error: message };
   }
 }
 

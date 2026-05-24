@@ -14,7 +14,7 @@ A customer books a mobile barber at home; the barber manages appointments via an
 
 Details: [docs/architecture.md](docs/architecture.md) · Data model: [docs/data-model.md](docs/data-model.md)
 
-**MVP uses mock data** until Supabase URL and anon key are added (`apps/mobile/.env.example`).
+**MVP uses Supabase** when `apps/mobile/.env` is configured; otherwise the app shows catalog errors (no silent demo IDs). See [docs/current-status.md](docs/current-status.md).
 
 ## Monorepo layout
 
@@ -36,15 +36,18 @@ npx expo start
 
 Scan the QR code with **Expo Go** on Android, or press `a` for an emulator.
 
-### Supabase (when ready)
+### Supabase
 
 1. Create a project at [supabase.com](https://supabase.com).
 2. Copy `apps/mobile/.env.example` → `apps/mobile/.env`.
-3. Set `EXPO_PUBLIC_SUPABASE_URL` and `EXPO_PUBLIC_SUPABASE_ANON_KEY`.
-4. Run `supabase/migrations/0001_initial_schema.sql`, then `supabase/seed.sql`.
-5. Install client: `npm install @supabase/supabase-js` and finish `services/supabase.ts` TODOs.
+3. Set `EXPO_PUBLIC_SUPABASE_URL` and `EXPO_PUBLIC_SUPABASE_ANON_KEY` (anon or publishable key).
+4. In the SQL editor, run:
+   - `supabase/migrations/0001_initial_schema.sql`
+   - `supabase/migrations/0002_bookings_anon_mvp_policies.sql`
+   - `supabase/seed.sql`
+5. Start the app with cache clear: `npx expo start -c`.
 
-Until then, the app reads from `data/mockData.ts`.
+Details: [supabase/README.md](supabase/README.md) · Status: [docs/current-status.md](docs/current-status.md)
 
 ## Developer notifications (ntfy)
 

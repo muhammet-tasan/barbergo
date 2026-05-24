@@ -20,26 +20,29 @@
 ### Backend (Supabase)
 
 - [x] Architecture docs + data model
-- [x] Supabase client activated (`services/supabase.ts`)
+- [x] Supabase client (`services/supabase.ts` + `supabase-env.ts`)
+- [x] `app.config.js` loads `.env` into Expo `extra`
 - [x] Row mappers (`services/supabase-mappers.ts`)
-- [x] Provider + services + bookings repositories with mock fallback
-- [x] Supabase SQL migration + seed files prepared
-- [x] Current status tracking document (`docs/current-status.md`)
-- [x] Supabase project + env vars configured
+- [x] Provider + services + bookings repositories
+- [x] Supabase SQL migrations + seed prepared (`supabase/`)
+- [x] Migration `0002_bookings_anon_mvp_policies.sql` (file in repo)
 - [x] `@supabase/supabase-js` installed
 - [x] Load providers/services/bookings from Supabase
 - [x] Persist new bookings and status updates to Supabase
-- [ ] Manually test full flow on Expo Go with live Supabase data
-- [ ] Verify admin list/detail works with your Supabase RLS settings (see `docs/current-status.md`)
-- [ ] Row Level Security policies (production hardening)
+- [x] Catalog error diagnostics + debug panel (service screen)
+- [x] UUID validation accepts seed IDs; blocks demo IDs (`provider-1`)
+- [ ] Confirm migration **0002** applied in hosted Supabase project
+- [ ] Manual E2E: Expo Go book → Table Editor → admin refresh
+- [ ] Row Level Security production hardening
 - [ ] Optional: Supabase Auth for barber admin
 
 ### Next recommended tasks
 
-- [ ] Manually test German customer + admin flow with Expo Go against live Supabase
-- [ ] Confirm bookings appear in Supabase Table Editor after customer booking
-- [ ] If admin list is empty: adjust RLS or disable RLS on `bookings` for MVP demo (no auth yet)
+- [ ] Run full customer + admin flow on Expo Go against live Supabase
+- [ ] Verify booking row in Supabase after test; admin list survives app reload
+- [ ] Gate or remove `SupabaseCatalogDebugPanel` before any public build
 - [ ] Add pull-to-refresh on admin booking list (optional UX)
+- [ ] Booking form Chrome autofill (web) — optional
 
 ### Not in MVP
 

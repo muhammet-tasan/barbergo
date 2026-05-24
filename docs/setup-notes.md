@@ -65,3 +65,22 @@ barbergo-muhammet
 ```
 
 Scripts post to: `https://ntfy.sh/barbergo-muhammet`
+
+### ntfy kommt nicht an?
+
+1. In der **ntfy-App** (Android/iOS) erneut Topic **`barbergo-muhammet`** abonnieren (nach „alles löschen“ sind Abos weg).
+2. Test vom PC (Repo-Root):
+   ```powershell
+   powershell -ExecutionPolicy Bypass -File scripts/notify-custom.ps1 "Test barbergo"
+   ```
+3. Prüfen: Handy online, keine Störung „Nur wichtig“, Topic exakt `barbergo-muhammet` (Groß/Klein beachten).
+
+## Buchungen verschwinden nach Refresh / leer in Supabase?
+
+Typische Ursachen:
+
+1. **`apps/mobile/.env` fehlt oder Expo nicht neu gestartet** — App läuft im Demo-Modus.
+2. **SQL-Migration 0002 nicht ausgeführt** — Insert kann klappen, aber die App darf Buchungen als `anon` nicht lesen (`0002_bookings_anon_mvp_policies.sql`).
+3. **Provider/Services aus Demo-IDs** (`provider-1`) statt Supabase-UUIDs — Insert schlägt fehl, App zeigt nur temporär Mock-Daten.
+
+Fix-Reihenfolge: `.env` → Migration 0001 + **0002** + `seed.sql` → `cd apps/mobile` → `npx expo start -c` → Testbuchung → Supabase Table Editor → `bookings`.
