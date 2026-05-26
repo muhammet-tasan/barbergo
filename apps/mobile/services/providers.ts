@@ -22,8 +22,10 @@ export async function fetchDefaultProvider(): Promise<ProviderLoadResult> {
   const client = getSupabaseClient();
 
   if (!client) {
-    const diag = await runSupabaseCatalogDiagnostics();
-    logSupabaseCatalogDiagnostics(diag);
+    if (__DEV__) {
+      const diag = await runSupabaseCatalogDiagnostics();
+      logSupabaseCatalogDiagnostics(diag);
+    }
     return {
       source: 'mock',
       failureReason: 'env_missing',
@@ -45,9 +47,11 @@ export async function fetchDefaultProvider(): Promise<ProviderLoadResult> {
 
     const row = data?.[0] as ProviderRow | undefined;
     if (!row) {
-      console.warn('[barbergo] providers table empty or no active row');
-      const diag = await runSupabaseCatalogDiagnostics();
-      logSupabaseCatalogDiagnostics(diag);
+      if (__DEV__) {
+        console.warn('[barbergo] providers table empty or no active row');
+        const diag = await runSupabaseCatalogDiagnostics();
+        logSupabaseCatalogDiagnostics(diag);
+      }
       return {
         source: 'supabase',
         failureReason: 'providers_empty',
@@ -55,13 +59,12 @@ export async function fetchDefaultProvider(): Promise<ProviderLoadResult> {
       };
     }
 
-    const mapped = mapProvider(row);
-    const diag = await runSupabaseCatalogDiagnostics(mapped.id);
-    logSupabaseCatalogDiagnostics(diag);
-    return { provider: mapped, source: 'supabase' };
+    return { provider: mapProvider(row), source: 'supabase' };
   } catch (err) {
     const { reason, detail } = classifySupabaseError(err);
-    console.warn('[barbergo] fetchDefaultProvider failed:', detail);
+    if (__DEV__) {
+      console.warn('[barbergo] fetchDefaultProvider failed:', detail);
+    }
     return {
       source: 'supabase',
       failureReason: reason,

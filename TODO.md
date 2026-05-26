@@ -40,7 +40,8 @@
 
 - [ ] Run full customer + admin flow on Expo Go against live Supabase
 - [ ] Verify booking row in Supabase after test; admin list survives app reload
-- [ ] Gate or remove `SupabaseCatalogDebugPanel` before any public build
+- [x] Gate `SupabaseCatalogDebugPanel` + diagnostics behind `__DEV__`
+- [ ] Verify migration 0002 applied on hosted Supabase project
 - [ ] Add pull-to-refresh on admin booking list (optional UX)
 - [ ] Booking form Chrome autofill (web) — optional
 

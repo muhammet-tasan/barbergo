@@ -73,7 +73,7 @@ Last updated: 2026-05-24 (end-of-day checkpoint)
 
 - **RLS:** Migration 0002 allows **anon** read/update on `bookings` — acceptable for demo only; tighten before public release.
 - **No barber auth** — anyone with the app can open Admin-Demo.
-- **Debug panel** visible on service screen — remove or gate behind `__DEV__` before production.
+- **Debug panel** + diagnostics are gated behind `__DEV__`; invisible in production builds.
 - **Web autofill** on booking form — not fully implemented (task aborted).
 - **Expo must reload** after `.env` changes: `npx expo start -c`.
 - **Bookings fallback** on network errors still uses in-memory mock for reads; writes show explicit errors.
@@ -82,7 +82,7 @@ Last updated: 2026-05-24 (end-of-day checkpoint)
 
 - [ ] Full manual test: customer book → row in Table Editor → admin list after refresh
 - [ ] Confirm migration 0002 applied on production Supabase project
-- [ ] Optional: hide debug panel outside development
+- [ ] Confirm migration 0002 is applied on hosted Supabase project
 - [ ] Production RLS + Supabase Auth for barber admin
 
 ## Environment requirements
@@ -110,11 +110,12 @@ powershell -ExecutionPolicy Bypass -File scripts\notify-done.ps1
 
 ## Next recommended milestone
 
-**Milestone: “Demo-ready on device”** (1–2 sessions)
+**Milestone: “Production-grade auth & RLS”** (next focus)
 
-1. Manual E2E test on Expo Go (book + admin + Supabase row).
-2. Remove or `__DEV__`-gate Supabase debug UI.
-3. Harden RLS with barber-only policies + Supabase Auth (or magic link).
-4. Optional: pull-to-refresh on admin list, autofill on booking form (web).
+1. ~~Manual E2E test on Expo Go (book + admin + Supabase row).~~ done
+2. ~~`__DEV__`-gate Supabase debug UI.~~ done
+3. Supabase Auth (magic link) for barber admin.
+4. Tighten RLS: anon only INSERT pending bookings; SELECT/UPDATE only for authenticated barber.
+5. Optional polish: pull-to-refresh, web autofill on booking form.
 
 See [TODO.md](../TODO.md) for the task list.

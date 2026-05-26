@@ -21,6 +21,7 @@ export function SupabaseCatalogDebugPanel({
   const [diag, setDiag] = useState<SupabaseCatalogDiagnostics | null>(null);
 
   useEffect(() => {
+    if (!__DEV__) return;
     let cancelled = false;
     (async () => {
       const result = await runSupabaseCatalogDiagnostics(providerIdFilter);
@@ -32,6 +33,10 @@ export function SupabaseCatalogDebugPanel({
       cancelled = true;
     };
   }, [providerIdFilter]);
+
+  if (!__DEV__) {
+    return null;
+  }
 
   if (!diag) {
     return (

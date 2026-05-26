@@ -66,6 +66,7 @@ export async function runSupabaseCatalogDiagnostics(
 }
 
 export function logSupabaseCatalogDiagnostics(diag: SupabaseCatalogDiagnostics): void {
+  if (!__DEV__) return;
   console.log('[barbergo] Supabase catalog diagnostics', {
     supabaseUrlPresent: diag.env.urlPresent ? 'yes' : 'no',
     supabaseUrlHost: diag.env.urlHost,

@@ -23,8 +23,10 @@ export async function fetchServices(providerId?: string): Promise<ServicesLoadRe
   const client = getSupabaseClient();
 
   if (!client) {
-    const diag = await runSupabaseCatalogDiagnostics(providerId);
-    logSupabaseCatalogDiagnostics(diag);
+    if (__DEV__) {
+      const diag = await runSupabaseCatalogDiagnostics(providerId);
+      logSupabaseCatalogDiagnostics(diag);
+    }
     return {
       services: [],
       source: 'mock',
@@ -60,7 +62,9 @@ export async function fetchServices(providerId?: string): Promise<ServicesLoadRe
 
     const rows = (data ?? []) as ServiceRow[];
     if (rows.length === 0) {
-      console.warn('[barbergo] services table empty for provider', providerId ?? '(all)');
+      if (__DEV__) {
+        console.warn('[barbergo] services table empty for provider', providerId ?? '(all)');
+      }
       return {
         services: [],
         source: 'supabase',
@@ -69,13 +73,12 @@ export async function fetchServices(providerId?: string): Promise<ServicesLoadRe
       };
     }
 
-    const mapped = sortServices(rows.map(mapService));
-    const diag = await runSupabaseCatalogDiagnostics(providerId);
-    logSupabaseCatalogDiagnostics(diag);
-    return { services: mapped, source: 'supabase' };
+    return { services: sortServices(rows.map(mapService)), source: 'supabase' };
   } catch (err) {
     const { reason, detail } = classifySupabaseError(err);
-    console.warn('[barbergo] fetchServices failed:', detail);
+    if (__DEV__) {
+      console.warn('[barbergo] fetchServices failed:', detail);
+    }
     return {
       services: [],
       source: 'supabase',
