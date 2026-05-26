@@ -40,6 +40,56 @@ Prefer **iterative progress** and **small working increments** over perfect upfr
 
 ---
 
+## Session bootstrap
+
+At the start of a new chat / session, before making changes, read in this order:
+
+1. [README.md](../README.md)
+2. [TODO.md](../TODO.md)
+3. [current-status.md](./current-status.md)
+4. This file ([project-rules.md](./project-rules.md))
+5. [coding-guidelines.md](./coding-guidelines.md)
+
+Also run `git status` once before larger edits to understand the working tree (untracked files, uncommitted changes, current branch).
+
+---
+
+## Stability & change safety
+
+In addition to the semi-autonomous defaults, follow these to keep the working MVP intact:
+
+- Do **not** break existing working logic intentionally.
+- Do **not** overwrite or refactor existing behavior unless one of these is true:
+  - the user explicitly requested it
+  - it is required to fix a bug
+  - it is required to complete the requested feature
+  - the current implementation is clearly broken
+- **Preserve backward compatibility** where reasonable (env vars, public component props, exported service functions, Supabase column names).
+- Prefer **incremental** changes over large rewrites.
+
+Ask for confirmation (ntfy + chat) before:
+
+- major architecture rewrites
+- breaking API / public function / prop changes
+- destructive operations (delete files, drop tables, force-push)
+- deleting important code paths
+- changing established project conventions (this file, [coding-guidelines.md](./coding-guidelines.md), [AGENTS.md](../AGENTS.md), `.cursor/rules/`)
+
+---
+
+## Verification after milestones
+
+After every meaningful milestone, run a lightweight check before stopping. Pick what fits the change:
+
+- `npx tsc --noEmit` (in `apps/mobile`) — TypeScript
+- `npm run lint` (in `apps/mobile`) — ESLint via Expo
+- App still starts: `npx expo start -c`
+- Targeted manual smoke flow (e.g. booking create) only when relevant
+
+If a check fails or is skipped, note it in [current-status.md](./current-status.md) → *Known issues*. The detailed checklist lives in [coding-guidelines.md](./coding-guidelines.md#code-review-checklist-self-check-before-finishing).
+
+---
+
 ## Notifications (ntfy)
 
 Run from **repository root**. Topic: `barbergo-muhammet` (see [README.md](../README.md)).
@@ -131,7 +181,7 @@ Before stopping, update:
 - **`TODO.md`** — mark completed tasks, add next recommended tasks
 - **`docs/current-status.md`** — must include: current working state, completed features, known issues, next steps, important technical decisions
 
-Keep summaries **concise**. Then: ntfy notification, what to test, **suggested commit message** (do **not** commit unless the user asks).
+Keep summaries **concise**. **Avoid duplicate documentation** — update the existing section instead of adding a parallel one. Then: ntfy notification, what to test, **suggested commit message** (do **not** commit unless the user asks).
 
 ### When changing engineering standards
 
@@ -142,9 +192,12 @@ Keep summaries **concise**. Then: ntfy notification, what to test, **suggested c
 
 ## Git rules
 
-- Do **not** automatically **commit** or **push**.
-- After stable milestones, suggest a meaningful commit message and summarize changed files first.
-- Keep commits small: `feat:`, `fix:`, `docs:`, `refactor:` (see [coding-guidelines.md](./coding-guidelines.md#git-rules)).
+- Do **not** automatically **commit** or **push** unless the user explicitly requests it.
+- Before suggesting a commit, summarize:
+  - **changed files**
+  - **important logic changes**
+  - **potential risks** (regressions, RLS/security impact, behavior changes for existing flows)
+- Prefer **small, clean commits** with conventional prefixes: `feat:`, `fix:`, `docs:`, `refactor:`, `chore:` (see [coding-guidelines.md](./coding-guidelines.md#git-rules)).
 
 ---
 
