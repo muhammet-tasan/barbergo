@@ -28,7 +28,7 @@ export default function HomeScreen() {
           <AppButton
             label="Admin-Demo"
             variant="secondary"
-            onPress={() => router.push('/admin')}
+            onPress={() => router.push('/admin/login')}
           />
         </View>
       </View>

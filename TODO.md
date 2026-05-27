@@ -31,17 +31,18 @@
 - [x] Persist new bookings and status updates to Supabase
 - [x] Catalog error diagnostics + debug panel (service screen)
 - [x] UUID validation accepts seed IDs; blocks demo IDs (`provider-1`)
-- [ ] Confirm migration **0002** applied in hosted Supabase project
-- [ ] Manual E2E: Expo Go book → Table Editor → admin refresh
-- [ ] Row Level Security production hardening
-- [ ] Optional: Supabase Auth for barber admin
+- [x] Migration `0003_bookings_auth_rls.sql` (admin login + stricter bookings RLS)
+- [x] Supabase Auth magic-link login screen for admin (`/admin/login`)
+- [x] Admin screens gated behind login session
+- [ ] Manual E2E: customer book (anon) → admin login → list + status update
+- [ ] Supabase Dashboard: Email auth on + redirect URL `barbergo://auth/callback`
 
 ### Next recommended tasks
 
 - [ ] Run full customer + admin flow on Expo Go against live Supabase
 - [ ] Verify booking row in Supabase after test; admin list survives app reload
 - [x] Gate `SupabaseCatalogDebugPanel` + diagnostics behind `__DEV__`
-- [ ] Verify migration 0002 applied on hosted Supabase project
+- [ ] Verify migration 0003 applied on hosted Supabase project
 - [ ] Add pull-to-refresh on admin booking list (optional UX)
 - [ ] Booking form Chrome autofill (web) — optional
 

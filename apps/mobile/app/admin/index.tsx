@@ -4,17 +4,21 @@ import { useRouter, useFocusEffect } from 'expo-router';
 import { useCallback } from 'react';
 
 import { AppCard } from '@/components/AppCard';
+import { AppButton } from '@/components/AppButton';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { StatusBadge } from '@/components/StatusBadge';
 import { formatChf } from '@/constants/pricing';
 import { colors } from '@/constants/theme';
 import { useBookings } from '@/hooks/use-bookings';
+import { useSession } from '@/hooks/use-session';
 import { useServices } from '@/hooks/use-services';
 import { getServiceById } from '@/services/bookings';
+import { signOut } from '@/services/auth';
 import { formatSwissDate } from '@/utils/date';
 
 export default function AdminBookingListScreen() {
   const router = useRouter();
+  const { session, loading: sessionLoading } = useSession();
   const { bookings, loading, reload, usingFallback, error } = useBookings();
   const { services } = useServices();
 
@@ -25,6 +29,26 @@ export default function AdminBookingListScreen() {
   );
 
   const showDataWarning = !loading && (usingFallback || !!error);
+
+  if (sessionLoading) {
+    return (
+      <SafeAreaView className="flex-1 bg-brand-dark items-center justify-center" edges={['top']}>
+        <ActivityIndicator color={colors.accent} />
+      </SafeAreaView>
+    );
+  }
+
+  if (!session) {
+    return (
+      <SafeAreaView className="flex-1 bg-brand-dark" edges={['top']}>
+        <ScreenHeader title="Admin - Buchungen" onBack={() => router.replace('/')} />
+        <View className="flex-1 px-6 justify-center">
+          <Text className="text-white text-center mb-4">Bitte zuerst als Admin anmelden.</Text>
+          <AppButton label="Zum Login" onPress={() => router.replace('/admin/login')} />
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView className="flex-1 bg-brand-dark" edges={['top']}>
@@ -57,6 +81,21 @@ export default function AdminBookingListScreen() {
           <Text className="text-slate-400 mb-4">
             Demo-Ansicht für den Barber. Tippe auf eine Buchung für Details, Maps und WhatsApp.
           </Text>
+
+          <View className="mb-4">
+            <AppButton
+              label="Logout"
+              variant="ghost"
+              onPress={async () => {
+                try {
+                  await signOut();
+                  router.replace('/');
+                } catch (e) {
+                  Alert.alert('Fehler', e instanceof Error ? e.message : 'Logout fehlgeschlagen.');
+                }
+              }}
+            />
+          </View>
 
           {bookings.length === 0 ? (
             <AppCard>

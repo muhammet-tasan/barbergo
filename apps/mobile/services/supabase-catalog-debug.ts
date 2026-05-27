@@ -26,7 +26,8 @@ export async function runSupabaseCatalogDiagnostics(
     services: { count: 0, error: null, firstId: null },
     providerIdFilter,
     providerIdFilterValid: filterValid,
-    usesMockProviderId: providerIdFilter === 'provider-1' || providerIdFilter?.startsWith('provider-'),
+    usesMockProviderId:
+      providerIdFilter === 'provider-1' || (providerIdFilter?.startsWith('provider-') ?? false),
   };
 
   if (!client) {

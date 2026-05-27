@@ -1,10 +1,10 @@
 # barbergo — Current Status
 
-Last updated: 2026-05-24 (end-of-day checkpoint)
+Last updated: 2026-05-27
 
 ## Project maturity
 
-**MVP stage:** Supabase-backed mobile booking flow is implemented and stabilized. Suitable for **internal/demo testing** on Expo Go and web preview. Not production-ready (RLS/auth hardening pending).
+**MVP stage:** Supabase-backed booking flow with **admin login**. Suitable for **internal/demo testing** on Expo Go and web preview. Production still needs polish (deep links, email allowlist, optional pull-to-refresh).
 
 ## Current working features
 
@@ -13,14 +13,15 @@ Last updated: 2026-05-24 (end-of-day checkpoint)
 - Home → barber profile → service selection → booking form (`DD.MM.YYYY`, `HH:MM`)
 - Booking confirmation screen + WhatsApp deeplink
 - Provider and services loaded from **Supabase** when `apps/mobile/.env` is set
-- New bookings **persist** to `bookings` table (with RLS migration 0002 applied)
+- New bookings **persist** to `bookings` table (customers can submit without login)
 - Swiss date display; ISO date storage in Postgres
 
-### Admin demo flow
+### Admin flow (login required)
 
-- Booking list and detail (status updates)
+- **Admin Login** via magic link email (`/admin/login`)
+- Booking list and detail (status updates) — only when logged in
 - Google Maps + WhatsApp deeplinks to customer
-- List reloads from Supabase on screen focus
+- Logout button on admin list
 
 ### Developer / diagnostics
 
@@ -28,7 +29,13 @@ Last updated: 2026-05-24 (end-of-day checkpoint)
 - Console logs: `[barbergo] Supabase catalog diagnostics`
 - ntfy scripts (`scripts/notify-*.ps1`, topic `barbergo-muhammet`)
 
-## Completed today (2026-05-24)
+## Completed recently (2026-05-27)
+
+- **Admin login** (magic link per E-Mail) before Buchungsliste
+- **RLS 0003:** Kunden dürfen nur Anfragen stellen; Barber sieht/bearbeitet nur nach Login
+- Startseite „Admin-Demo“ führt direkt zum Login
+
+## Completed earlier (2026-05-24)
 
 - Fixed **Expo env loading** for web/native (`app.config.js` → `expo.extra`, `services/supabase-env.ts`)
 - Fixed **false “Demo-ID” errors** — seed UUIDs (`11111111-…`) are now accepted (`utils/uuid.ts`)
@@ -47,7 +54,7 @@ Last updated: 2026-05-24 (end-of-day checkpoint)
 | Env | `EXPO_PUBLIC_*` in `apps/mobile/.env`, mirrored via `app.config.js` `extra` |
 | Data access | `providers.ts`, `catalog.ts`, `bookings.ts` + hooks; mappers in `supabase-mappers.ts` |
 | Offline / failure | Mock data only when env missing or explicit offline demo; no silent mock IDs for Supabase writes |
-| Auth | Deferred — admin uses anon key + relaxed RLS for demo |
+| Auth | Supabase magic link for barber admin; customer flow stays without login |
 | Comms | WhatsApp + Google Maps deeplinks only |
 
 ## Supabase setup status
@@ -57,7 +64,8 @@ Last updated: 2026-05-24 (end-of-day checkpoint)
 | Supabase project + `.env` | Configured locally (not in git) |
 | `0001_initial_schema.sql` | Required — providers, services, bookings + base RLS |
 | `seed.sql` | Required — demo barber + 4 services |
-| `0002_bookings_anon_mvp_policies.sql` | **Required** for admin list + status updates without login |
+| `0003_bookings_auth_rls.sql` | **Required** — anon can only create pending bookings; admin read/update needs login |
+| `0002_bookings_anon_mvp_policies.sql` | Legacy demo only (superseded by 0003) |
 | Publishable/anon API key | Supported (`sb_publishable_*` tested) |
 
 ## Tested flows (checkpoint)
@@ -110,12 +118,12 @@ powershell -ExecutionPolicy Bypass -File scripts\notify-done.ps1
 
 ## Next recommended milestone
 
-**Milestone: “Production-grade auth & RLS”** (next focus)
+**Milestone: “Auth & RLS live”** — mostly done; verify on device
 
-1. ~~Manual E2E test on Expo Go (book + admin + Supabase row).~~ done
-2. ~~`__DEV__`-gate Supabase debug UI.~~ done
-3. Supabase Auth (magic link) for barber admin.
-4. Tighten RLS: anon only INSERT pending bookings; SELECT/UPDATE only for authenticated barber.
-5. Optional polish: pull-to-refresh, web autofill on booking form.
+1. ~~Supabase Auth + admin login screen.~~ done
+2. ~~RLS migration 0003 (stricter bookings).~~ done (run in SQL editor if not yet)
+3. Manual test: customer books → admin logs in → sees booking → updates status
+4. Supabase Dashboard: enable Email auth + redirect URL
+5. Optional polish: pull-to-refresh, web autofill, production deep-link hardening
 
 See [TODO.md](../TODO.md) for the task list.

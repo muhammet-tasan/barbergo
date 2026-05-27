@@ -34,8 +34,8 @@ export function getSupabaseClient(): SupabaseClient | null {
   const { url, anonKey } = getSupabaseEnvVars();
   client = createClient(url, anonKey, {
     auth: {
-      persistSession: false,
-      autoRefreshToken: false,
+      persistSession: true,
+      autoRefreshToken: true,
     },
   });
   cachedEnvKey = envKey;
