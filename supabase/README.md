@@ -8,7 +8,7 @@ Supabase is the MVP backend for barbergo. The mobile app keeps using mock data u
 1. Create a Supabase project.
 2. Open the Supabase SQL editor.
 3. Run `migrations/0001_initial_schema.sql`.
-4. Run `migrations/0002_bookings_anon_mvp_policies.sql` (required for admin list without login).
+4. Run `migrations/0002_bookings_anon_mvp_policies.sql` (required for admin list without login; safe to re-run — uses `DROP POLICY IF EXISTS`).
 5. Run `seed.sql`.
 6. Copy `apps/mobile/.env.example` to `apps/mobile/.env`.
 7. Fill `EXPO_PUBLIC_SUPABASE_URL` and `EXPO_PUBLIC_SUPABASE_ANON_KEY`.

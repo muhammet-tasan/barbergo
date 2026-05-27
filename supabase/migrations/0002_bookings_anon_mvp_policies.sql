@@ -6,6 +6,8 @@
 
 drop policy if exists "Authenticated admins can read bookings" on public.bookings;
 drop policy if exists "Authenticated admins can update bookings" on public.bookings;
+drop policy if exists "Anon can read bookings for MVP admin demo" on public.bookings;
+drop policy if exists "Anon can update booking status for MVP admin demo" on public.bookings;
 
 create policy "Anon can read bookings for MVP admin demo"
 on public.bookings
