@@ -1,6 +1,13 @@
-import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { createClient, type Session, type SupabaseClient } from '@supabase/supabase-js';
+import { Platform } from 'react-native';
 
 import { getSupabaseEnvSnapshot, getSupabaseEnvVars } from './supabase-env';
+
+/** When true, /admin requires Supabase login (see supabase/README.md). */
+export function isAdminAuthRequired(): boolean {
+  return process.env.EXPO_PUBLIC_ADMIN_AUTH_REQUIRED === 'true';
+}
 
 let client: SupabaseClient | null = null;
 let cachedEnvKey = '';
@@ -17,7 +24,7 @@ export function isSupabaseConfigured(): boolean {
 
 /**
  * Returns a singleton Supabase client when env vars exist, otherwise null.
- * Auth is disabled for MVP — no session persistence.
+ * Session persistence is enabled for barber admin login.
  */
 export function getSupabaseClient(): SupabaseClient | null {
   if (!isSupabaseConfigured()) {
@@ -34,8 +41,10 @@ export function getSupabaseClient(): SupabaseClient | null {
   const { url, anonKey } = getSupabaseEnvVars();
   client = createClient(url, anonKey, {
     auth: {
+      storage: AsyncStorage,
       persistSession: true,
       autoRefreshToken: true,
+      detectSessionInUrl: Platform.OS === 'web',
     },
   });
   cachedEnvKey = envKey;
@@ -48,3 +57,5 @@ export const SupabaseTables = {
   services: 'services',
   bookings: 'bookings',
 } as const;
+
+export type { Session };

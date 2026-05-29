@@ -5,6 +5,7 @@ import { useMemo, useState } from 'react';
 
 import { AppButton } from '@/components/AppButton';
 import { AppCard } from '@/components/AppCard';
+import { DataSourceBanner } from '@/components/DataSourceBanner';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { StatusBadge } from '@/components/StatusBadge';
 import { formatChf } from '@/constants/pricing';
@@ -27,16 +28,20 @@ function DetailRow({ label, value }: { label: string; value: string }) {
 
 export default function BookingConfirmScreen() {
   const router = useRouter();
-  const { bookingId } = useLocalSearchParams<{ bookingId: string }>();
-  const { booking, loading: bookingLoading } = useBooking(bookingId);
+  const { bookingId, serviceName: serviceNameParam } = useLocalSearchParams<{
+    bookingId: string;
+    serviceName?: string;
+  }>();
+  const { booking, loading: bookingLoading, usingFallback, error } = useBooking(bookingId);
   const { provider, loading: providerLoading } = useProvider();
   const { services, loading: servicesLoading } = useServices(provider?.id);
   const [whatsappLoading, setWhatsappLoading] = useState(false);
 
-  const service = useMemo(
-    () => (booking ? getServiceById(booking.serviceId, services) : undefined),
-    [booking, services]
-  );
+  const serviceName = useMemo(() => {
+    if (!booking) return undefined;
+    const fromCatalog = getServiceById(booking.serviceId, services);
+    return fromCatalog?.name ?? serviceNameParam;
+  }, [booking, services, serviceNameParam]);
 
   const loading = bookingLoading || providerLoading || servicesLoading;
 
@@ -48,7 +53,7 @@ export default function BookingConfirmScreen() {
     );
   }
 
-  if (!booking || !service || !provider) {
+  if (!booking || !serviceName || !provider) {
     return (
       <SafeAreaView className="flex-1 bg-brand-dark" edges={['top']}>
         <ScreenHeader title="Bestätigung" showBack={false} />
@@ -63,7 +68,7 @@ export default function BookingConfirmScreen() {
   const handleWhatsApp = async () => {
     setWhatsappLoading(true);
     try {
-      const ok = await openBarberWhatsAppBooking(booking, service.name, provider.name);
+      const ok = await openBarberWhatsAppBooking(booking, serviceName, provider.name);
       if (!ok) {
         Alert.alert(
           'WhatsApp',
@@ -79,6 +84,7 @@ export default function BookingConfirmScreen() {
     <SafeAreaView className="flex-1 bg-brand-dark" edges={['top']}>
       <ScreenHeader title="Buchung bestätigt" showBack={false} />
       <ScrollView className="flex-1 px-4 pt-4" contentContainerClassName="pb-8">
+        <DataSourceBanner usingFallback={usingFallback} error={error} />
         <View className="items-center mb-6">
           <Text className="text-3xl mb-2">✓</Text>
           <Text className="text-xl font-bold text-white text-center">Anfrage gesendet</Text>
@@ -92,7 +98,7 @@ export default function BookingConfirmScreen() {
         </View>
 
         <AppCard className="mb-6">
-          <DetailRow label="Service" value={service.name} />
+          <DetailRow label="Service" value={serviceName} />
           <DetailRow label="Datum" value={formatSwissDate(booking.appointmentDate)} />
           <DetailRow label="Uhrzeit" value={booking.appointmentTime} />
           <DetailRow label="Adresse" value={booking.address} />

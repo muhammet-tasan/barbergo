@@ -9,13 +9,17 @@ export function useBookings() {
   const [usingFallback, setUsingFallback] = useState(false);
   const [error, setError] = useState<string | undefined>();
 
-  const reload = useCallback(async () => {
-    setLoading(true);
+  const reload = useCallback(async (silent = false) => {
+    if (!silent) {
+      setLoading(true);
+    }
     const result = await listBookings();
     setBookings(result.bookings);
     setUsingFallback(result.source === 'mock');
     setError(result.error);
-    setLoading(false);
+    if (!silent) {
+      setLoading(false);
+    }
   }, []);
 
   useEffect(() => {

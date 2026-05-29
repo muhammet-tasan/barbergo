@@ -1,26 +1,27 @@
-import { ActivityIndicator, Alert, Pressable, ScrollView, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, Pressable, RefreshControl, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useFocusEffect } from 'expo-router';
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 
 import { AppCard } from '@/components/AppCard';
-import { AppButton } from '@/components/AppButton';
+import { DataSourceBanner } from '@/components/DataSourceBanner';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { StatusBadge } from '@/components/StatusBadge';
 import { formatChf } from '@/constants/pricing';
 import { colors } from '@/constants/theme';
+import { useAuth } from '@/contexts/auth-context';
 import { useBookings } from '@/hooks/use-bookings';
-import { useSession } from '@/hooks/use-session';
 import { useServices } from '@/hooks/use-services';
 import { getServiceById } from '@/services/bookings';
-import { signOut } from '@/services/auth';
 import { formatSwissDate } from '@/utils/date';
 
 export default function AdminBookingListScreen() {
   const router = useRouter();
-  const { session, loading: sessionLoading } = useSession();
+  const { session, signOut } = useAuth();
   const { bookings, loading, reload, usingFallback, error } = useBookings();
   const { services } = useServices();
+  const [refreshing, setRefreshing] = useState(false);
+  const [signingOut, setSigningOut] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
@@ -28,27 +29,25 @@ export default function AdminBookingListScreen() {
     }, [reload])
   );
 
-  const showDataWarning = !loading && (usingFallback || !!error);
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await reload(true);
+    setRefreshing(false);
+  }, [reload]);
 
-  if (sessionLoading) {
-    return (
-      <SafeAreaView className="flex-1 bg-brand-dark items-center justify-center" edges={['top']}>
-        <ActivityIndicator color={colors.accent} />
-      </SafeAreaView>
-    );
-  }
-
-  if (!session) {
-    return (
-      <SafeAreaView className="flex-1 bg-brand-dark" edges={['top']}>
-        <ScreenHeader title="Admin - Buchungen" onBack={() => router.replace('/')} />
-        <View className="flex-1 px-6 justify-center">
-          <Text className="text-white text-center mb-4">Bitte zuerst als Admin anmelden.</Text>
-          <AppButton label="Zum Login" onPress={() => router.replace('/admin/login')} />
-        </View>
-      </SafeAreaView>
-    );
-  }
+  const handleSignOut = async () => {
+    setSigningOut(true);
+    try {
+      const result = await signOut();
+      if (result.error) {
+        Alert.alert('Fehler', result.error);
+        return;
+      }
+      router.replace('/');
+    } finally {
+      setSigningOut(false);
+    }
+  };
 
   return (
     <SafeAreaView className="flex-1 bg-brand-dark" edges={['top']}>
@@ -58,44 +57,38 @@ export default function AdminBookingListScreen() {
           <ActivityIndicator color={colors.accent} />
         </View>
       ) : (
-        <ScrollView className="flex-1 px-4 pt-4" contentContainerClassName="pb-8">
-          {showDataWarning ? (
-            <Pressable
-              onPress={() =>
-                Alert.alert(
-                  'Supabase-Verbindung',
-                  error ??
-                    'Buchungen kommen aus dem Demo-Modus, nicht aus der Datenbank. Prüfe apps/mobile/.env, führe supabase/migrations/0002_bookings_anon_mvp_policies.sql aus und starte Expo mit npx expo start -c neu.'
-                )
-              }
-              className="mb-4 rounded-xl border border-amber-500/60 bg-amber-500/10 px-4 py-3 active:opacity-90"
-            >
-              <Text className="text-amber-200 font-semibold">Demo-Daten (nicht Supabase)</Text>
-              <Text className="text-amber-100/80 text-sm mt-1">
-                Tippen für Hinweise — echte Buchungen erscheinen erst nach SQL-Migration 0002 und
-                gültiger .env.
+        <ScrollView
+          className="flex-1 px-4 pt-4"
+          contentContainerClassName="pb-8"
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              tintColor={colors.accent}
+              colors={[colors.accent]}
+            />
+          }
+        >
+          <DataSourceBanner usingFallback={usingFallback} error={error} />
+          {session ? (
+            <View className="flex-row justify-between items-center mb-4">
+              <Text className="text-slate-400 text-sm flex-1 mr-2" numberOfLines={1}>
+                Angemeldet als {session.user.email}
               </Text>
+              <Pressable onPress={handleSignOut} disabled={signingOut}>
+                <Text className="text-brand-gold text-sm font-medium">
+                  {signingOut ? '…' : 'Abmelden'}
+                </Text>
+              </Pressable>
+            </View>
+          ) : (
+            <Pressable onPress={() => router.push('/admin/login')} className="mb-4">
+              <Text className="text-brand-gold text-sm">Als Barber anmelden</Text>
             </Pressable>
-          ) : null}
-
+          )}
           <Text className="text-slate-400 mb-4">
             Demo-Ansicht für den Barber. Tippe auf eine Buchung für Details, Maps und WhatsApp.
           </Text>
-
-          <View className="mb-4">
-            <AppButton
-              label="Logout"
-              variant="ghost"
-              onPress={async () => {
-                try {
-                  await signOut();
-                  router.replace('/');
-                } catch (e) {
-                  Alert.alert('Fehler', e instanceof Error ? e.message : 'Logout fehlgeschlagen.');
-                }
-              }}
-            />
-          </View>
 
           {bookings.length === 0 ? (
             <AppCard>

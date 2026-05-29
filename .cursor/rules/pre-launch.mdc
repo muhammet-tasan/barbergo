@@ -1,0 +1,24 @@
+---
+description: Go-live and production hardening — env, auth, RLS. Apply when user mentions launch, go-live, production release, or public deployment.
+alwaysApply: false
+---
+
+# barbergo — before go-live
+
+When the user prepares a **public / production release**, proactively run through `docs/pre-launch-checklist.md` and apply these changes (do not enable during MVP demo unless asked):
+
+## Required env changes
+
+- Set `EXPO_PUBLIC_ADMIN_AUTH_REQUIRED=true` in `apps/mobile/.env` (and document in `.env.example`).
+- Restart Expo after env changes.
+
+## Required Supabase hardening
+
+- Ensure barber Auth user exists; admin must use `/admin/login`.
+- **Revoke MVP anon policies** from `0002_mvp_anon_bookings_access.sql` on `bookings` (anon read/update). Keep customer booking path working (anon insert with `status = pending` from `0001` is enough if RLS is configured correctly).
+- Verify authenticated admin can read/update bookings; anon admin access must fail.
+
+## Agent behavior
+
+- Remind the user of this checklist when they say "go live", "production", "launch", or "release".
+- Do not set `EXPO_PUBLIC_ADMIN_AUTH_REQUIRED=true` during normal MVP development unless explicitly requested.

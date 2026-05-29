@@ -1,54 +1,47 @@
-import { useMemo, useState } from 'react';
-import { ActivityIndicator, Text, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
+import { useState } from 'react';
 
 import { AppButton } from '@/components/AppButton';
-import { AppCard } from '@/components/AppCard';
 import { AppInput } from '@/components/AppInput';
 import { ScreenHeader } from '@/components/ScreenHeader';
-import { colors } from '@/constants/theme';
-import { useSession } from '@/hooks/use-session';
-import { signInWithMagicLink } from '@/services/auth';
-import { showUserMessage } from '@/utils/show-message';
+import { useAuth } from '@/contexts/auth-context';
 
 export default function AdminLoginScreen() {
   const router = useRouter();
-  const { session, loading: sessionLoading } = useSession();
+  const { signIn } = useAuth();
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [emailError, setEmailError] = useState<string | undefined>();
+  const [passwordError, setPasswordError] = useState<string | undefined>();
+  const [authError, setAuthError] = useState<string | undefined>();
   const [submitting, setSubmitting] = useState(false);
 
-  const emailTrimmed = useMemo(() => email.trim(), [email]);
+  const handleSubmit = async () => {
+    setEmailError(undefined);
+    setPasswordError(undefined);
+    setAuthError(undefined);
 
-  if (sessionLoading) {
-    return (
-      <SafeAreaView className="flex-1 bg-brand-dark items-center justify-center" edges={['top']}>
-        <ActivityIndicator color={colors.accent} />
-      </SafeAreaView>
-    );
-  }
-
-  if (session) {
-    router.replace('/admin');
-    return null;
-  }
-
-  const handleSendLink = async () => {
-    if (!emailTrimmed.includes('@')) {
-      showUserMessage('E-Mail', 'Bitte eine gültige E-Mail-Adresse eingeben.');
-      return;
+    let hasError = false;
+    if (!email.trim()) {
+      setEmailError('E-Mail ist erforderlich');
+      hasError = true;
     }
+    if (!password) {
+      setPasswordError('Passwort ist erforderlich');
+      hasError = true;
+    }
+    if (hasError) return;
 
     setSubmitting(true);
     try {
-      await signInWithMagicLink(emailTrimmed);
-      showUserMessage(
-        'Login-Link gesendet',
-        'Bitte prüfe deine E-Mails und öffne den Link, um dich anzumelden.'
-      );
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Login-Link konnte nicht gesendet werden.';
-      showUserMessage('Fehler', msg);
+      const result = await signIn(email, password);
+      if (result.error) {
+        setAuthError(result.error);
+        return;
+      }
+      router.replace('/admin');
     } finally {
       setSubmitting(false);
     }
@@ -56,29 +49,55 @@ export default function AdminLoginScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-brand-dark" edges={['top']}>
-      <ScreenHeader title="Admin Login" onBack={() => router.replace('/')} />
-      <View className="flex-1 px-4 pt-4">
-        <AppCard className="mb-4">
-          <Text className="text-slate-300 mb-3">
-            Für den Admin-Bereich ist ein Login nötig. Wir senden dir einen Magic-Link per E-Mail.
+      <ScreenHeader title="Barber Login" onBack={() => router.replace('/')} />
+      <KeyboardAvoidingView
+        className="flex-1"
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
+        <ScrollView
+          className="flex-1 px-4 pt-4"
+          contentContainerClassName="pb-8"
+          keyboardShouldPersistTaps="handled"
+        >
+          <Text className="text-slate-400 mb-6">
+            Melde dich an, um Buchungen zu verwalten. Der Barber-Account wird in Supabase angelegt.
           </Text>
+
           <AppInput
             label="E-Mail"
             value={email}
-            onChangeText={setEmail}
-            placeholder="barber@example.com"
-            keyboardType="email-address"
+            onChangeText={(value) => {
+              setEmail(value);
+              setAuthError(undefined);
+            }}
+            error={emailError}
             autoCapitalize="none"
-            autoCorrect={false}
+            autoComplete="email"
+            keyboardType="email-address"
+            textContentType="emailAddress"
           />
-          <AppButton label="Link senden" onPress={handleSendLink} loading={submitting} />
-        </AppCard>
-        <Text className="text-slate-500 text-sm px-1">
-          Hinweis: Für Expo Go / Web ist das ausreichend. In einem Production-Build wird der Link per
-          Deep Link zurück in die App führen.
-        </Text>
-      </View>
+          <AppInput
+            label="Passwort"
+            value={password}
+            onChangeText={(value) => {
+              setPassword(value);
+              setAuthError(undefined);
+            }}
+            error={passwordError}
+            secureTextEntry
+            autoComplete="password"
+            textContentType="password"
+          />
+
+          {authError ? (
+            <View className="mb-4 rounded-lg border border-red-500/50 bg-red-950/40 px-3 py-2">
+              <Text className="text-red-300 text-sm">{authError}</Text>
+            </View>
+          ) : null}
+
+          <AppButton label="Anmelden" onPress={handleSubmit} loading={submitting} />
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
-

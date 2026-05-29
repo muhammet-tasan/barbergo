@@ -16,6 +16,8 @@
 - [x] Mock data + pricing constants (`constants/pricing.ts`)
 - [x] German app language for visible UI and WhatsApp messages
 - [x] Async data hooks for provider, services, and bookings
+- [x] Pull-to-refresh on admin booking list
+- [x] Offline/demo data banner (Admin + confirmation)
 
 ### Backend (Supabase)
 
@@ -25,26 +27,20 @@
 - [x] Row mappers (`services/supabase-mappers.ts`)
 - [x] Provider + services + bookings repositories
 - [x] Supabase SQL migrations + seed prepared (`supabase/`)
-- [x] Migration `0002_bookings_anon_mvp_policies.sql` (file in repo)
 - [x] `@supabase/supabase-js` installed
 - [x] Load providers/services/bookings from Supabase
 - [x] Persist new bookings and status updates to Supabase
-- [x] Catalog error diagnostics + debug panel (service screen)
-- [x] UUID validation accepts seed IDs; blocks demo IDs (`provider-1`)
-- [x] Migration `0003_bookings_auth_rls.sql` (admin login + stricter bookings RLS)
-- [x] Supabase Auth magic-link login screen for admin (`/admin/login`)
-- [x] Admin screens gated behind login session
-- [ ] Manual E2E: customer book (anon) → admin login → list + status update
-- [ ] Supabase Dashboard: Email auth on + redirect URL `barbergo://auth/callback`
+- [x] Catalog error diagnostics + debug panel (service screen, `__DEV__`)
+- [x] Supabase Auth login for admin (`/admin/login`, E-Mail + Passwort)
+- [x] MVP RLS migrations (`0002` demo, `0003` auth)
+- [x] Manually test live Supabase + offline fallback
+- [ ] Row Level Security policies (production hardening — see `docs/pre-launch-checklist.md`)
 
 ### Next recommended tasks
 
-- [ ] Run full customer + admin flow on Expo Go against live Supabase
-- [ ] Verify booking row in Supabase after test; admin list survives app reload
-- [x] Gate `SupabaseCatalogDebugPanel` + diagnostics behind `__DEV__`
-- [ ] Verify migration 0003 applied on hosted Supabase project
-- [ ] Add pull-to-refresh on admin booking list (optional UX)
-- [ ] Booking form Chrome autofill (web) — optional
+- [ ] Verify migration 0002 or 0003 applied on hosted Supabase project
+- [ ] Manual E2E: customer book → admin login → list + status update
+- [ ] **Before go-live:** `EXPO_PUBLIC_ADMIN_AUTH_REQUIRED=true` + revoke anon booking policies
 
 ### Not in MVP
 

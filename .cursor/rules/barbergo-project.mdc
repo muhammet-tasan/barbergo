@@ -41,6 +41,11 @@ Otherwise: `scripts/notify-done.ps1`. Do not skip.
 - Simple MVP; avoid paid APIs; Supabase + mock fallback; see `docs/coding-guidelines.md` and `docs/data-model.md`
 - App product language is **German**. Visible mobile UI copy, validation messages, and WhatsApp messages should be German.
 
+## Before go-live (not during MVP demo)
+
+- See **`docs/pre-launch-checklist.md`** — includes `EXPO_PUBLIC_ADMIN_AUTH_REQUIRED=true`, Supabase Auth, and revoking anon RLS on `bookings`.
+- Rule: `.cursor/rules/pre-launch.mdc` applies when user mentions launch / production.
+
 ## After every major step (required summary)
 
 1. **Changed files** — paths added/updated/removed, grouped by folder  

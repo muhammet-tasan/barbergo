@@ -149,7 +149,7 @@ export default function BookingFormScreen() {
 
       router.replace({
         pathname: '/barber/confirm',
-        params: { bookingId: result.booking.id },
+        params: { bookingId: result.booking.id, serviceName: service.name },
       });
     } catch (err) {
       const msg =
