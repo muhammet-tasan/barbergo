@@ -93,7 +93,7 @@ export default function AdminBookingListScreen() {
           {bookings.length === 0 ? (
             <AppCard>
               <Text className="text-slate-300 text-center">
-                Noch keine Buchungen. Erstelle eine über Termin buchen auf der Startseite.
+                Noch keine Buchungen.
               </Text>
             </AppCard>
           ) : (

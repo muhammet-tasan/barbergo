@@ -1,11 +1,14 @@
-import { Text, View } from 'react-native';
+import { ActivityIndicator, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 
 import { AppButton } from '@/components/AppButton';
+import { colors } from '@/constants/theme';
+import { useAuth } from '@/contexts/auth-context';
 
 export default function HomeScreen() {
   const router = useRouter();
+  const { session, loading } = useAuth();
 
   return (
     <SafeAreaView className="flex-1 bg-brand-dark">
@@ -20,16 +23,24 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        <View className="gap-4">
-          <AppButton
-            label="Termin buchen"
-            onPress={() => router.push('/barber')}
-          />
-          <AppButton
-            label="Admin-Demo"
-            variant="secondary"
-            onPress={() => router.push('/admin/login')}
-          />
+        <View className="gap-4 min-h-[132px] justify-center">
+          {loading ? (
+            <ActivityIndicator color={colors.accent} />
+          ) : session ? (
+            <AppButton
+              label="Buchungen verwalten"
+              onPress={() => router.push('/admin')}
+            />
+          ) : (
+            <>
+              <AppButton label="Termin buchen" onPress={() => router.push('/barber')} />
+              <AppButton
+                label="Admin-Demo"
+                variant="secondary"
+                onPress={() => router.push('/admin/login')}
+              />
+            </>
+          )}
         </View>
       </View>
     </SafeAreaView>
