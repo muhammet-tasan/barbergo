@@ -1,14 +1,20 @@
--- Production-oriented RLS tightening for bookings.
+-- Secure RLS baseline for bookings (recommended default after 0001 + seed).
 -- Goal: anonymous users may only create pending booking requests.
 -- Admin read/update requires Supabase Auth (authenticated).
 --
--- Apply AFTER:
--- - 0001_initial_schema.sql
--- - (Optional) 0002_bookings_anon_mvp_policies.sql (this migration removes its anon policies)
+-- Run in Supabase SQL Editor AFTER:
+--   1. migrations/0001_initial_schema.sql
+--   2. seed.sql
+-- Safe to re-run (idempotent). Removes all MVP demo anon read/update policies.
 
--- Remove MVP demo policies (if present)
+-- Remove MVP demo policies — legacy names (0002_bookings_anon_mvp_policies.sql)
 drop policy if exists "Anon can read bookings for MVP admin demo" on public.bookings;
 drop policy if exists "Anon can update booking status for MVP admin demo" on public.bookings;
+
+-- Remove MVP demo policies — current names (0002_mvp_anon_bookings_access.sql)
+drop policy if exists "MVP anon can read bookings" on public.bookings;
+drop policy if exists "MVP anon can create pending bookings" on public.bookings;
+drop policy if exists "MVP anon can update booking status" on public.bookings;
 
 -- Remove previous authenticated admin policies (if present)
 drop policy if exists "Authenticated admins can read bookings" on public.bookings;

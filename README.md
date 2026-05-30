@@ -41,11 +41,13 @@ Scan the QR code with **Expo Go** on Android, or press `a` for an emulator.
 1. Create a project at [supabase.com](https://supabase.com).
 2. Copy `apps/mobile/.env.example` → `apps/mobile/.env`.
 3. Set `EXPO_PUBLIC_SUPABASE_URL` and `EXPO_PUBLIC_SUPABASE_ANON_KEY` (anon or publishable key).
-4. In the SQL editor, run:
+4. In the SQL editor, run (in order):
    - `supabase/migrations/0001_initial_schema.sql`
-   - `supabase/migrations/0002_bookings_anon_mvp_policies.sql`
    - `supabase/seed.sql`
-5. Start the app with cache clear: `npx expo start -c`.
+   - `supabase/migrations/0003_bookings_auth_rls.sql` (secure baseline; see [supabase/README.md](supabase/README.md))
+5. Copy `.env.example` → `.env` and set `EXPO_PUBLIC_ADMIN_AUTH_REQUIRED=true` (default).
+6. Create a barber user in Supabase Auth.
+7. Start the app with cache clear: `npx expo start -c`.
 
 Details: [supabase/README.md](supabase/README.md) · Status: [docs/current-status.md](docs/current-status.md)
 

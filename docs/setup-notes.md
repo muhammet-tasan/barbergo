@@ -80,7 +80,12 @@ Scripts post to: `https://ntfy.sh/barbergo-muhammet`
 Typische Ursachen:
 
 1. **`apps/mobile/.env` fehlt oder Expo nicht neu gestartet** — App läuft im Demo-Modus.
-2. **SQL-Migration 0002 nicht ausgeführt** — Insert kann klappen, aber die App darf Buchungen als `anon` nicht lesen (`0002_bookings_anon_mvp_policies.sql`).
-3. **Provider/Services aus Demo-IDs** (`provider-1`) statt Supabase-UUIDs — Insert schlägt fehl, App zeigt nur temporär Mock-Daten.
+2. **Migration `0003` aktiv, aber nicht als Barber eingeloggt** — anon darf Buchungen nicht lesen (korrekt). Admin unter `/admin/login` anmelden.
+3. **Nur `0001` ohne `0003`** — Insert kann klappen, Admin-Liste bleibt leer bis Login (oder bis unsichere Demo-`0002` läuft).
+4. **Provider/Services aus Demo-IDs** (`provider-1`) statt Supabase-UUIDs — Insert schlägt fehl.
 
-Fix-Reihenfolge: `.env` → Migration 0001 + **0002** + `seed.sql` → `cd apps/mobile` → `npx expo start -c` → Testbuchung → Supabase Table Editor → `bookings`.
+**Empfohlene Fix-Reihenfolge:** `.env` (inkl. `EXPO_PUBLIC_ADMIN_AUTH_REQUIRED=true`) → `0001` + `seed.sql` + **`0003`** → Barber-User in Auth → `npx expo start -c` → Testbuchung → Login → Admin-Liste.
+
+**Nur für lokale Demo ohne Login:** `0002_mvp_anon_bookings_access.sql` statt `0003` und `EXPO_PUBLIC_ADMIN_AUTH_REQUIRED=false` — unsicher, nicht für Release.
+
+Details: [supabase/README.md](../supabase/README.md)

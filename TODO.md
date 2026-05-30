@@ -33,14 +33,16 @@
 - [x] Catalog error diagnostics + debug panel (service screen, `__DEV__`)
 - [x] Supabase Auth login for admin (`/admin/login`, E-Mail + Passwort)
 - [x] MVP RLS migrations (`0002` demo, `0003` auth)
-- [x] Manually test live Supabase + offline fallback
+- [x] Secure baseline documented: `0003` + `EXPO_PUBLIC_ADMIN_AUTH_REQUIRED=true`
+- [x] RLS smoke script (`apps/mobile/scripts/verify-rls-0003.mjs`)
 - [ ] Row Level Security policies (production hardening — see `docs/pre-launch-checklist.md`)
 
 ### Next recommended tasks
 
-- [ ] Verify migration 0002 or 0003 applied on hosted Supabase project
-- [ ] Manual E2E: customer book → admin login → list + status update
-- [ ] **Before go-live:** `EXPO_PUBLIC_ADMIN_AUTH_REQUIRED=true` + revoke anon booking policies
+- [ ] Apply migration **`0003_bookings_auth_rls.sql`** on hosted Supabase (if not yet)
+- [ ] Set `EXPO_PUBLIC_ADMIN_AUTH_REQUIRED=true` in local `.env` (copy from `.env.example`)
+- [ ] Manual E2E: guest book → admin login → list + status update
+- [ ] Run `node scripts/verify-rls-0003.mjs` after applying `0003`
 
 ### Not in MVP
 
