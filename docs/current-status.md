@@ -1,6 +1,6 @@
 # barbergo — Current Status
 
-Last updated: 2026-05-30
+Last updated: 2026-05-31
 
 ## Project maturity
 
@@ -73,5 +73,6 @@ See [supabase/README.md](../supabase/README.md).
 1. Apply **`0003`** on hosted Supabase if not yet done.
 2. Manual E2E: guest book → barber login → list + status update.
 3. Continue MVP features from `TODO.md` (no public launch yet).
+4. Product priorities and phases: [product-roadmap.md](./product-roadmap.md).
 
 See [TODO.md](../TODO.md).

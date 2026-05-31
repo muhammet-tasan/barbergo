@@ -50,16 +50,27 @@
 - [ ] n8n workflows
 - [ ] Coolify deployment
 
-## Future roadmap
+## Product roadmap
 
-- [ ] Supabase production hardening (RLS, backups)
-- [ ] Customer + provider authentication
+Detailliertes Feature Backlog, Phasen und offene Produktentscheidungen: **[docs/product-roadmap.md](docs/product-roadmap.md)**.
+
+Kurzüberblick (priorisiert nach Product Roadmap — siehe Tabellen dort):
+
+- [ ] Phase 1: Datenmodell (`profiles`, `customer_id`, Booking-Access-Token) + RLS Go-live
+- [ ] Phase 2: Kunden-Login, Meine Buchungen, Storno
+- [ ] Phase 3: Barber-Profil bearbeiten, Avatar, modernes Profil (Card-UI)
+- [ ] Phase 4: Kalender/Tagesansicht, Verfügbarkeit, Services in App pflegen
+- [ ] Phase 5: Bewertungen + Durchschnitt auf Profil
+- [ ] Phase 6 / später: Push, Zahlung (TWINT/Stripe), Multi-Barber, Admin-Web, Chat
+
+## Future roadmap (technisch / Infrastruktur)
+
+- [ ] Supabase production hardening (RLS, backups) — siehe auch Phase 1 in product-roadmap
 - [ ] End-user push notifications (Expo / FCM)
 - [ ] Payments (TWINT / Stripe)
 - [ ] Multiple providers / barbers
 - [ ] Admin web panel
-- [ ] Ratings and reviews
-- [ ] Calendar sync
+- [ ] Calendar sync (Barber-Kalender — siehe product-roadmap #12)
 
 ## Future automation stack
 

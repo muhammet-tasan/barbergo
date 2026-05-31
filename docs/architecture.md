@@ -91,5 +91,6 @@ Documented only — **do not implement yet.**
 ## Related docs
 
 - [data-model.md](./data-model.md) — entities and fields
+- [product-roadmap.md](./product-roadmap.md) — feature backlog, phases, product decisions (does not override stack choices here)
 - [setup-notes.md](./setup-notes.md) — stack choices in more detail
 - [project-rules.md](./project-rules.md) — how agents work on this repo
