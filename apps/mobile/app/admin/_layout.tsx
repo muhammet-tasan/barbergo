@@ -6,7 +6,7 @@ import { colors } from '@/constants/theme';
 import { isSupabaseConfigured } from '@/services/supabase';
 
 export default function AdminLayout() {
-  const { session, loading, adminAuthRequired } = useAuth();
+  const { session, loading, adminAuthRequired, isBarber } = useAuth();
   const pathname = usePathname();
   const onLoginScreen = pathname === '/admin/login';
 
@@ -18,14 +18,18 @@ export default function AdminLayout() {
     );
   }
 
+  if (session && !isBarber && !onLoginScreen) {
+    return <Redirect href="/" />;
+  }
+
   const mustSignIn =
     adminAuthRequired && isSupabaseConfigured() && !session && !onLoginScreen;
 
   if (mustSignIn) {
-    return <Redirect href="/admin/login" />;
+    return <Redirect href="/login" />;
   }
 
-  if (session && onLoginScreen) {
+  if (session && isBarber && onLoginScreen) {
     return <Redirect href="/admin" />;
   }
 

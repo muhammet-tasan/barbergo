@@ -13,13 +13,15 @@ Last updated: 2026-05-31
 - Home → barber profile → service selection → booking form (`DD.MM.YYYY`, `HH:MM`)
 - Booking confirmation + WhatsApp deeplink
 - Provider/services from Supabase when `.env` is set
-- **Guest booking** (no customer login) — anon `INSERT` with `status = pending`
+- **Guest booking** (no customer login) — anon `INSERT` with `status = pending` (RLS `0003`; App speichert ohne post-insert SELECT)
 - Offline fallback to mock data with banner on writes/reads
 
 ### Admin flow (login required when configured)
 
 - **`EXPO_PUBLIC_ADMIN_AUTH_REQUIRED=true`** in `.env.example` (recommended)
-- `/admin` redirects to `/admin/login` when not authenticated (Supabase configured)
+- Unified login at **`/login`** (Kunde + Barber); role via Supabase `user_metadata.role`
+- Barber → **`/admin`** (Buchungen verwalten); Kunde → Startseite mit **Termine verwalten**
+- **`Anmelden` / `Abmelden`** im Header aller Screens (via `ScreenHeader`)
 - Booking list with pull-to-refresh + offline/demo banner
 - Booking detail: status updates, Maps, WhatsApp
 - `/admin/login` (E-Mail + Passwort)

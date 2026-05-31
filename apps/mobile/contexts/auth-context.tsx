@@ -8,13 +8,25 @@ import {
   type ReactNode,
 } from 'react';
 
+import {
+  getPostLoginPath,
+  getUserRole,
+  isBarberRole,
+  isCustomerRole,
+  type UserRole,
+} from '@/services/auth-roles';
 import { signInWithEmail, signOut as authSignOut, type AuthResult } from '@/services/auth';
 import { getSupabaseClient, isAdminAuthRequired, type Session } from '@/services/supabase';
 
 type AuthContextValue = {
   session: Session | null;
+  role: UserRole | null;
   loading: boolean;
   adminAuthRequired: boolean;
+  isBarber: boolean;
+  isCustomer: boolean;
+  isAuthenticated: boolean;
+  postLoginPath: '/' | '/admin';
   signIn: (email: string, password: string) => Promise<AuthResult>;
   signOut: () => Promise<AuthResult>;
 };
@@ -59,15 +71,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return result;
   }, []);
 
+  const role = useMemo(() => getUserRole(session), [session]);
+
   const value = useMemo(
     () => ({
       session,
+      role,
       loading,
       adminAuthRequired: isAdminAuthRequired(),
+      isBarber: isBarberRole(session),
+      isCustomer: isCustomerRole(session),
+      isAuthenticated: Boolean(session),
+      postLoginPath: getPostLoginPath(session),
       signIn,
       signOut,
     }),
-    [session, loading, signIn, signOut]
+    [session, role, loading, signIn, signOut]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

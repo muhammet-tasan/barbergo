@@ -1,11 +1,17 @@
 import { mockBookings } from '@/data/mockData';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { calculateBookingTotal } from '@/constants/pricing';
 import type { Booking, BookingStatus, Service } from '@/types/domain';
 import { parseSwissDateToIso } from '@/utils/date';
 
-import { isMockCatalogId, isValidUuid } from '@/utils/uuid';
+import { generateUuid, isMockCatalogId, isValidUuid } from '@/utils/uuid';
 
-import { formatBookingIdError, formatCatalogErrorMessage, getEnvConfigStatus } from './catalog-errors';
+import {
+  classifySupabaseError,
+  formatBookingIdError,
+  formatCatalogErrorMessage,
+  getEnvConfigStatus,
+} from './catalog-errors';
 import { getSupabaseClient, SupabaseTables } from './supabase';
 import { mapBooking, sortBookings, type BookingRow } from './supabase-mappers';
 
@@ -29,8 +35,85 @@ export type BookingMutationResult = {
   error?: string;
 };
 
+/** Guest bookings: anon cannot SELECT after insert (RLS 0003) — local copy for confirm + Meine Termine. */
+const guestBookingCache = new Map<string, Booking>();
+const GUEST_BOOKINGS_STORAGE_KEY = 'barbergo:guest-bookings';
+
+async function persistGuestBookings(): Promise<void> {
+  try {
+    const payload = JSON.stringify([...guestBookingCache.values()]);
+    await AsyncStorage.setItem(GUEST_BOOKINGS_STORAGE_KEY, payload);
+  } catch (err) {
+    console.warn('[barbergo] persistGuestBookings failed:', err);
+  }
+}
+
+async function loadGuestBookingsFromStorage(): Promise<void> {
+  try {
+    const raw = await AsyncStorage.getItem(GUEST_BOOKINGS_STORAGE_KEY);
+    if (!raw) return;
+    const parsed = JSON.parse(raw) as Booking[];
+    if (!Array.isArray(parsed)) return;
+    for (const booking of parsed) {
+      if (booking?.id) {
+        guestBookingCache.set(booking.id, booking);
+      }
+    }
+  } catch (err) {
+    console.warn('[barbergo] loadGuestBookingsFromStorage failed:', err);
+  }
+}
+
+let guestBookingsHydrated = false;
+
+async function ensureGuestBookingsHydrated(): Promise<void> {
+  if (guestBookingsHydrated) return;
+  await loadGuestBookingsFromStorage();
+  guestBookingsHydrated = true;
+}
+
+function cacheGuestBooking(booking: Booking): void {
+  guestBookingCache.set(booking.id, booking);
+  void persistGuestBookings();
+}
+
+function getCachedGuestBooking(id: string): Booking | undefined {
+  return guestBookingCache.get(id);
+}
+
+/** Bookings created on this device (guest flow under RLS 0003). */
+export async function listLocalGuestBookings(): Promise<Booking[]> {
+  await ensureGuestBookingsHydrated();
+  return sortBookings([...guestBookingCache.values()]);
+}
+
 function generateMockId(): string {
   return `booking-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+}
+
+function buildBookingFromInput(id: string, input: CreateBookingInput, timestamps?: { createdAt: string; updatedAt: string }): Booking {
+  const { serviceFeeChf, totalChf } = calculateBookingTotal(input.service.priceChf);
+  const now = timestamps?.createdAt ?? new Date().toISOString();
+  const appointmentDate =
+    parseSwissDateToIso(input.appointmentDate) ?? input.appointmentDate.trim();
+
+  return {
+    id,
+    providerId: input.providerId,
+    serviceId: input.service.id,
+    status: 'pending',
+    customerName: input.customerName.trim(),
+    phone: input.phone.trim(),
+    address: input.address.trim(),
+    appointmentDate,
+    appointmentTime: input.appointmentTime.trim(),
+    note: input.note?.trim() || undefined,
+    servicePriceChf: input.service.priceChf,
+    serviceFeeChf,
+    totalChf,
+    createdAt: now,
+    updatedAt: timestamps?.updatedAt ?? now,
+  };
 }
 
 export function getServiceById(serviceId: string, services: Service[]): Service | undefined {
@@ -66,6 +149,12 @@ export async function listBookings(): Promise<BookingsLoadResult> {
 }
 
 export async function getBookingById(id: string): Promise<BookingLoadResult> {
+  await ensureGuestBookingsHydrated();
+  const cached = getCachedGuestBooking(id);
+  if (cached) {
+    return { booking: cached, source: 'supabase' };
+  }
+
   const client = getSupabaseClient();
   if (!client) {
     const booking = mockBookings.find((b) => b.id === id);
@@ -132,29 +221,7 @@ function buildBookingPayload(input: CreateBookingInput) {
 }
 
 function buildMockBooking(input: CreateBookingInput): Booking {
-  const { serviceFeeChf, totalChf } = calculateBookingTotal(input.service.priceChf);
-  const now = new Date().toISOString();
-  const appointmentDate =
-    parseSwissDateToIso(input.appointmentDate) ?? input.appointmentDate.trim();
-
-  const booking: Booking = {
-    id: generateMockId(),
-    providerId: input.providerId,
-    serviceId: input.service.id,
-    status: 'pending',
-    customerName: input.customerName.trim(),
-    phone: input.phone.trim(),
-    address: input.address.trim(),
-    appointmentDate,
-    appointmentTime: input.appointmentTime.trim(),
-    note: input.note?.trim() || undefined,
-    servicePriceChf: input.service.priceChf,
-    serviceFeeChf,
-    totalChf,
-    createdAt: now,
-    updatedAt: now,
-  };
-
+  const booking = buildBookingFromInput(generateMockId(), input);
   mockBookings.unshift(booking);
   return booking;
 }
@@ -185,22 +252,24 @@ export async function createBooking(input: CreateBookingInput): Promise<BookingM
   }
 
   try {
-    const payload = buildBookingPayload(input);
-    const { data, error } = await client
-      .from(SupabaseTables.bookings)
-      .insert(payload)
-      .select(
-        'id, provider_id, service_id, status, customer_name, phone, address, appointment_date, appointment_time, note, service_price_chf, service_fee_chf, total_chf, created_at, updated_at'
-      )
-      .single();
+    const id = generateUuid();
+    const payload = { id, ...buildBookingPayload(input) };
+    // RLS 0003: anon may INSERT but not SELECT — do not chain .select() here.
+    const { error } = await client.from(SupabaseTables.bookings).insert(payload);
 
     if (error) {
       throw error;
     }
 
-    return { booking: mapBooking(data as BookingRow), source: 'supabase' };
+    const booking = buildBookingFromInput(id, input);
+    cacheGuestBooking(booking);
+    return { booking, source: 'supabase' };
   } catch (err) {
-    const message = err instanceof Error ? err.message : 'Buchung konnte nicht gespeichert werden.';
+    const classified = classifySupabaseError(err);
+    const message =
+      classified.reason === 'rls_denied'
+        ? 'Buchung wurde blockiert (RLS). Prüfe Migration 0003 und anon INSERT auf bookings.'
+        : classified.detail || 'Buchung konnte nicht gespeichert werden.';
     console.warn('[barbergo] createBooking failed:', message);
     return { source: 'mock', error: message };
   }

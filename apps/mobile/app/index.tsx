@@ -3,15 +3,17 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 
 import { AppButton } from '@/components/AppButton';
+import { ScreenHeader } from '@/components/ScreenHeader';
 import { colors } from '@/constants/theme';
 import { useAuth } from '@/contexts/auth-context';
 
 export default function HomeScreen() {
   const router = useRouter();
-  const { session, loading } = useAuth();
+  const { loading, isAuthenticated, isBarber, isCustomer } = useAuth();
 
   return (
-    <SafeAreaView className="flex-1 bg-brand-dark">
+    <SafeAreaView className="flex-1 bg-brand-dark" edges={['top']}>
+      <ScreenHeader title="barbergo" showBack={false} />
       <View className="flex-1 px-6 justify-center">
         <View className="mb-10">
           <Text className="text-4xl font-bold text-white tracking-tight">barbergo</Text>
@@ -26,19 +28,21 @@ export default function HomeScreen() {
         <View className="gap-4 min-h-[132px] justify-center">
           {loading ? (
             <ActivityIndicator color={colors.accent} />
-          ) : session ? (
-            <AppButton
-              label="Buchungen verwalten"
-              onPress={() => router.push('/admin')}
-            />
-          ) : (
+          ) : isBarber ? (
+            <AppButton label="Buchungen verwalten" onPress={() => router.push('/admin')} />
+          ) : isCustomer ? (
             <>
               <AppButton label="Termin buchen" onPress={() => router.push('/barber')} />
               <AppButton
-                label="Admin-Demo"
+                label="Termine verwalten"
                 variant="secondary"
-                onPress={() => router.push('/admin/login')}
+                onPress={() => router.push('/customer/bookings')}
               />
+            </>
+          ) : (
+            <>
+              <AppButton label="Termin buchen" onPress={() => router.push('/barber')} />
+              <AppButton label="Anmelden" variant="secondary" onPress={() => router.push('/login')} />
             </>
           )}
         </View>
