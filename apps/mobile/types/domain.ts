@@ -37,6 +37,8 @@ export type Booking = {
   servicePriceChf: number;
   serviceFeeChf: number;
   totalChf: number;
+  customerId?: string;
+  accessToken?: string;
   createdAt?: string;
   updatedAt?: string;
 };

@@ -34,6 +34,8 @@ export type BookingRow = {
   service_price_chf: number | string;
   service_fee_chf: number | string;
   total_chf: number | string;
+  customer_id?: string | null;
+  access_token?: string | null;
   created_at?: string;
   updated_at?: string;
 };
@@ -80,6 +82,8 @@ export function mapBooking(row: BookingRow): Booking {
     servicePriceChf: toNumber(row.service_price_chf),
     serviceFeeChf: toNumber(row.service_fee_chf),
     totalChf: toNumber(row.total_chf),
+    customerId: row.customer_id ?? undefined,
+    accessToken: row.access_token ?? undefined,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };

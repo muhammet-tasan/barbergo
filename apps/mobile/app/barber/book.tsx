@@ -18,6 +18,7 @@ import { calculateBookingTotal, formatChf } from '@/constants/pricing';
 import { colors } from '@/constants/theme';
 import { useProvider } from '@/hooks/use-provider';
 import { useServices } from '@/hooks/use-services';
+import { useAuth } from '@/contexts/auth-context';
 import { createBooking, getServiceById } from '@/services/bookings';
 import { showUserMessage } from '@/utils/show-message';
 import { resolveCatalogDisplayError } from '@/utils/catalog-error-display';
@@ -31,6 +32,7 @@ import {
 export default function BookingFormScreen() {
   const router = useRouter();
   const { serviceId } = useLocalSearchParams<{ serviceId: string }>();
+  const { isCustomer, session } = useAuth();
   const { provider, loading: providerLoading, usingFallback, error: providerError } = useProvider();
   const providerIdForServices =
     provider && isValidUuid(provider.id) ? provider.id : undefined;
@@ -128,6 +130,7 @@ export default function BookingFormScreen() {
         appointmentDate,
         appointmentTime,
         note,
+        customerId: isCustomer ? session?.user.id : undefined,
       });
 
       if (!result.booking) {

@@ -29,3 +29,8 @@ export function generateUuid(): string {
     return value.toString(16);
   });
 }
+
+/** Opaque token for guest booking access (stored locally + in DB). */
+export function generateAccessToken(): string {
+  return generateUuid().replace(/-/g, '');
+}

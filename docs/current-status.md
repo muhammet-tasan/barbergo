@@ -11,10 +11,10 @@ Last updated: 2026-05-31
 ### Customer flow (German UI)
 
 - Home → barber profile → service selection → booking form (`DD.MM.YYYY`, `HH:MM`)
+- **Guest booking** or **logged-in customer** (`customer_id` on insert after migration `0004`)
 - Booking confirmation + WhatsApp deeplink
-- Provider/services from Supabase when `.env` is set
-- **Guest booking** (no customer login) — anon `INSERT` with `status = pending` (RLS `0003`; App speichert ohne post-insert SELECT)
-- Offline fallback to mock data with banner on writes/reads
+- **`/register`** + **`/login`** (role `customer` / `barber` in user metadata)
+- **`/customer/bookings`** — account bookings from Supabase + device guest list; **Storno** (24h rule)
 
 ### Admin flow (login required when configured)
 

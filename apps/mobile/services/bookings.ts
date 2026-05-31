@@ -4,7 +4,8 @@ import { calculateBookingTotal } from '@/constants/pricing';
 import type { Booking, BookingStatus, Service } from '@/types/domain';
 import { parseSwissDateToIso } from '@/utils/date';
 
-import { generateUuid, isMockCatalogId, isValidUuid } from '@/utils/uuid';
+import { generateAccessToken, generateUuid, isMockCatalogId, isValidUuid } from '@/utils/uuid';
+import { canCancelBooking, cancelBookingBlockedReason } from '@/utils/booking-cancel';
 
 import {
   classifySupabaseError,
@@ -12,8 +13,12 @@ import {
   formatCatalogErrorMessage,
   getEnvConfigStatus,
 } from './catalog-errors';
+import { getBookingAccessToken, saveBookingAccessToken } from './booking-tokens';
 import { getSupabaseClient, SupabaseTables } from './supabase';
 import { mapBooking, sortBookings, type BookingRow } from './supabase-mappers';
+
+const BOOKING_SELECT =
+  'id, provider_id, service_id, status, customer_name, phone, address, appointment_date, appointment_time, note, service_price_chf, service_fee_chf, total_chf, customer_id, created_at, updated_at';
 
 export type DataSource = 'supabase' | 'mock';
 
@@ -91,9 +96,17 @@ function generateMockId(): string {
   return `booking-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
 }
 
-function buildBookingFromInput(id: string, input: CreateBookingInput, timestamps?: { createdAt: string; updatedAt: string }): Booking {
+function buildBookingFromInput(
+  id: string,
+  input: CreateBookingInput,
+  options?: {
+    accessToken?: string;
+    customerId?: string;
+    timestamps?: { createdAt: string; updatedAt: string };
+  }
+): Booking {
   const { serviceFeeChf, totalChf } = calculateBookingTotal(input.service.priceChf);
-  const now = timestamps?.createdAt ?? new Date().toISOString();
+  const now = options?.timestamps?.createdAt ?? new Date().toISOString();
   const appointmentDate =
     parseSwissDateToIso(input.appointmentDate) ?? input.appointmentDate.trim();
 
@@ -111,8 +124,10 @@ function buildBookingFromInput(id: string, input: CreateBookingInput, timestamps
     servicePriceChf: input.service.priceChf,
     serviceFeeChf,
     totalChf,
+    customerId: options?.customerId,
+    accessToken: options?.accessToken,
     createdAt: now,
-    updatedAt: timestamps?.updatedAt ?? now,
+    updatedAt: options?.timestamps?.updatedAt ?? now,
   };
 }
 
@@ -129,9 +144,7 @@ export async function listBookings(): Promise<BookingsLoadResult> {
   try {
     const { data, error } = await client
       .from(SupabaseTables.bookings)
-      .select(
-        'id, provider_id, service_id, status, customer_name, phone, address, appointment_date, appointment_time, note, service_price_chf, service_fee_chf, total_chf, created_at, updated_at'
-      )
+      .select(BOOKING_SELECT)
       .order('appointment_date', { ascending: false })
       .order('appointment_time', { ascending: false });
 
@@ -164,9 +177,7 @@ export async function getBookingById(id: string): Promise<BookingLoadResult> {
   try {
     const { data, error } = await client
       .from(SupabaseTables.bookings)
-      .select(
-        'id, provider_id, service_id, status, customer_name, phone, address, appointment_date, appointment_time, note, service_price_chf, service_fee_chf, total_chf, created_at, updated_at'
-      )
+      .select(BOOKING_SELECT)
       .eq('id', id)
       .maybeSingle();
 
@@ -174,17 +185,71 @@ export async function getBookingById(id: string): Promise<BookingLoadResult> {
       throw error;
     }
 
-    if (!data) {
-      const booking = mockBookings.find((b) => b.id === id);
-      return { booking, source: booking ? 'mock' : 'supabase' };
+    if (data) {
+      return { booking: mapBooking(data as BookingRow), source: 'supabase' };
     }
 
-    return { booking: mapBooking(data as BookingRow), source: 'supabase' };
+    const accessToken = await getBookingAccessToken(id);
+    if (accessToken) {
+      const guest = await fetchGuestBookingViaRpc(id, accessToken);
+      if (guest) {
+        cacheGuestBooking(guest);
+        return { booking: guest, source: 'supabase' };
+      }
+    }
+
+    const booking = mockBookings.find((b) => b.id === id);
+    return { booking, source: booking ? 'mock' : 'supabase' };
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Buchung konnte nicht geladen werden.';
     console.warn('[barbergo] getBookingById fallback:', message);
     const booking = mockBookings.find((b) => b.id === id);
     return { booking, source: 'mock', error: message };
+  }
+}
+
+async function fetchGuestBookingViaRpc(
+  bookingId: string,
+  accessToken: string
+): Promise<Booking | undefined> {
+  const client = getSupabaseClient();
+  if (!client) return undefined;
+
+  const { data, error } = await client.rpc('get_guest_booking', {
+    p_booking_id: bookingId,
+    p_access_token: accessToken,
+  });
+
+  if (error || !data) {
+    return undefined;
+  }
+
+  const row = (Array.isArray(data) ? data[0] : data) as BookingRow | undefined;
+  return row ? mapBooking(row) : undefined;
+}
+
+export async function listCustomerBookings(): Promise<BookingsLoadResult> {
+  const client = getSupabaseClient();
+  if (!client) {
+    return { bookings: [], source: 'mock', error: 'Supabase ist nicht konfiguriert.' };
+  }
+
+  try {
+    const { data, error } = await client
+      .from(SupabaseTables.bookings)
+      .select(BOOKING_SELECT)
+      .order('appointment_date', { ascending: false })
+      .order('appointment_time', { ascending: false });
+
+    if (error) {
+      throw error;
+    }
+
+    const rows = (data ?? []) as BookingRow[];
+    return { bookings: sortBookings(rows.map(mapBooking)), source: 'supabase' };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Termine konnten nicht geladen werden.';
+    return { bookings: [], source: 'supabase', error: message };
   }
 }
 
@@ -197,9 +262,10 @@ export type CreateBookingInput = {
   appointmentDate: string;
   appointmentTime: string;
   note?: string;
+  customerId?: string;
 };
 
-function buildBookingPayload(input: CreateBookingInput) {
+function buildBookingPayload(input: CreateBookingInput, options: { accessToken?: string }) {
   const { serviceFeeChf, totalChf } = calculateBookingTotal(input.service.priceChf);
   const appointmentDate =
     parseSwissDateToIso(input.appointmentDate) ?? input.appointmentDate.trim();
@@ -217,11 +283,15 @@ function buildBookingPayload(input: CreateBookingInput) {
     service_price_chf: input.service.priceChf,
     service_fee_chf: serviceFeeChf,
     total_chf: totalChf,
+    customer_id: input.customerId ?? null,
+    access_token: options.accessToken ?? null,
   };
 }
 
 function buildMockBooking(input: CreateBookingInput): Booking {
-  const booking = buildBookingFromInput(generateMockId(), input);
+  const booking = buildBookingFromInput(generateMockId(), input, {
+    customerId: input.customerId,
+  });
   mockBookings.unshift(booking);
   return booking;
 }
@@ -253,26 +323,124 @@ export async function createBooking(input: CreateBookingInput): Promise<BookingM
 
   try {
     const id = generateUuid();
-    const payload = { id, ...buildBookingPayload(input) };
-    // RLS 0003: anon may INSERT but not SELECT — do not chain .select() here.
-    const { error } = await client.from(SupabaseTables.bookings).insert(payload);
+    const isGuest = !input.customerId;
+    const accessToken = isGuest ? generateAccessToken() : undefined;
+    const payload = {
+      id,
+      ...buildBookingPayload(input, { accessToken }),
+    };
 
+    const { error } = await client.from(SupabaseTables.bookings).insert(payload);
     if (error) {
       throw error;
     }
 
-    const booking = buildBookingFromInput(id, input);
-    cacheGuestBooking(booking);
+    const booking = buildBookingFromInput(id, input, {
+      accessToken,
+      customerId: input.customerId,
+    });
+
+    if (isGuest && accessToken) {
+      await saveBookingAccessToken(id, accessToken);
+      cacheGuestBooking(booking);
+    }
+
     return { booking, source: 'supabase' };
   } catch (err) {
     const classified = classifySupabaseError(err);
     const message =
       classified.reason === 'rls_denied'
-        ? 'Buchung wurde blockiert (RLS). Prüfe Migration 0003 und anon INSERT auf bookings.'
+        ? 'Buchung wurde blockiert (RLS). Prüfe Migration 0004 in Supabase.'
         : classified.detail || 'Buchung konnte nicht gespeichert werden.';
     console.warn('[barbergo] createBooking failed:', message);
     return { source: 'mock', error: message };
   }
+}
+
+export async function cancelCustomerBooking(id: string): Promise<BookingMutationResult> {
+  const cached = getCachedGuestBooking(id);
+  const client = getSupabaseClient();
+
+  if (!client) {
+    const booking = mockBookings.find((b) => b.id === id) ?? cached;
+    if (!booking) {
+      return { source: 'mock', error: 'Buchung nicht gefunden.' };
+    }
+    if (!canCancelBooking(booking)) {
+      return { source: 'mock', error: cancelBookingBlockedReason(booking) };
+    }
+    booking.status = 'cancelled';
+    booking.updatedAt = new Date().toISOString();
+    cacheGuestBooking(booking);
+    return { booking: { ...booking }, source: 'mock' };
+  }
+
+  const existing =
+    cached ??
+    (await getBookingById(id)).booking ??
+    mockBookings.find((b) => b.id === id);
+
+  if (!existing) {
+    return { source: 'supabase', error: 'Buchung nicht gefunden.' };
+  }
+
+  if (!canCancelBooking(existing)) {
+    return { source: 'supabase', error: cancelBookingBlockedReason(existing) };
+  }
+
+  if (existing.customerId) {
+    const { error } = await client
+      .from(SupabaseTables.bookings)
+      .update({ status: 'cancelled' })
+      .eq('id', id);
+
+    if (error) {
+      return { source: 'supabase', error: error.message };
+    }
+
+    const updated = { ...existing, status: 'cancelled' as const, updatedAt: new Date().toISOString() };
+    return { booking: updated, source: 'supabase' };
+  }
+
+  return cancelGuestBooking(id);
+}
+
+export async function cancelGuestBooking(id: string): Promise<BookingMutationResult> {
+  const cached = getCachedGuestBooking(id);
+  const accessToken = cached?.accessToken ?? (await getBookingAccessToken(id));
+
+  if (!accessToken) {
+    return { source: 'supabase', error: 'Zugriffstoken für diese Buchung fehlt.' };
+  }
+
+  const existing = cached ?? (await fetchGuestBookingViaRpc(id, accessToken));
+  if (!existing) {
+    return { source: 'supabase', error: 'Buchung nicht gefunden.' };
+  }
+
+  if (!canCancelBooking(existing)) {
+    return { source: 'supabase', error: cancelBookingBlockedReason(existing) };
+  }
+
+  const client = getSupabaseClient();
+  if (!client) {
+    const updated = { ...existing, status: 'cancelled' as const, updatedAt: new Date().toISOString() };
+    cacheGuestBooking(updated);
+    return { booking: updated, source: 'mock' };
+  }
+
+  const { error } = await client.rpc('cancel_guest_booking', {
+    p_booking_id: id,
+    p_access_token: accessToken,
+  });
+
+  if (error) {
+    return { source: 'supabase', error: error.message };
+  }
+
+  const updated = { ...existing, status: 'cancelled' as const, updatedAt: new Date().toISOString() };
+  cacheGuestBooking(updated);
+  return { booking: updated, source: 'supabase' };
 }
 
 export async function updateBookingStatus(
@@ -295,9 +463,7 @@ export async function updateBookingStatus(
       .from(SupabaseTables.bookings)
       .update({ status })
       .eq('id', id)
-      .select(
-        'id, provider_id, service_id, status, customer_name, phone, address, appointment_date, appointment_time, note, service_price_chf, service_fee_chf, total_chf, created_at, updated_at'
-      )
+      .select(BOOKING_SELECT)
       .single();
 
     if (error) {
@@ -320,3 +486,5 @@ export async function updateBookingStatus(
     return { source: 'mock', error: message };
   }
 }
+
+export { canCancelBooking, cancelBookingBlockedReason };

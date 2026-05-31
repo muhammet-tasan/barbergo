@@ -8,6 +8,7 @@
 - [x] Expo + TypeScript + Expo Router + NativeWind
 - [x] Home screen (rollenbasierte CTAs: Gast / Kunde / Barber)
 - [x] Unified login `/login` + Header Anmelden/Abmelden
+- [x] Customer register `/register` + Phase 2 bookings (`0004`, Storno, Meine Termine)
 - [x] Barber profile screen
 - [x] Service selection screen
 - [x] Booking form + validation
@@ -58,7 +59,8 @@ Detailliertes Feature Backlog, Phasen und offene Produktentscheidungen: **[docs/
 Kurzüberblick (priorisiert nach Product Roadmap — siehe Tabellen dort):
 
 - [ ] Phase 1: Datenmodell (`profiles`, `customer_id`, Booking-Access-Token) + RLS Go-live
-- [ ] Phase 2: Kunden-Buchungen aus Supabase (`customer_id` + RLS) — `/customer/bookings` zeigt vorerst nur Geräte-Buchungen
+- [ ] Apply migration **`0004_customer_profiles_and_booking_access.sql`** on hosted Supabase
+- [ ] Manual E2E Phase 2: register customer → book → Meine Termine → Storno; guest book → device list
 - [ ] Phase 3: Barber-Profil bearbeiten, Avatar, modernes Profil (Card-UI)
 - [ ] Phase 4: Kalender/Tagesansicht, Verfügbarkeit, Services in App pflegen
 - [ ] Phase 5: Bewertungen + Durchschnitt auf Profil

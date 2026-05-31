@@ -8,17 +8,20 @@ import { AppInput } from '@/components/AppInput';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { colors } from '@/constants/theme';
 import { useAuth } from '@/contexts/auth-context';
-import { getPostLoginPath } from '@/services/auth-roles';
 import { getCurrentSession } from '@/services/auth';
+import { getPostLoginPath } from '@/services/auth-roles';
 
-export default function LoginScreen() {
+export default function RegisterScreen() {
   const router = useRouter();
-  const { signIn, loading: authLoading, isAuthenticated, postLoginPath } = useAuth();
+  const { signUp, loading: authLoading, isAuthenticated, postLoginPath } = useAuth();
+  const [displayName, setDisplayName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [nameError, setNameError] = useState<string | undefined>();
   const [emailError, setEmailError] = useState<string | undefined>();
   const [passwordError, setPasswordError] = useState<string | undefined>();
-  const [authError, setAuthError] = useState<string | undefined>();
+  const [formError, setFormError] = useState<string | undefined>();
+  const [successMessage, setSuccessMessage] = useState<string | undefined>();
   const [submitting, setSubmitting] = useState(false);
 
   if (authLoading) {
@@ -34,31 +37,44 @@ export default function LoginScreen() {
   }
 
   const handleSubmit = async () => {
+    setNameError(undefined);
     setEmailError(undefined);
     setPasswordError(undefined);
-    setAuthError(undefined);
+    setFormError(undefined);
+    setSuccessMessage(undefined);
 
     let hasError = false;
+    if (!displayName.trim()) {
+      setNameError('Name ist erforderlich');
+      hasError = true;
+    }
     if (!email.trim()) {
       setEmailError('E-Mail ist erforderlich');
       hasError = true;
     }
-    if (!password) {
-      setPasswordError('Passwort ist erforderlich');
+    if (password.length < 6) {
+      setPasswordError('Mindestens 6 Zeichen');
       hasError = true;
     }
     if (hasError) return;
 
     setSubmitting(true);
     try {
-      const result = await signIn(email, password);
+      const result = await signUp({ email, password, displayName: displayName.trim() });
       if (result.error) {
-        setAuthError(result.error);
+        setFormError(result.error);
         return;
       }
 
       const session = await getCurrentSession();
-      router.replace(getPostLoginPath(session));
+      if (session) {
+        router.replace(getPostLoginPath(session));
+        return;
+      }
+
+      setSuccessMessage(
+        'Konto erstellt. Falls E-Mail-Bestätigung aktiv ist, bestätige deine E-Mail und melde dich an.'
+      );
     } finally {
       setSubmitting(false);
     }
@@ -66,7 +82,7 @@ export default function LoginScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-brand-dark" edges={['top']}>
-      <ScreenHeader title="Anmelden" onBack={() => router.replace('/')} showAuthAction={false} />
+      <ScreenHeader title="Registrieren" onBack={() => router.replace('/')} showAuthAction={false} />
       <KeyboardAvoidingView
         className="flex-1"
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -77,46 +93,48 @@ export default function LoginScreen() {
           keyboardShouldPersistTaps="handled"
         >
           <Text className="text-slate-400 mb-6">
-            Melde dich als Kunde oder Barber an. Accounts werden in Supabase angelegt — Rolle
-            über Benutzer-Metadaten (`customer` oder `barber`).
+            Erstelle ein Kundenkonto für „Meine Termine“ und Stornierungen.
           </Text>
 
           <AppInput
+            label="Dein Name"
+            value={displayName}
+            onChangeText={setDisplayName}
+            error={nameError}
+            autoCapitalize="words"
+          />
+          <AppInput
             label="E-Mail"
             value={email}
-            onChangeText={(value) => {
-              setEmail(value);
-              setAuthError(undefined);
-            }}
+            onChangeText={setEmail}
             error={emailError}
             autoCapitalize="none"
-            autoComplete="email"
             keyboardType="email-address"
-            textContentType="emailAddress"
           />
           <AppInput
             label="Passwort"
             value={password}
-            onChangeText={(value) => {
-              setPassword(value);
-              setAuthError(undefined);
-            }}
+            onChangeText={setPassword}
             error={passwordError}
             secureTextEntry
-            autoComplete="password"
-            textContentType="password"
           />
 
-          {authError ? (
+          {formError ? (
             <View className="mb-4 rounded-lg border border-red-500/50 bg-red-950/40 px-3 py-2">
-              <Text className="text-red-300 text-sm">{authError}</Text>
+              <Text className="text-red-300 text-sm">{formError}</Text>
             </View>
           ) : null}
 
-          <AppButton label="Anmelden" onPress={handleSubmit} loading={submitting} />
+          {successMessage ? (
+            <View className="mb-4 rounded-lg border border-emerald-500/50 bg-emerald-950/40 px-3 py-2">
+              <Text className="text-emerald-200 text-sm">{successMessage}</Text>
+            </View>
+          ) : null}
 
-          <Pressable onPress={() => router.push('/register')} className="mt-4 items-center py-2">
-            <Text className="text-brand-gold text-sm">Noch kein Konto? Registrieren</Text>
+          <AppButton label="Konto erstellen" onPress={handleSubmit} loading={submitting} />
+
+          <Pressable onPress={() => router.push('/login')} className="mt-6 items-center py-2">
+            <Text className="text-brand-gold text-sm">Bereits ein Konto? Anmelden</Text>
           </Pressable>
         </ScrollView>
       </KeyboardAvoidingView>

@@ -10,7 +10,8 @@ Supabase is the MVP backend for barbergo. The mobile app uses Supabase when
 3. Run migrations in order:
    - **`migrations/0001_initial_schema.sql`** — tables + base RLS
    - **`seed.sql`** — demo barber + services (Basel)
-   - **`migrations/0003_bookings_auth_rls.sql`** — **secure baseline** (guest book only; admin read/update needs login)
+   - **`migrations/0003_bookings_auth_rls.sql`** — secure baseline (guest insert; barber read/update)
+   - **`migrations/0004_customer_profiles_and_booking_access.sql`** — Phase 2: profiles, `customer_id`, guest `access_token`, customer RLS
 4. Copy `apps/mobile/.env.example` → `apps/mobile/.env`.
 5. Fill `EXPO_PUBLIC_SUPABASE_URL` and `EXPO_PUBLIC_SUPABASE_ANON_KEY`.
 6. Keep **`EXPO_PUBLIC_ADMIN_AUTH_REQUIRED=true`** (default in `.env.example`).
@@ -28,6 +29,7 @@ Run **three separate executions** (or paste each file in full):
 | 1 | `supabase/migrations/0001_initial_schema.sql` | Schema + RLS on `providers`, `services`, `bookings` |
 | 2 | `supabase/seed.sql` | Demo provider + 4 services |
 | 3 | `supabase/migrations/0003_bookings_auth_rls.sql` | Remove anon booking read/update; keep anon **insert** (`pending` only) |
+| 4 | `supabase/migrations/0004_customer_profiles_and_booking_access.sql` | Profiles, customer bookings, guest access token, barber-only admin RLS |
 
 **Do not run `0003` before `0001`.** `0003` is idempotent and removes any prior demo policies from `0002_*` if they were applied earlier.
 
@@ -70,4 +72,4 @@ The app includes `/admin/login` (E-Mail + Passwort).
 - Never put a Supabase **service role** key in the mobile app.
 
 See also `docs/pre-launch-checklist.md` before any public release.
-
+

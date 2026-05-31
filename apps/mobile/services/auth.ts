@@ -32,6 +32,36 @@ export async function signInWithEmail(email: string, password: string): Promise<
   return {};
 }
 
+export type SignUpInput = {
+  email: string;
+  password: string;
+  displayName?: string;
+};
+
+export async function signUpWithEmail(input: SignUpInput): Promise<AuthResult> {
+  const client = getSupabaseClient();
+  if (!client) {
+    return { error: 'Supabase ist nicht konfiguriert.' };
+  }
+
+  const { error } = await client.auth.signUp({
+    email: input.email.trim(),
+    password: input.password,
+    options: {
+      data: {
+        role: 'customer',
+        display_name: input.displayName?.trim() || undefined,
+      },
+    },
+  });
+
+  if (error) {
+    return { error: 'Registrierung fehlgeschlagen. E-Mail bereits vergeben?' };
+  }
+
+  return {};
+}
+
 export async function signInWithMagicLink(email: string): Promise<AuthResult> {
   const client = getSupabaseClient();
   if (!client) {

@@ -66,6 +66,7 @@ if (serviceError || !service) {
 }
 
 const bookingId = randomUUID();
+const accessToken = randomUUID().replace(/-/g, '');
 const { error: insertError } = await client.from('bookings').insert({
   id: bookingId,
   provider_id: provider.id,
@@ -79,6 +80,7 @@ const { error: insertError } = await client.from('bookings').insert({
   service_price_chf: service.price_chf,
   service_fee_chf: 1,
   total_chf: Number(service.price_chf) + 1,
+  access_token: accessToken,
 });
 
 if (insertError) {

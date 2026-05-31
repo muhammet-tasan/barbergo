@@ -15,7 +15,7 @@ import {
   isCustomerRole,
   type UserRole,
 } from '@/services/auth-roles';
-import { signInWithEmail, signOut as authSignOut, type AuthResult } from '@/services/auth';
+import { signInWithEmail, signOut as authSignOut, signUpWithEmail, type AuthResult, type SignUpInput } from '@/services/auth';
 import { getSupabaseClient, isAdminAuthRequired, type Session } from '@/services/supabase';
 
 type AuthContextValue = {
@@ -28,6 +28,7 @@ type AuthContextValue = {
   isAuthenticated: boolean;
   postLoginPath: '/' | '/admin';
   signIn: (email: string, password: string) => Promise<AuthResult>;
+  signUp: (input: SignUpInput) => Promise<AuthResult>;
   signOut: () => Promise<AuthResult>;
 };
 
@@ -63,6 +64,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return signInWithEmail(email, password);
   }, []);
 
+  const signUp = useCallback(async (input: SignUpInput) => {
+    return signUpWithEmail(input);
+  }, []);
+
   const signOut = useCallback(async () => {
     const result = await authSignOut();
     if (!result.error) {
@@ -84,9 +89,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isAuthenticated: Boolean(session),
       postLoginPath: getPostLoginPath(session),
       signIn,
+      signUp,
       signOut,
     }),
-    [session, role, loading, signIn, signOut]
+    [session, role, loading, signIn, signUp, signOut]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

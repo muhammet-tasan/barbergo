@@ -71,8 +71,21 @@ A home-visit appointment request.
 | `service_price_chf` | number | Snapshot at booking time |
 | `service_fee_chf` | number | MVP: 1 CHF platform fee |
 | `total_chf` | number | service + fee |
+| `customer_id` | UUID? | FK → `auth.users` when logged-in customer books |
+| `access_token` | string? | Guest booking access (hashed in app storage locally) |
 | `created_at` | timestamp | |
 | `updated_at` | timestamp | |
+
+## Profiles (Phase 2)
+
+| Field | Type | Notes |
+|-------|------|--------|
+| `id` | UUID | PK, FK → `auth.users` |
+| `role` | `customer` \| `barber` \| `admin` | Drives RLS |
+| `display_name` | string? | |
+| `created_at` | timestamp | |
+
+Auto-created on signup via trigger `handle_new_user`. Barber users: set `user_metadata.role` to `barber`.
 
 **Relations**
 
