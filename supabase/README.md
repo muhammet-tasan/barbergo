@@ -48,11 +48,19 @@ Legacy file `0002_bookings_anon_mvp_policies.sql` is equivalent to older docs �
 
 ## Barber admin login
 
-The app includes `/admin/login` (E-Mail + Passwort).
+The app includes `/login` (E-Mail + Passwort).
 
-1. Create a barber user in Supabase Auth.
+1. Create a barber user in Supabase Auth (User Metadata optional: `{ "role": "barber" }`).
 2. `EXPO_PUBLIC_ADMIN_AUTH_REQUIRED=true` blocks `/admin` without login (when Supabase is configured).
-3. With **`0003`** applied, RLS also blocks anon read/update on `bookings`; customers can still book as anon.
+3. With **`0003`** + **`0004`** applied, RLS enforces roles; customers can still book as anon or logged in.
+
+### Customer registration (E-Mail)
+
+By default Supabase sends a **confirmation e-mail**; the user appears under **Authentication → Users** (often as „Waiting for verification“) and cannot log in until confirmed.
+
+**For local testing:** Supabase Dashboard → **Authentication** → **Providers** → **Email** → disable **Confirm email**.
+
+After confirmation (or with confirm off), a row is created in **`public.profiles`** via trigger.
 
 ## Troubleshooting
 

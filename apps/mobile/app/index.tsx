@@ -42,7 +42,11 @@ export default function HomeScreen() {
           ) : (
             <>
               <AppButton label="Termin buchen" onPress={() => router.push('/barber')} />
-              <AppButton label="Anmelden" variant="secondary" onPress={() => router.push('/login')} />
+              <AppButton
+                label="Meine Termine"
+                variant="secondary"
+                onPress={() => router.push('/guest/bookings')}
+              />
             </>
           )}
         </View>

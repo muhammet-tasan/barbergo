@@ -82,14 +82,36 @@ function cacheGuestBooking(booking: Booking): void {
   void persistGuestBookings();
 }
 
+async function syncBookingToLocalCache(booking: Booking): Promise<void> {
+  const hasToken = Boolean(booking.accessToken) || Boolean(await getBookingAccessToken(booking.id));
+  if (guestBookingCache.has(booking.id) || hasToken) {
+    cacheGuestBooking(booking);
+  }
+}
+
 function getCachedGuestBooking(id: string): Booking | undefined {
   return guestBookingCache.get(id);
 }
 
-/** Bookings created on this device (guest flow under RLS 0003). */
+/** Bookings created on this device (guest flow). Refreshes status from Supabase when possible. */
 export async function listLocalGuestBookings(): Promise<Booking[]> {
   await ensureGuestBookingsHydrated();
-  return sortBookings([...guestBookingCache.values()]);
+  const local = [...guestBookingCache.values()];
+
+  const refreshed = await Promise.all(
+    local.map(async (booking) => {
+      const token = booking.accessToken ?? (await getBookingAccessToken(booking.id));
+      if (!token) return booking;
+      const fresh = await fetchGuestBookingViaRpc(booking.id, token);
+      if (fresh) {
+        cacheGuestBooking(fresh);
+        return fresh;
+      }
+      return booking;
+    })
+  );
+
+  return sortBookings(refreshed);
 }
 
 function generateMockId(): string {
@@ -163,13 +185,11 @@ export async function listBookings(): Promise<BookingsLoadResult> {
 
 export async function getBookingById(id: string): Promise<BookingLoadResult> {
   await ensureGuestBookingsHydrated();
-  const cached = getCachedGuestBooking(id);
-  if (cached) {
-    return { booking: cached, source: 'supabase' };
-  }
 
   const client = getSupabaseClient();
   if (!client) {
+    const cached = getCachedGuestBooking(id);
+    if (cached) return { booking: cached, source: 'supabase' };
     const booking = mockBookings.find((b) => b.id === id);
     return { booking, source: 'mock' };
   }
@@ -186,10 +206,16 @@ export async function getBookingById(id: string): Promise<BookingLoadResult> {
     }
 
     if (data) {
-      return { booking: mapBooking(data as BookingRow), source: 'supabase' };
+      const booking = mapBooking(data as BookingRow);
+      const token = await getBookingAccessToken(id);
+      if (token || getCachedGuestBooking(id)) {
+        cacheGuestBooking(booking);
+      }
+      return { booking, source: 'supabase' };
     }
 
-    const accessToken = await getBookingAccessToken(id);
+    const accessToken =
+      getCachedGuestBooking(id)?.accessToken ?? (await getBookingAccessToken(id));
     if (accessToken) {
       const guest = await fetchGuestBookingViaRpc(id, accessToken);
       if (guest) {
@@ -198,11 +224,22 @@ export async function getBookingById(id: string): Promise<BookingLoadResult> {
       }
     }
 
+    const cached = getCachedGuestBooking(id);
+    if (cached) {
+      return { booking: cached, source: 'supabase' };
+    }
+
     const booking = mockBookings.find((b) => b.id === id);
     return { booking, source: booking ? 'mock' : 'supabase' };
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Buchung konnte nicht geladen werden.';
     console.warn('[barbergo] getBookingById fallback:', message);
+
+    const cached = getCachedGuestBooking(id);
+    if (cached) {
+      return { booking: cached, source: 'supabase', error: message };
+    }
+
     const booking = mockBookings.find((b) => b.id === id);
     return { booking, source: 'mock', error: message };
   }
@@ -399,6 +436,7 @@ export async function cancelCustomerBooking(id: string): Promise<BookingMutation
     }
 
     const updated = { ...existing, status: 'cancelled' as const, updatedAt: new Date().toISOString() };
+    await syncBookingToLocalCache(updated);
     return { booking: updated, source: 'supabase' };
   }
 
@@ -470,7 +508,9 @@ export async function updateBookingStatus(
       throw error;
     }
 
-    return { booking: mapBooking(data as BookingRow), source: 'supabase' };
+    const booking = mapBooking(data as BookingRow);
+    await syncBookingToLocalCache(booking);
+    return { booking, source: 'supabase' };
   } catch (err) {
     const message =
       err instanceof Error ? err.message : 'Status konnte nicht aktualisiert werden.';

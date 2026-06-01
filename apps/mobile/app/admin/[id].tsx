@@ -9,8 +9,8 @@ import { ScreenHeader } from '@/components/ScreenHeader';
 import { StatusBadge } from '@/components/StatusBadge';
 import { formatChf } from '@/constants/pricing';
 import { colors } from '@/constants/theme';
+import { useAuth } from '@/contexts/auth-context';
 import { useBooking } from '@/hooks/use-booking';
-import { useSession } from '@/hooks/use-session';
 import { useServices } from '@/hooks/use-services';
 import { getServiceById, updateBookingStatus } from '@/services/bookings';
 import { openAddressInMaps } from '@/services/maps';
@@ -37,7 +37,7 @@ function DetailRow({ label, value }: { label: string; value: string }) {
 export default function AdminBookingDetailScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { session, loading: sessionLoading } = useSession();
+  const { session, loading: sessionLoading } = useAuth();
   const { booking, loading, setBooking } = useBooking(id);
   const { services, loading: servicesLoading } = useServices();
   const service = useMemo(
@@ -61,7 +61,7 @@ export default function AdminBookingDetailScreen() {
         <ScreenHeader title="Buchungsdetails" />
         <View className="flex-1 px-6 justify-center">
           <Text className="text-white text-center mb-4">Bitte zuerst als Admin anmelden.</Text>
-          <AppButton label="Zum Login" onPress={() => router.replace('/admin/login')} />
+          <AppButton label="Zum Login" onPress={() => router.replace('/login')} />
         </View>
       </SafeAreaView>
     );

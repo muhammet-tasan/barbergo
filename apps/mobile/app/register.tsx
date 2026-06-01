@@ -66,15 +66,21 @@ export default function RegisterScreen() {
         return;
       }
 
+      if (result.needsEmailConfirmation) {
+        setSuccessMessage(
+          'Konto angelegt. Bitte bestätige deine E-Mail (Link von Supabase) und melde dich danach an. ' +
+            'Tipp für Tests: Supabase → Authentication → Providers → Email → „Confirm email“ deaktivieren.'
+        );
+        return;
+      }
+
       const session = await getCurrentSession();
       if (session) {
         router.replace(getPostLoginPath(session));
         return;
       }
 
-      setSuccessMessage(
-        'Konto erstellt. Falls E-Mail-Bestätigung aktiv ist, bestätige deine E-Mail und melde dich an.'
-      );
+      setFormError('Registrierung ohne Session — bitte erneut anmelden.');
     } finally {
       setSubmitting(false);
     }

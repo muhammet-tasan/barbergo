@@ -4,6 +4,8 @@ import { getSupabaseClient } from './supabase';
 
 export type AuthResult = {
   error?: string;
+  /** True when Supabase requires e-mail confirmation before login (no session yet). */
+  needsEmailConfirmation?: boolean;
 };
 
 export async function getCurrentSession(): Promise<Session | null> {
@@ -44,7 +46,7 @@ export async function signUpWithEmail(input: SignUpInput): Promise<AuthResult> {
     return { error: 'Supabase ist nicht konfiguriert.' };
   }
 
-  const { error } = await client.auth.signUp({
+  const { data, error } = await client.auth.signUp({
     email: input.email.trim(),
     password: input.password,
     options: {
@@ -57,6 +59,10 @@ export async function signUpWithEmail(input: SignUpInput): Promise<AuthResult> {
 
   if (error) {
     return { error: 'Registrierung fehlgeschlagen. E-Mail bereits vergeben?' };
+  }
+
+  if (!data.session) {
+    return { needsEmailConfirmation: true };
   }
 
   return {};
