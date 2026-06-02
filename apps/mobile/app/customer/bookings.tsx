@@ -42,17 +42,17 @@ function BookingCard({
     <AppCard className="mb-3">
       <Pressable onPress={onOpen} className="active:opacity-90">
         <View className="flex-row justify-between items-start mb-2">
-          <Text className="text-white font-semibold text-base flex-1">{serviceName}</Text>
+          <Text className="text-brand-text font-semibold text-base flex-1">{serviceName}</Text>
           <StatusBadge status={booking.status} />
         </View>
-        <Text className="text-slate-400 text-sm">
+        <Text className="text-brand-muted text-sm">
           {formatSwissDate(booking.appointmentDate)} · {booking.appointmentTime}
         </Text>
-        <Text className="text-slate-400 text-sm mt-1">{booking.address}</Text>
+        <Text className="text-brand-muted text-sm mt-1">{booking.address}</Text>
         <Text className="text-brand-gold font-medium mt-2">{formatChf(booking.totalChf)}</Text>
       </Pressable>
       {booking.status === 'pending' || booking.status === 'confirmed' ? (
-        <View className="mt-3 pt-3 border-t border-slate-700">
+        <View className="mt-3 pt-3 border-t border-brand-border">
           <AppButton
             label="Termin stornieren"
             variant="secondary"
@@ -61,7 +61,7 @@ function BookingCard({
             disabled={!cancelAllowed}
           />
           {!cancelAllowed ? (
-            <Text className="text-slate-500 text-xs mt-2">{cancelBookingBlockedReason(booking)}</Text>
+            <Text className="text-brand-muted text-xs mt-2">{cancelBookingBlockedReason(booking)}</Text>
           ) : null}
         </View>
       ) : null}
@@ -159,14 +159,14 @@ export default function CustomerBookingsScreen() {
 
           {!hasAny ? (
             <AppCard>
-              <Text className="text-slate-300 text-center mb-4">Noch keine Termine.</Text>
+              <Text className="text-brand-muted text-center mb-4">Noch keine Termine.</Text>
               <AppButton label="Termin buchen" onPress={() => router.push('/barber')} />
             </AppCard>
           ) : null}
 
           {accountBookings.length > 0 ? (
             <>
-              <Text className="text-white font-semibold mb-3">Dein Konto</Text>
+              <Text className="text-brand-text font-semibold mb-3">Dein Konto</Text>
               {accountBookings.map((booking) => {
                 const service = getServiceById(booking.serviceId, services);
                 return (
@@ -190,8 +190,8 @@ export default function CustomerBookingsScreen() {
 
           {deviceBookings.length > 0 ? (
             <>
-              <Text className="text-white font-semibold mb-3 mt-4">Von diesem Gerät (Gast)</Text>
-              <Text className="text-slate-500 text-xs mb-3">
+              <Text className="text-brand-text font-semibold mb-3 mt-4">Von diesem Gerät (Gast)</Text>
+              <Text className="text-brand-muted text-xs mb-3">
                 Gastbuchungen ohne Konto — nur auf diesem Gerät sichtbar.
               </Text>
               {deviceBookings.map((booking) => {

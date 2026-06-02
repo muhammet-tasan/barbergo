@@ -15,6 +15,7 @@
 - [x] Booking confirmation + WhatsApp deeplink
 - [x] Admin booking list + detail (Maps + WhatsApp)
 - [x] Reusable UI components (cards, inputs, badges)
+- [x] Branding tokens + `docs/branding.md` (Tailwind `brand-*`, Expo splash/icon colors)
 - [x] Mock data + pricing constants (`constants/pricing.ts`)
 - [x] German app language for visible UI and WhatsApp messages
 - [x] Async data hooks for provider, services, and bookings
@@ -61,7 +62,7 @@ Kurzüberblick (priorisiert nach Product Roadmap — siehe Tabellen dort):
 - [ ] Phase 1: Datenmodell (`profiles`, `customer_id`, Booking-Access-Token) + RLS Go-live
 - [ ] Apply migration **`0004_customer_profiles_and_booking_access.sql`** on hosted Supabase
 - [ ] Manual E2E Phase 2: register customer → book → Meine Termine → Storno; guest book → device list
-- [ ] Phase 3: Barber-Profil bearbeiten, Avatar, modernes Profil (Card-UI)
+- [ ] Phase 3: Barber-Profil bearbeiten, Avatar, modernes Profil (Card-UI); custom app icon / splash assets per `docs/branding.md`
 - [ ] Phase 4: Kalender/Tagesansicht, Verfügbarkeit, Services in App pflegen
 - [ ] Phase 5: Bewertungen + Durchschnitt auf Profil
 - [ ] Phase 6 / später: Push, Zahlung (TWINT/Stripe), Multi-Barber, Admin-Web, Chat

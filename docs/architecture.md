@@ -90,6 +90,7 @@ Documented only — **do not implement yet.**
 
 ## Related docs
 
+- [branding.md](./branding.md) — colors, assets, UI rules
 - [data-model.md](./data-model.md) — entities and fields
 - [product-roadmap.md](./product-roadmap.md) — feature backlog, phases, product decisions (does not override stack choices here)
 - [setup-notes.md](./setup-notes.md) — stack choices in more detail

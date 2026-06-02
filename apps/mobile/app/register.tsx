@@ -100,7 +100,7 @@ export default function RegisterScreen() {
           contentContainerClassName="pb-8"
           keyboardShouldPersistTaps="handled"
         >
-          <Text className="text-slate-400 mb-6">
+          <Text className="text-brand-muted mb-6">
             Erstelle ein Kundenkonto für „Meine Termine“ und Stornierungen.
           </Text>
 
@@ -136,14 +136,14 @@ export default function RegisterScreen() {
             />
 
             {formError ? (
-              <View className="mb-4 rounded-lg border border-red-500/50 bg-red-950/40 px-3 py-2">
-                <Text className="text-red-300 text-sm">{formError}</Text>
+              <View className="mb-4 rounded-lg border border-error/50 bg-error/10 px-3 py-2">
+                <Text className="text-error text-sm">{formError}</Text>
               </View>
             ) : null}
 
             {successMessage ? (
-              <View className="mb-4 rounded-lg border border-emerald-500/50 bg-emerald-950/40 px-3 py-2">
-                <Text className="text-emerald-200 text-sm">{successMessage}</Text>
+              <View className="mb-4 rounded-lg border border-success/50 bg-success/10 px-3 py-2">
+                <Text className="text-success text-sm">{successMessage}</Text>
               </View>
             ) : null}
 

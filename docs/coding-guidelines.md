@@ -75,7 +75,7 @@ apps/mobile/
 ## UI / UX guidelines
 
 - **Mobile-first** — design for phone, not desktop admin panels.
-- **Clean, modern** UI — dark brand theme, gold accent (see `constants/theme.ts`).
+- **Clean, modern** UI — dark brand theme, gold accent (see `docs/branding.md` and `constants/theme.ts`).
 - Use **NativeWind** (`className`) consistently; avoid mixing random inline styles.
 - Prefer **reusable components** (current names in repo):
 

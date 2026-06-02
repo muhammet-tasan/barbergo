@@ -20,9 +20,9 @@ import { formatSwissDate } from '@/utils/date';
 
 function DetailRow({ label, value }: { label: string; value: string }) {
   return (
-    <View className="flex-row justify-between py-2 border-b border-slate-700/80">
-      <Text className="text-slate-400">{label}</Text>
-      <Text className="text-white font-medium flex-1 text-right ml-4">{value}</Text>
+    <View className="flex-row justify-between py-2 border-b border-brand-border/80">
+      <Text className="text-brand-muted">{label}</Text>
+      <Text className="text-brand-text font-medium flex-1 text-right ml-4">{value}</Text>
     </View>
   );
 }
@@ -62,7 +62,7 @@ export default function BookingConfirmScreen() {
       <SafeAreaView className="flex-1 bg-brand-dark" edges={['top']}>
         <ScreenHeader title="Bestätigung" onBack={() => router.replace('/')} />
         <View className="flex-1 px-6 justify-center">
-          <Text className="text-white text-center mb-6">Buchung nicht gefunden.</Text>
+          <Text className="text-brand-text text-center mb-6">Buchung nicht gefunden.</Text>
           <AppButton label="Zur Startseite" onPress={() => router.replace('/')} />
         </View>
       </SafeAreaView>
@@ -94,8 +94,8 @@ export default function BookingConfirmScreen() {
         <DataSourceBanner usingFallback={usingFallback} error={error} />
         <View className="items-center mb-6">
           <Text className="text-3xl mb-2">✓</Text>
-          <Text className="text-xl font-bold text-white text-center">Anfrage gesendet</Text>
-          <Text className="text-slate-400 text-center mt-2 px-4">
+          <Text className="text-xl font-bold text-brand-text text-center">Anfrage gesendet</Text>
+          <Text className="text-brand-muted text-center mt-2 px-4">
             Dein Termin ist angefragt. Schreibe {provider.name} auf WhatsApp, damit er schneller
             bestätigen kann.
           </Text>

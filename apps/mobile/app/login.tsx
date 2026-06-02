@@ -78,7 +78,7 @@ export default function LoginScreen() {
           contentContainerClassName="pb-8"
           keyboardShouldPersistTaps="handled"
         >
-          <Text className="text-slate-400 mb-6">
+          <Text className="text-brand-muted mb-6">
             Melde dich als Kunde oder Barber an. Accounts werden in Supabase angelegt — Rolle
             über Benutzer-Metadaten (`customer` oder `barber`).
           </Text>
@@ -112,8 +112,8 @@ export default function LoginScreen() {
             />
 
             {authError ? (
-              <View className="mb-4 rounded-lg border border-red-500/50 bg-red-950/40 px-3 py-2">
-                <Text className="text-red-300 text-sm">{authError}</Text>
+              <View className="mb-4 rounded-lg border border-error/50 bg-error/10 px-3 py-2">
+                <Text className="text-error text-sm">{authError}</Text>
               </View>
             ) : null}
 

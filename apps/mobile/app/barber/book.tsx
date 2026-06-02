@@ -75,7 +75,7 @@ export default function BookingFormScreen() {
       <SafeAreaView className="flex-1 bg-brand-dark" edges={['top']}>
         <ScreenHeader title="Termin buchen" />
         <View className="flex-1 px-6 justify-center">
-          <Text className="text-white text-center mb-6">
+          <Text className="text-brand-text text-center mb-6">
             Service nicht gefunden. Bitte wähle einen Service aus.
           </Text>
           <AppButton label="Service auswählen" onPress={() => router.replace('/barber/services')} />
@@ -181,9 +181,9 @@ export default function BookingFormScreen() {
           keyboardShouldPersistTaps="always"
         >
           {catalogBlocked ? (
-            <View className="mb-4 rounded-xl border border-amber-500/60 bg-amber-500/10 px-4 py-3">
-              <Text className="text-amber-200 font-semibold">Buchung blockiert</Text>
-              <Text className="text-amber-100/80 text-sm mt-1">
+            <View className="mb-4 rounded-xl border border-warning/60 bg-warning/10 px-4 py-3">
+              <Text className="text-warning font-semibold">Buchung blockiert</Text>
+              <Text className="text-warning/80 text-sm mt-1">
                 {catalogError ||
                   'Provider/Services kommen nicht aus Supabase. Prüfe .env, Migration 0001/0002 und seed.sql.'}
               </Text>
@@ -191,19 +191,19 @@ export default function BookingFormScreen() {
           ) : null}
 
           {submitBanner ? (
-            <View className="mb-4 rounded-xl border border-red-500/60 bg-red-500/10 px-4 py-3">
-              <Text className="text-red-200 font-semibold">Hinweis</Text>
-              <Text className="text-red-100/90 text-sm mt-1">{submitBanner}</Text>
+            <View className="mb-4 rounded-xl border border-error/60 bg-error/10 px-4 py-3">
+              <Text className="text-error font-semibold">Hinweis</Text>
+              <Text className="text-error/90 text-sm mt-1">{submitBanner}</Text>
             </View>
           ) : null}
 
           <AppCard className="mb-4">
-            <Text className="text-white font-semibold text-lg">{service.name}</Text>
-            <Text className="text-slate-400 mt-1">{service.durationMinutes} Minuten</Text>
+            <Text className="text-brand-text font-semibold text-lg">{service.name}</Text>
+            <Text className="text-brand-muted mt-1">{service.durationMinutes} Minuten</Text>
             {totals ? (
               <Text className="text-brand-gold font-bold mt-2 text-lg">
                 {formatChf(totals.totalChf)} gesamt
-                <Text className="text-slate-400 font-normal text-sm">
+                <Text className="text-brand-muted font-normal text-sm">
                   {' '}
                   (inkl. {formatChf(totals.serviceFeeChf)} Gebühr)
                 </Text>

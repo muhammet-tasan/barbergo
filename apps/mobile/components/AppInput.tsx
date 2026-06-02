@@ -1,6 +1,7 @@
 import { Platform, Text, TextInput, View, type TextInputProps } from 'react-native';
 
 import type { AutofillPreset } from '@/constants/form-autofill';
+import { colors } from '@/constants/theme';
 
 type AppInputProps = TextInputProps & {
   label: string;
@@ -36,28 +37,28 @@ export function AppInput({
           style={{
             display: 'block',
             fontSize: 14,
-            color: '#CBD5E1',
+            color: colors.textMuted,
             marginBottom: 6,
           }}
         >
           {label}
         </label>
       ) : (
-        <Text className="text-sm text-slate-300 mb-1.5">{label}</Text>
+        <Text className="text-sm text-brand-muted mb-1.5">{label}</Text>
       )}
       <TextInput
         nativeID={fieldName}
-        placeholderTextColor="#64748B"
+        placeholderTextColor={colors.textMuted}
         importantForAutofill="yes"
         autoComplete={resolvedAutoComplete}
         textContentType={resolvedTextContentType}
-        className={`rounded-xl bg-slate-800 border px-4 py-3 text-white text-base ${
-          error ? 'border-red-500' : 'border-slate-600'
+        className={`rounded-xl bg-brand-surface border px-4 py-3 text-brand-text text-base ${
+          error ? 'border-error' : 'border-brand-border'
         } ${className ?? ''}`}
         {...webFieldProps}
         {...props}
       />
-      {error ? <Text className="text-red-400 text-sm mt-1">{error}</Text> : null}
+      {error ? <Text className="text-error text-sm mt-1">{error}</Text> : null}
     </View>
   );
 }

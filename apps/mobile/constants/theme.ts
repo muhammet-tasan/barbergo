@@ -1,5 +1,6 @@
 /**
- * barbergo design tokens — used for non-Tailwind cases (icons, StatusBar, etc.)
+ * BarberGo design tokens — canonical palette (see `docs/branding.md`).
+ * Use Tailwind `brand-*`, `success`, `warning`, `error` in UI; import `colors` for icons, StatusBar, inline styles.
  */
 export const colors = {
   background: '#0F172A',
@@ -13,6 +14,18 @@ export const colors = {
   warning: '#F59E0B',
   error: '#EF4444',
   border: '#334155',
+} as const;
+
+/** Same values as Tailwind `brand.*` utilities */
+export const brand = {
+  dark: colors.background,
+  surface: colors.surface,
+  surfaceLight: colors.surfaceLight,
+  border: colors.border,
+  text: colors.text,
+  muted: colors.textMuted,
+  gold: colors.accent,
+  accentDark: colors.accentDark,
 } as const;
 
 export const spacing = {

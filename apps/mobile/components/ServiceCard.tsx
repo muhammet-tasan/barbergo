@@ -18,13 +18,13 @@ export function ServiceCard({ service, selected = false, onPress }: ServiceCardP
       className={`rounded-2xl border p-4 mb-3 active:opacity-90 ${
         selected
           ? 'bg-brand-gold/15 border-brand-gold'
-          : 'bg-brand-surface border-slate-700'
+          : 'bg-brand-surface border-brand-border'
       }`}
     >
       <View className="flex-row items-center justify-between">
         <View className="flex-1 pr-3">
-          <Text className="text-base font-semibold text-white">{service.name}</Text>
-          <Text className="text-sm text-slate-400 mt-1">{service.durationMinutes} min</Text>
+          <Text className="text-base font-semibold text-brand-text">{service.name}</Text>
+          <Text className="text-sm text-brand-muted mt-1">{service.durationMinutes} min</Text>
         </View>
         <View className="items-end">
           <Text className="text-lg font-bold text-brand-gold">{formatChf(service.priceChf)}</Text>

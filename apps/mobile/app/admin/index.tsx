@@ -56,17 +56,17 @@ export default function AdminBookingListScreen() {
         >
           <DataSourceBanner usingFallback={usingFallback} error={error} />
           {session ? (
-            <Text className="text-slate-400 text-sm mb-4" numberOfLines={1}>
+            <Text className="text-brand-muted text-sm mb-4" numberOfLines={1}>
               Angemeldet als {session.user.email}
             </Text>
           ) : null}
-          <Text className="text-slate-400 mb-4">
+          <Text className="text-brand-muted mb-4">
             Barber-Bereich: Buchungen verwalten, Status ändern, Maps und WhatsApp.
           </Text>
 
           {bookings.length === 0 ? (
             <AppCard>
-              <Text className="text-slate-300 text-center">
+              <Text className="text-brand-muted text-center">
                 Noch keine Buchungen.
               </Text>
             </AppCard>
@@ -86,12 +86,12 @@ export default function AdminBookingListScreen() {
                 >
                   <AppCard>
                     <View className="flex-row justify-between items-start mb-2">
-                      <Text className="text-white font-semibold text-base flex-1">
+                      <Text className="text-brand-text font-semibold text-base flex-1">
                         {booking.customerName}
                       </Text>
                       <StatusBadge status={booking.status} />
                     </View>
-                    <Text className="text-slate-400 text-sm">
+                    <Text className="text-brand-muted text-sm">
                       {service?.name ?? 'Service'} · {formatSwissDate(booking.appointmentDate)} ·{' '}
                       {booking.appointmentTime}
                     </Text>

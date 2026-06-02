@@ -11,9 +11,9 @@ export function DataSourceBanner({ usingFallback, error }: DataSourceBannerProps
   }
 
   return (
-    <View className="mb-4 rounded-lg border border-amber-600/50 bg-amber-950/40 px-3 py-2">
-      <Text className="text-amber-200 text-sm font-medium">Offline- / Demo-Daten</Text>
-      <Text className="text-amber-200/80 text-xs mt-1">
+    <View className="mb-4 rounded-lg border border-warning/50 bg-warning/10 px-3 py-2">
+      <Text className="text-warning text-sm font-medium">Offline- / Demo-Daten</Text>
+      <Text className="text-warning/80 text-xs mt-1">
         {error
           ? 'Supabase nicht erreichbar. Es werden lokale Demo-Daten angezeigt.'
           : 'Lokale Demo-Daten — nicht mit der Live-Datenbank synchron.'}

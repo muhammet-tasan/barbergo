@@ -69,14 +69,14 @@ export default function GuestBookingsScreen() {
         </View>
       ) : (
         <ScrollView className="flex-1 px-4 pt-4" contentContainerClassName="pb-8">
-          <Text className="text-slate-400 mb-4">
+          <Text className="text-brand-muted mb-4">
             Gastbuchungen von diesem Gerät. Für alle Geräte und Storno: Konto unter „Anmelden“ in
             der Kopfzeile erstellen.
           </Text>
 
           {bookings.length === 0 ? (
             <AppCard>
-              <Text className="text-slate-300 text-center mb-4">Noch keine Termine auf diesem Gerät.</Text>
+              <Text className="text-brand-muted text-center mb-4">Noch keine Termine auf diesem Gerät.</Text>
               <AppButton label="Termin buchen" onPress={() => router.push('/barber')} />
             </AppCard>
           ) : (
@@ -98,18 +98,18 @@ export default function GuestBookingsScreen() {
                     className="active:opacity-90"
                   >
                     <View className="flex-row justify-between items-start mb-2">
-                      <Text className="text-white font-semibold text-base flex-1">
+                      <Text className="text-brand-text font-semibold text-base flex-1">
                         {service?.name ?? 'Service'}
                       </Text>
                       <StatusBadge status={booking.status} />
                     </View>
-                    <Text className="text-slate-400 text-sm">
+                    <Text className="text-brand-muted text-sm">
                       {formatSwissDate(booking.appointmentDate)} · {booking.appointmentTime}
                     </Text>
                     <Text className="text-brand-gold font-medium mt-2">{formatChf(booking.totalChf)}</Text>
                   </Pressable>
                   {(booking.status === 'pending' || booking.status === 'confirmed') && (
-                    <View className="mt-3 pt-3 border-t border-slate-700">
+                    <View className="mt-3 pt-3 border-t border-brand-border">
                       <AppButton
                         label="Termin stornieren"
                         variant="secondary"
@@ -118,7 +118,7 @@ export default function GuestBookingsScreen() {
                         onPress={() => handleCancel(booking)}
                       />
                       {!cancelAllowed ? (
-                        <Text className="text-slate-500 text-xs mt-2">
+                        <Text className="text-brand-muted text-xs mt-2">
                           {cancelBookingBlockedReason(booking)}
                         </Text>
                       ) : null}

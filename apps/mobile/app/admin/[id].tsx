@@ -27,9 +27,9 @@ const bookingStatusText: Record<BookingStatus, string> = {
 
 function DetailRow({ label, value }: { label: string; value: string }) {
   return (
-    <View className="py-2 border-b border-slate-700/80">
-      <Text className="text-slate-400 text-sm">{label}</Text>
-      <Text className="text-white mt-0.5">{value}</Text>
+    <View className="py-2 border-b border-brand-border/80">
+      <Text className="text-brand-muted text-sm">{label}</Text>
+      <Text className="text-brand-text mt-0.5">{value}</Text>
     </View>
   );
 }
@@ -60,7 +60,7 @@ export default function AdminBookingDetailScreen() {
       <SafeAreaView className="flex-1 bg-brand-dark" edges={['top']}>
         <ScreenHeader title="Buchungsdetails" />
         <View className="flex-1 px-6 justify-center">
-          <Text className="text-white text-center mb-4">Bitte zuerst als Admin anmelden.</Text>
+          <Text className="text-brand-text text-center mb-4">Bitte zuerst als Admin anmelden.</Text>
           <AppButton label="Zum Login" onPress={() => router.replace('/login')} />
         </View>
       </SafeAreaView>
@@ -72,7 +72,7 @@ export default function AdminBookingDetailScreen() {
       <SafeAreaView className="flex-1 bg-brand-dark" edges={['top']}>
         <ScreenHeader title="Buchung" />
         <View className="flex-1 px-6 justify-center">
-          <Text className="text-white text-center mb-6">Buchung nicht gefunden.</Text>
+          <Text className="text-brand-text text-center mb-6">Buchung nicht gefunden.</Text>
           <AppButton label="Zur Liste" onPress={() => router.back()} />
         </View>
       </SafeAreaView>
@@ -144,7 +144,7 @@ export default function AdminBookingDetailScreen() {
           <DetailRow label="Gesamt" value={formatChf(booking.totalChf)} />
         </AppCard>
 
-        <Text className="text-slate-400 text-sm mb-2 uppercase tracking-wide">Aktionen</Text>
+        <Text className="text-brand-muted text-sm mb-2 uppercase tracking-wide">Aktionen</Text>
         <View className="gap-3 mb-6">
           <AppButton
             label="Adresse in Maps öffnen"
@@ -168,7 +168,7 @@ export default function AdminBookingDetailScreen() {
           />
         </View>
 
-        <Text className="text-slate-400 text-sm mb-2 uppercase tracking-wide">Status</Text>
+        <Text className="text-brand-muted text-sm mb-2 uppercase tracking-wide">Status</Text>
         <View className="gap-2">
           {booking.status === 'pending' ? (
             <AppButton

@@ -1,6 +1,6 @@
 # barbergo — Current Status
 
-Last updated: 2026-05-31
+Last updated: 2026-06-02 (branding standardization)
 
 ## Project maturity
 
@@ -69,6 +69,12 @@ See [supabase/README.md](../supabase/README.md).
 - **RLS `0003`:** anon may create pending bookings; anon cannot read/update bookings.
 - **App gate:** `/admin` requires login when `EXPO_PUBLIC_ADMIN_AUTH_REQUIRED=true`.
 - **Demo RLS `0002_*`:** still in repo for experiments; documented as insecure.
+
+## Branding
+
+- Canonical palette: `apps/mobile/constants/theme.ts` + Tailwind `brand-*` / `success` / `warning` / `error`
+- Expo splash + Android adaptive icon background: `#0F172A`
+- Guide: [branding.md](./branding.md) — replace default `assets/images/*` when logo is ready
 
 ## Next recommended tasks
 

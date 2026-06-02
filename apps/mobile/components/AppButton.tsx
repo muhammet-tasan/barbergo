@@ -1,5 +1,7 @@
 import { ActivityIndicator, Platform, Pressable, Text } from 'react-native';
 
+import { colors } from '@/constants/theme';
+
 type ButtonVariant = 'primary' | 'secondary' | 'ghost';
 
 type AppButtonProps = {
@@ -14,13 +16,13 @@ type AppButtonProps = {
 
 const containerStyles: Record<ButtonVariant, string> = {
   primary: 'bg-brand-gold',
-  secondary: 'bg-brand-surface border border-slate-600',
-  ghost: 'bg-transparent border border-slate-600',
+  secondary: 'bg-brand-surface border border-brand-border',
+  ghost: 'bg-transparent border border-brand-border',
 };
 
 const labelStyles: Record<ButtonVariant, string> = {
-  primary: 'text-slate-900',
-  secondary: 'text-white',
+  primary: 'text-brand-dark',
+  secondary: 'text-brand-text',
   ghost: 'text-brand-gold',
 };
 
@@ -47,7 +49,7 @@ export function AppButton({
         className={webButtonClass(variant, isDisabled)}
       >
         {loading ? (
-          <ActivityIndicator color={variant === 'primary' ? '#0F172A' : '#D4A574'} />
+          <ActivityIndicator color={variant === 'primary' ? colors.background : colors.accent} />
         ) : (
           <span className={`text-base font-semibold ${labelStyles[variant]}`}>{label}</span>
         )}
@@ -64,7 +66,7 @@ export function AppButton({
       } ${isDisabled ? 'opacity-50' : ''}`}
     >
       {loading ? (
-        <ActivityIndicator color={variant === 'primary' ? '#0F172A' : '#D4A574'} />
+        <ActivityIndicator color={variant === 'primary' ? colors.background : colors.accent} />
       ) : (
         <Text className={`text-base font-semibold ${labelStyles[variant]}`}>{label}</Text>
       )}

@@ -33,7 +33,7 @@ export function ScreenHeader({
   };
 
   return (
-    <View className="flex-row items-center px-4 py-3 border-b border-slate-700 min-h-[52px]">
+    <View className="flex-row items-center px-4 py-3 border-b border-brand-border min-h-[52px]">
       <View className={`${SIDE_SLOT_WIDTH} items-start justify-center`}>
         {showBack ? (
           <Pressable
@@ -48,7 +48,7 @@ export function ScreenHeader({
       </View>
 
       <Text
-        className="flex-1 text-lg font-semibold text-white text-center"
+        className="flex-1 text-lg font-semibold text-brand-text text-center"
         numberOfLines={1}
         accessibilityRole="header"
       >

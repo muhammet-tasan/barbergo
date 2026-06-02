@@ -40,18 +40,18 @@ export default function ServiceSelectionScreen() {
           />
 
           {catalogError ? (
-            <View className="mb-4 rounded-xl border border-red-500/60 bg-red-500/10 px-4 py-3">
-              <Text className="text-red-200 font-semibold">Supabase-Daten fehlen</Text>
-              <Text className="text-red-100/90 text-sm mt-1">{catalogError}</Text>
+            <View className="mb-4 rounded-xl border border-error/60 bg-error/10 px-4 py-3">
+              <Text className="text-error font-semibold">Supabase-Daten fehlen</Text>
+              <Text className="text-error/90 text-sm mt-1">{catalogError}</Text>
             </View>
           ) : null}
 
-          <Text className="text-slate-400 mb-4">
+          <Text className="text-brand-muted mb-4">
             Alle Preise in CHF. +CHF 1 Servicegebühr beim Buchen.
           </Text>
 
           {!catalogError && services.length === 0 ? (
-            <Text className="text-slate-300 text-center">Keine Services verfügbar.</Text>
+            <Text className="text-brand-muted text-center">Keine Services verfügbar.</Text>
           ) : !catalogError ? (
             services.map((service) => (
               <ServiceCard

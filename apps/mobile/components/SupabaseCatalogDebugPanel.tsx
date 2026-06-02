@@ -40,8 +40,8 @@ export function SupabaseCatalogDebugPanel({
 
   if (!diag) {
     return (
-      <View className="mb-4 rounded-xl border border-slate-600 bg-slate-900/80 px-3 py-2">
-        <Text className="text-slate-400 text-xs font-mono">Supabase debug: loading…</Text>
+      <View className="mb-4 rounded-xl border border-brand-border bg-brand-dark/80 px-3 py-2">
+        <Text className="text-brand-muted text-xs font-mono">Supabase debug: loading…</Text>
       </View>
     );
   }
@@ -55,9 +55,9 @@ export function SupabaseCatalogDebugPanel({
     : 'none';
 
   return (
-    <View className="mb-4 rounded-xl border border-slate-600 bg-slate-900/80 px-3 py-2">
-      <Text className="text-slate-300 text-xs font-semibold mb-1">Supabase debug</Text>
-      <Text className="text-slate-400 text-xs font-mono leading-5">
+    <View className="mb-4 rounded-xl border border-brand-border bg-brand-dark/80 px-3 py-2">
+      <Text className="text-brand-muted text-xs font-semibold mb-1">Supabase debug</Text>
+      <Text className="text-brand-muted text-xs font-mono leading-5">
         {formatDiagnosticsForUi(diag)}
         {'\n'}
         loaded provider id: {loadedValid}

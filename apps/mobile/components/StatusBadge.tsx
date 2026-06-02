@@ -8,23 +8,23 @@ const statusConfig: Record<
 > = {
   pending: {
     label: 'Offen',
-    container: 'bg-amber-900/40 border-amber-600',
-    text: 'text-amber-300',
+    container: 'bg-warning/20 border-warning',
+    text: 'text-warning',
   },
   confirmed: {
     label: 'Bestätigt',
-    container: 'bg-emerald-900/40 border-emerald-600',
-    text: 'text-emerald-300',
+    container: 'bg-success/20 border-success',
+    text: 'text-success',
   },
   completed: {
     label: 'Abgeschlossen',
-    container: 'bg-slate-700/60 border-slate-500',
-    text: 'text-slate-300',
+    container: 'bg-brand-surfaceLight/60 border-brand-muted',
+    text: 'text-brand-muted',
   },
   cancelled: {
     label: 'Storniert',
-    container: 'bg-red-900/40 border-red-600',
-    text: 'text-red-300',
+    container: 'bg-error/20 border-error',
+    text: 'text-error',
   },
 };
 
