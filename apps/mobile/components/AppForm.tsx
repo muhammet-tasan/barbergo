@@ -18,7 +18,7 @@ export function AppForm({ children, onSubmit, className, style, ...rest }: AppFo
           onSubmit();
         }}
         className={className}
-        style={[{ width: '100%', margin: 0 }, style] as ViewProps['style']}
+        style={{ width: '100%', margin: 0 }}
       >
         {children}
       </form>
