@@ -12,6 +12,8 @@ type ScreenHeaderProps = {
   onBack?: () => void;
 };
 
+const SIDE_SLOT_WIDTH = 'w-[72px]';
+
 export function ScreenHeader({
   title,
   showBack = true,
@@ -31,22 +33,31 @@ export function ScreenHeader({
   };
 
   return (
-    <View className="flex-row items-center px-4 py-3 border-b border-slate-700">
-      {showBack ? (
-        <Pressable
-          onPress={handleBack}
-          className="mr-3 p-1 active:opacity-70"
-          accessibilityLabel="Zurück"
-        >
-          <Ionicons name="chevron-back" size={28} color={colors.accent} />
-        </Pressable>
-      ) : (
-        <View className="w-9 mr-3" />
-      )}
-      <Text className="flex-1 text-lg font-semibold text-white" numberOfLines={1}>
+    <View className="flex-row items-center px-4 py-3 border-b border-slate-700 min-h-[52px]">
+      <View className={`${SIDE_SLOT_WIDTH} items-start justify-center`}>
+        {showBack ? (
+          <Pressable
+            onPress={handleBack}
+            className="p-1 active:opacity-70"
+            accessibilityRole="button"
+            accessibilityLabel="Zurück"
+          >
+            <Ionicons name="chevron-back" size={28} color={colors.accent} />
+          </Pressable>
+        ) : null}
+      </View>
+
+      <Text
+        className="flex-1 text-lg font-semibold text-white text-center"
+        numberOfLines={1}
+        accessibilityRole="header"
+      >
         {title}
       </Text>
-      {showAuthAction ? <HeaderAuthAction /> : <View className="w-16" />}
+
+      <View className={`${SIDE_SLOT_WIDTH} items-end justify-center`}>
+        {showAuthAction ? <HeaderAuthAction /> : null}
+      </View>
     </View>
   );
 }

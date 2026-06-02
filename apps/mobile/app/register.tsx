@@ -4,9 +4,11 @@ import { Redirect, useRouter } from 'expo-router';
 import { useState } from 'react';
 
 import { AppButton } from '@/components/AppButton';
+import { AppForm } from '@/components/AppForm';
 import { AppInput } from '@/components/AppInput';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { colors } from '@/constants/theme';
+import { AUTOFILL } from '@/constants/form-autofill';
 import { useAuth } from '@/contexts/auth-context';
 import { getCurrentSession } from '@/services/auth';
 import { getPostLoginPath } from '@/services/auth-roles';
@@ -102,42 +104,51 @@ export default function RegisterScreen() {
             Erstelle ein Kundenkonto für „Meine Termine“ und Stornierungen.
           </Text>
 
-          <AppInput
-            label="Dein Name"
-            value={displayName}
-            onChangeText={setDisplayName}
-            error={nameError}
-            autoCapitalize="words"
-          />
-          <AppInput
-            label="E-Mail"
-            value={email}
-            onChangeText={setEmail}
-            error={emailError}
-            autoCapitalize="none"
-            keyboardType="email-address"
-          />
-          <AppInput
-            label="Passwort"
-            value={password}
-            onChangeText={setPassword}
-            error={passwordError}
-            secureTextEntry
-          />
+          <AppForm onSubmit={handleSubmit}>
+            <AppInput
+              label="Dein Name"
+              value={displayName}
+              onChangeText={setDisplayName}
+              error={nameError}
+              autofill={AUTOFILL.name}
+              autoCapitalize="words"
+              returnKeyType="next"
+            />
+            <AppInput
+              label="E-Mail"
+              value={email}
+              onChangeText={setEmail}
+              error={emailError}
+              autofill={AUTOFILL.email}
+              autoCapitalize="none"
+              keyboardType="email-address"
+              returnKeyType="next"
+            />
+            <AppInput
+              label="Passwort"
+              value={password}
+              onChangeText={setPassword}
+              error={passwordError}
+              secureTextEntry
+              autofill={AUTOFILL.newPassword}
+              returnKeyType="go"
+              onSubmitEditing={handleSubmit}
+            />
 
-          {formError ? (
-            <View className="mb-4 rounded-lg border border-red-500/50 bg-red-950/40 px-3 py-2">
-              <Text className="text-red-300 text-sm">{formError}</Text>
-            </View>
-          ) : null}
+            {formError ? (
+              <View className="mb-4 rounded-lg border border-red-500/50 bg-red-950/40 px-3 py-2">
+                <Text className="text-red-300 text-sm">{formError}</Text>
+              </View>
+            ) : null}
 
-          {successMessage ? (
-            <View className="mb-4 rounded-lg border border-emerald-500/50 bg-emerald-950/40 px-3 py-2">
-              <Text className="text-emerald-200 text-sm">{successMessage}</Text>
-            </View>
-          ) : null}
+            {successMessage ? (
+              <View className="mb-4 rounded-lg border border-emerald-500/50 bg-emerald-950/40 px-3 py-2">
+                <Text className="text-emerald-200 text-sm">{successMessage}</Text>
+              </View>
+            ) : null}
 
-          <AppButton label="Konto erstellen" onPress={handleSubmit} loading={submitting} />
+            <AppButton label="Konto erstellen" onPress={handleSubmit} loading={submitting} submit />
+          </AppForm>
 
           <Pressable onPress={() => router.push('/login')} className="mt-6 items-center py-2">
             <Text className="text-brand-gold text-sm">Bereits ein Konto? Anmelden</Text>

@@ -4,9 +4,11 @@ import { Redirect, useRouter } from 'expo-router';
 import { useState } from 'react';
 
 import { AppButton } from '@/components/AppButton';
+import { AppForm } from '@/components/AppForm';
 import { AppInput } from '@/components/AppInput';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { colors } from '@/constants/theme';
+import { AUTOFILL } from '@/constants/form-autofill';
 import { useAuth } from '@/contexts/auth-context';
 import { getPostLoginPath } from '@/services/auth-roles';
 import { getCurrentSession } from '@/services/auth';
@@ -81,39 +83,42 @@ export default function LoginScreen() {
             über Benutzer-Metadaten (`customer` oder `barber`).
           </Text>
 
-          <AppInput
-            label="E-Mail"
-            value={email}
-            onChangeText={(value) => {
-              setEmail(value);
-              setAuthError(undefined);
-            }}
-            error={emailError}
-            autoCapitalize="none"
-            autoComplete="email"
-            keyboardType="email-address"
-            textContentType="emailAddress"
-          />
-          <AppInput
-            label="Passwort"
-            value={password}
-            onChangeText={(value) => {
-              setPassword(value);
-              setAuthError(undefined);
-            }}
-            error={passwordError}
-            secureTextEntry
-            autoComplete="password"
-            textContentType="password"
-          />
+          <AppForm onSubmit={handleSubmit}>
+            <AppInput
+              label="E-Mail"
+              value={email}
+              onChangeText={(value) => {
+                setEmail(value);
+                setAuthError(undefined);
+              }}
+              error={emailError}
+              autofill={AUTOFILL.loginEmail}
+              autoCapitalize="none"
+              keyboardType="email-address"
+              returnKeyType="next"
+            />
+            <AppInput
+              label="Passwort"
+              value={password}
+              onChangeText={(value) => {
+                setPassword(value);
+                setAuthError(undefined);
+              }}
+              error={passwordError}
+              secureTextEntry
+              autofill={AUTOFILL.currentPassword}
+              returnKeyType="go"
+              onSubmitEditing={handleSubmit}
+            />
 
-          {authError ? (
-            <View className="mb-4 rounded-lg border border-red-500/50 bg-red-950/40 px-3 py-2">
-              <Text className="text-red-300 text-sm">{authError}</Text>
-            </View>
-          ) : null}
+            {authError ? (
+              <View className="mb-4 rounded-lg border border-red-500/50 bg-red-950/40 px-3 py-2">
+                <Text className="text-red-300 text-sm">{authError}</Text>
+              </View>
+            ) : null}
 
-          <AppButton label="Anmelden" onPress={handleSubmit} loading={submitting} />
+            <AppButton label="Anmelden" onPress={handleSubmit} loading={submitting} submit />
+          </AppForm>
 
           <Pressable onPress={() => router.push('/register')} className="mt-4 items-center py-2">
             <Text className="text-brand-gold text-sm">Noch kein Konto? Registrieren</Text>

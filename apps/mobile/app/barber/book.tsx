@@ -12,10 +12,12 @@ import { useMemo, useRef, useState } from 'react';
 
 import { AppButton } from '@/components/AppButton';
 import { AppCard } from '@/components/AppCard';
+import { AppForm } from '@/components/AppForm';
 import { AppInput } from '@/components/AppInput';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { calculateBookingTotal, formatChf } from '@/constants/pricing';
 import { colors } from '@/constants/theme';
+import { AUTOFILL } from '@/constants/form-autofill';
 import { useProvider } from '@/hooks/use-provider';
 import { useServices } from '@/hooks/use-services';
 import { useAuth } from '@/contexts/auth-context';
@@ -209,62 +211,78 @@ export default function BookingFormScreen() {
             ) : null}
           </AppCard>
 
-          <AppInput
-            label="Dein Name"
-            value={customerName}
-            onChangeText={setCustomerName}
-            error={errors.customerName}
-            autoCapitalize="words"
-            placeholder="Max Mustermann"
-          />
-          <AppInput
-            label="Telefon (WhatsApp)"
-            value={phone}
-            onChangeText={setPhone}
-            error={errors.phone}
-            keyboardType="phone-pad"
-            placeholder="+41 79 123 45 67"
-          />
-          <AppInput
-            label="Adresse"
-            value={address}
-            onChangeText={setAddress}
-            error={errors.address}
-            placeholder="Musterstrasse 1, 4051 Basel"
-            multiline
-          />
-          <AppInput
-            label="Datum"
-            value={appointmentDate}
-            onChangeText={setAppointmentDate}
-            error={errors.appointmentDate}
-            placeholder="20.05.2026"
-            keyboardType="numbers-and-punctuation"
-          />
-          <AppInput
-            label="Uhrzeit"
-            value={appointmentTime}
-            onChangeText={setAppointmentTime}
-            error={errors.appointmentTime}
-            placeholder="14:30"
-            keyboardType="numbers-and-punctuation"
-          />
-          <AppInput
-            label="Notiz (optional)"
-            value={note}
-            onChangeText={setNote}
-            placeholder="Bitte klingeln, usw."
-            multiline
-          />
-
-          <View className="mb-8">
-            <AppButton
-              label="Buchung bestätigen"
-              onPress={handleSubmit}
-              loading={submitting}
-              disabled={catalogBlocked}
+          <AppForm onSubmit={handleSubmit}>
+            <AppInput
+              label="Dein Name"
+              value={customerName}
+              onChangeText={setCustomerName}
+              error={errors.customerName}
+              autofill={AUTOFILL.name}
+              autoCapitalize="words"
+              placeholder="Max Mustermann"
+              returnKeyType="next"
             />
-          </View>
+            <AppInput
+              label="Telefon (WhatsApp)"
+              value={phone}
+              onChangeText={setPhone}
+              error={errors.phone}
+              autofill={AUTOFILL.tel}
+              keyboardType="phone-pad"
+              placeholder="+41 79 123 45 67"
+              returnKeyType="next"
+            />
+            <AppInput
+              label="Adresse"
+              value={address}
+              onChangeText={setAddress}
+              error={errors.address}
+              autofill={AUTOFILL.streetAddress}
+              placeholder="Musterstrasse 1, 4051 Basel"
+              multiline
+              returnKeyType="next"
+            />
+            <AppInput
+              label="Datum"
+              value={appointmentDate}
+              onChangeText={setAppointmentDate}
+              error={errors.appointmentDate}
+              autofill={AUTOFILL.off}
+              placeholder="20.05.2026"
+              keyboardType="numbers-and-punctuation"
+              returnKeyType="next"
+            />
+            <AppInput
+              label="Uhrzeit"
+              value={appointmentTime}
+              onChangeText={setAppointmentTime}
+              error={errors.appointmentTime}
+              autofill={AUTOFILL.off}
+              placeholder="14:30"
+              keyboardType="numbers-and-punctuation"
+              returnKeyType="next"
+            />
+            <AppInput
+              label="Notiz (optional)"
+              value={note}
+              onChangeText={setNote}
+              autofill={AUTOFILL.off}
+              placeholder="Bitte klingeln, usw."
+              multiline
+              returnKeyType="go"
+              onSubmitEditing={handleSubmit}
+            />
+
+            <View className="mb-8">
+              <AppButton
+                label="Buchung bestätigen"
+                onPress={handleSubmit}
+                loading={submitting}
+                disabled={catalogBlocked}
+                submit
+              />
+            </View>
+          </AppForm>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>

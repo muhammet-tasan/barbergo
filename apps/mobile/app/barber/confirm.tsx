@@ -10,6 +10,7 @@ import { ScreenHeader } from '@/components/ScreenHeader';
 import { StatusBadge } from '@/components/StatusBadge';
 import { formatChf } from '@/constants/pricing';
 import { colors } from '@/constants/theme';
+import { useAuth } from '@/contexts/auth-context';
 import { useBooking } from '@/hooks/use-booking';
 import { useProvider } from '@/hooks/use-provider';
 import { useServices } from '@/hooks/use-services';
@@ -32,6 +33,7 @@ export default function BookingConfirmScreen() {
     bookingId: string;
     serviceName?: string;
   }>();
+  const { isCustomer } = useAuth();
   const { booking, loading: bookingLoading, usingFallback, error } = useBooking(bookingId);
   const { provider, loading: providerLoading } = useProvider();
   const { services, loading: servicesLoading } = useServices(provider?.id);
@@ -53,10 +55,12 @@ export default function BookingConfirmScreen() {
     );
   }
 
+  const bookingsPath = isCustomer ? '/customer/bookings' : '/guest/bookings';
+
   if (!booking || !serviceName || !provider) {
     return (
       <SafeAreaView className="flex-1 bg-brand-dark" edges={['top']}>
-        <ScreenHeader title="Bestätigung" showBack={false} />
+        <ScreenHeader title="Bestätigung" onBack={() => router.replace('/')} />
         <View className="flex-1 px-6 justify-center">
           <Text className="text-white text-center mb-6">Buchung nicht gefunden.</Text>
           <AppButton label="Zur Startseite" onPress={() => router.replace('/')} />
@@ -82,7 +86,10 @@ export default function BookingConfirmScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-brand-dark" edges={['top']}>
-      <ScreenHeader title="Buchung bestätigt" showBack={false} />
+      <ScreenHeader
+        title="Buchung bestätigt"
+        onBack={() => router.replace(bookingsPath)}
+      />
       <ScrollView className="flex-1 px-4 pt-4" contentContainerClassName="pb-8">
         <DataSourceBanner usingFallback={usingFallback} error={error} />
         <View className="items-center mb-6">
@@ -105,14 +112,11 @@ export default function BookingConfirmScreen() {
           <DetailRow label="Gesamt" value={formatChf(booking.totalChf)} />
         </AppCard>
 
-        <View className="gap-3">
-          <AppButton
-            label="Per WhatsApp senden"
-            onPress={handleWhatsApp}
-            loading={whatsappLoading}
-          />
-          <AppButton label="Fertig" variant="secondary" onPress={() => router.replace('/')} />
-        </View>
+        <AppButton
+          label="Per WhatsApp senden"
+          onPress={handleWhatsApp}
+          loading={whatsappLoading}
+        />
       </ScrollView>
     </SafeAreaView>
   );
