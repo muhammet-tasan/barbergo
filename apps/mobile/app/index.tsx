@@ -32,7 +32,7 @@ export default function HomeScreen() {
             <AppButton label="Buchungen verwalten" onPress={() => router.push('/admin')} />
           ) : isCustomer ? (
             <>
-              <AppButton label="Termin buchen" onPress={() => router.push('/barber')} />
+              <AppButton label="Termin buchen" onPress={() => router.push('/barbers')} />
               <AppButton
                 label="Termine verwalten"
                 variant="secondary"
@@ -41,7 +41,7 @@ export default function HomeScreen() {
             </>
           ) : (
             <>
-              <AppButton label="Termin buchen" onPress={() => router.push('/barber')} />
+              <AppButton label="Termin buchen" onPress={() => router.push('/barbers')} />
               <AppButton
                 label="Meine Termine"
                 variant="secondary"

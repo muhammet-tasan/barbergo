@@ -77,7 +77,7 @@ export default function GuestBookingsScreen() {
           {bookings.length === 0 ? (
             <AppCard>
               <Text className="text-brand-muted text-center mb-4">Noch keine Termine auf diesem Gerät.</Text>
-              <AppButton label="Termin buchen" onPress={() => router.push('/barber')} />
+              <AppButton label="Termin buchen" onPress={() => router.push('/barbers')} />
             </AppCard>
           ) : (
             bookings.map((booking) => {

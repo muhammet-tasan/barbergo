@@ -1,6 +1,6 @@
 # barbergo — Current Status
 
-Last updated: 2026-06-02
+Last updated: 2026-06-02 (barber selection `/barbers`)
 
 ## Project maturity
 
@@ -10,7 +10,7 @@ Last updated: 2026-06-02
 
 ### Customer flow (German UI)
 
-- Home → barber profile → service selection → booking form (`DD.MM.YYYY`, `HH:MM`)
+- Home → **Barber wählen** (`/barbers`) → barber profile (`/barber`) → service selection → booking form (`DD.MM.YYYY`, `HH:MM`)
 - **Guest booking** or **logged-in customer** (`customer_id` on insert after migration `0004`)
 - Booking confirmation + WhatsApp deeplink
 - **`/register`** + **`/login`** (role `customer` / `barber` in user metadata)

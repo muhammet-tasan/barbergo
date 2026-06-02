@@ -9,6 +9,7 @@
 - [x] Home screen (rollenbasierte CTAs: Gast / Kunde / Barber)
 - [x] Unified login `/login` + Header Anmelden/Abmelden
 - [x] Customer register `/register` + Phase 2 bookings (`0004`, Storno, Meine Termine)
+- [x] Barber selection screen `/barbers` (active providers list; navigates to `/barber`)
 - [x] Barber profile screen
 - [x] Service selection screen
 - [x] Booking form + validation
@@ -62,6 +63,7 @@ Kurzüberblick (priorisiert nach Product Roadmap — siehe Tabellen dort):
 - [ ] Phase 1: Datenmodell (`profiles`, `customer_id`, Booking-Access-Token) + RLS Go-live
 - [ ] Apply migration **`0004_customer_profiles_and_booking_access.sql`** on hosted Supabase
 - [ ] Manual E2E Phase 2: register customer → book → Meine Termine → Storno; guest book → device list
+- [ ] Per-barber routing (`/barber?providerId=` or `/barbers/[id]`) when multiple providers go live
 - [ ] Phase 3: Barber-Profil bearbeiten, Avatar, modernes Profil (Card-UI); custom app icon / splash assets per `docs/branding.md`
 - [ ] Phase 4: Kalender/Tagesansicht, Verfügbarkeit, Services in App pflegen
 - [ ] Phase 5: Bewertungen + Durchschnitt auf Profil

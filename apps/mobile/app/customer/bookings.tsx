@@ -160,7 +160,7 @@ export default function CustomerBookingsScreen() {
           {!hasAny ? (
             <AppCard>
               <Text className="text-brand-muted text-center mb-4">Noch keine Termine.</Text>
-              <AppButton label="Termin buchen" onPress={() => router.push('/barber')} />
+              <AppButton label="Termin buchen" onPress={() => router.push('/barbers')} />
             </AppCard>
           ) : null}
 
