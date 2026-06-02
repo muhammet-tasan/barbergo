@@ -6,7 +6,6 @@ import {
   getEnvConfigStatus,
   type CatalogFailureReason,
 } from './catalog-errors';
-import { logSupabaseCatalogDiagnostics, runSupabaseCatalogDiagnostics } from './supabase-catalog-debug';
 import { getSupabaseClient, SupabaseTables } from './supabase';
 import { mapProvider, type ProviderRow } from './supabase-mappers';
 
@@ -22,10 +21,6 @@ export async function fetchDefaultProvider(): Promise<ProviderLoadResult> {
   const client = getSupabaseClient();
 
   if (!client) {
-    if (__DEV__) {
-      const diag = await runSupabaseCatalogDiagnostics();
-      logSupabaseCatalogDiagnostics(diag);
-    }
     return {
       source: 'mock',
       failureReason: 'env_missing',
@@ -49,8 +44,6 @@ export async function fetchDefaultProvider(): Promise<ProviderLoadResult> {
     if (!row) {
       if (__DEV__) {
         console.warn('[barbergo] providers table empty or no active row');
-        const diag = await runSupabaseCatalogDiagnostics();
-        logSupabaseCatalogDiagnostics(diag);
       }
       return {
         source: 'supabase',

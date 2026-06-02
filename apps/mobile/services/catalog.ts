@@ -7,7 +7,6 @@ import {
   getEnvConfigStatus,
   type CatalogFailureReason,
 } from './catalog-errors';
-import { logSupabaseCatalogDiagnostics, runSupabaseCatalogDiagnostics } from './supabase-catalog-debug';
 import { getSupabaseClient, SupabaseTables } from './supabase';
 import { mapService, sortServices, type ServiceRow } from './supabase-mappers';
 
@@ -23,10 +22,6 @@ export async function fetchServices(providerId?: string): Promise<ServicesLoadRe
   const client = getSupabaseClient();
 
   if (!client) {
-    if (__DEV__) {
-      const diag = await runSupabaseCatalogDiagnostics(providerId);
-      logSupabaseCatalogDiagnostics(diag);
-    }
     return {
       services: [],
       source: 'mock',

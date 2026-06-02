@@ -6,7 +6,6 @@ import { useState } from 'react';
 import { AppButton } from '@/components/AppButton';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { ServiceCard } from '@/components/ServiceCard';
-import { SupabaseCatalogDebugPanel } from '@/components/SupabaseCatalogDebugPanel';
 import { colors } from '@/constants/theme';
 import { useProvider } from '@/hooks/use-provider';
 import { useServices } from '@/hooks/use-services';
@@ -34,11 +33,6 @@ export default function ServiceSelectionScreen() {
         </View>
       ) : (
         <ScrollView className="flex-1 px-4 pt-4" contentContainerClassName="pb-8">
-          <SupabaseCatalogDebugPanel
-            providerIdFilter={providerIdForServices}
-            loadedProviderId={provider?.id}
-          />
-
           {catalogError ? (
             <View className="mb-4 rounded-xl border border-error/60 bg-error/10 px-4 py-3">
               <Text className="text-error font-semibold">Supabase-Daten fehlen</Text>

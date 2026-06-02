@@ -1,6 +1,6 @@
 # barbergo — Current Status
 
-Last updated: 2026-06-02 (branding standardization)
+Last updated: 2026-06-02
 
 ## Project maturity
 
@@ -29,8 +29,8 @@ Last updated: 2026-06-02 (branding standardization)
 
 ### Developer / diagnostics
 
-- `SupabaseCatalogDebugPanel` on service screen (`__DEV__` only)
 - RLS smoke script: `apps/mobile/scripts/verify-rls-0003.mjs`
+- Guest insert verify: `apps/mobile/scripts/verify-guest-insert.mjs`
 - Env via `app.config.js` + `supabase-env.ts` (web-safe)
 - ntfy scripts (`scripts/notify-*.ps1`)
 

@@ -33,7 +33,7 @@
 - [x] `@supabase/supabase-js` installed
 - [x] Load providers/services/bookings from Supabase
 - [x] Persist new bookings and status updates to Supabase
-- [x] Catalog error diagnostics + debug panel (service screen, `__DEV__`)
+- [x] Catalog error diagnostics (user-facing banner on service screen; no dev debug panel)
 - [x] Supabase Auth login for admin (`/admin/login`, E-Mail + Passwort)
 - [x] MVP RLS migrations (`0002` demo, `0003` auth)
 - [x] Secure baseline documented: `0003` + `EXPO_PUBLIC_ADMIN_AUTH_REQUIRED=true`
