@@ -1,0 +1,16 @@
+{
+  "brand": {
+    "deepNavy": "#0F172A",
+    "surface": "#1E293B",
+    "gold": "#D4A574",
+    "offWhite": "#F8FAFC",
+    "coolGray": "#64748B"
+  },
+  "usage": {
+    "background": "deepNavy",
+    "primaryAccent": "gold",
+    "mainText": "offWhite",
+    "secondaryText": "coolGray",
+    "cardsBorders": "surface"
+  }
+}

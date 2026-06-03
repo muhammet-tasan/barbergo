@@ -127,8 +127,11 @@ export default function AdminBookingDetailScreen() {
     <SafeAreaView className="flex-1 bg-brand-dark" edges={['top']}>
       <ScreenHeader title="Buchungsdetails" />
       <ScrollView className="flex-1 px-4 pt-4" contentContainerClassName="pb-8">
-        <View className="mb-4">
+        <View className="mb-4 flex-row items-center gap-3">
           <StatusBadge status={booking.status} />
+          <Text className="text-brand-muted text-sm">
+            {bookingStatusText[booking.status] ?? booking.status}
+          </Text>
         </View>
 
         <AppCard className="mb-4">
@@ -171,25 +174,56 @@ export default function AdminBookingDetailScreen() {
         <Text className="text-brand-muted text-sm mb-2 uppercase tracking-wide">Status</Text>
         <View className="gap-2">
           {booking.status === 'pending' ? (
-            <AppButton
-              label="Als bestätigt markieren"
-              loading={statusLoading}
-              onPress={() => setStatus('confirmed')}
-            />
+            <>
+              <AppButton
+                label="Als bestätigt markieren"
+                loading={statusLoading}
+                onPress={() => setStatus('confirmed')}
+              />
+              <AppButton
+                label="Buchung stornieren"
+                variant="ghost"
+                loading={statusLoading}
+                onPress={() => setStatus('cancelled')}
+              />
+            </>
           ) : null}
           {booking.status === 'confirmed' ? (
-            <AppButton
-              label="Als abgeschlossen markieren"
-              loading={statusLoading}
-              onPress={() => setStatus('completed')}
-            />
+            <>
+              <AppButton
+                label="Als abgeschlossen markieren"
+                loading={statusLoading}
+                onPress={() => setStatus('completed')}
+              />
+              <AppButton
+                label="Buchung stornieren"
+                variant="ghost"
+                loading={statusLoading}
+                onPress={() => setStatus('cancelled')}
+              />
+            </>
           ) : null}
-          {booking.status !== 'cancelled' && booking.status !== 'completed' ? (
+          {booking.status === 'cancelled' ? (
+            <>
+              <AppButton
+                label="Wieder öffnen"
+                loading={statusLoading}
+                onPress={() => setStatus('pending')}
+              />
+              <AppButton
+                label="Bestätigen"
+                variant="secondary"
+                loading={statusLoading}
+                onPress={() => setStatus('confirmed')}
+              />
+            </>
+          ) : null}
+          {booking.status === 'completed' ? (
             <AppButton
-              label="Buchung stornieren"
-              variant="ghost"
+              label="Zurück auf bestätigt"
+              variant="secondary"
               loading={statusLoading}
-              onPress={() => setStatus('cancelled')}
+              onPress={() => setStatus('confirmed')}
             />
           ) : null}
         </View>

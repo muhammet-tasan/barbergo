@@ -1,6 +1,7 @@
 import { Pressable, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
+import { ProfileAvatar } from '@/components/ProfileAvatar';
 import { colors } from '@/constants/theme';
 import type { Provider } from '@/types/domain';
 
@@ -18,8 +19,8 @@ export function ProviderCard({ provider, onPress }: ProviderCardProps) {
       accessibilityLabel={`Barber ${provider.name} auswählen`}
     >
       <View className="flex-row items-start">
-        <View className="w-14 h-14 rounded-full bg-brand-dark border border-brand-gold items-center justify-center mr-3">
-          <Ionicons name="cut" size={26} color={colors.accent} />
+        <View className="mr-3">
+          <ProfileAvatar imageUrl={provider.imageUrl} name={provider.name} size={56} />
         </View>
         <View className="flex-1 pr-2">
           <Text className="text-lg font-semibold text-brand-text">{provider.name}</Text>

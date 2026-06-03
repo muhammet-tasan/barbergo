@@ -1,5 +1,6 @@
 import { Text, View } from 'react-native';
 
+import { normalizeBookingStatus } from '@/services/supabase-mappers';
 import type { BookingStatus } from '@/types/domain';
 
 const statusConfig: Record<
@@ -8,36 +9,37 @@ const statusConfig: Record<
 > = {
   pending: {
     label: 'Offen',
-    container: 'bg-warning/20 border-warning',
+    container: 'bg-brand-surface border-warning',
     text: 'text-warning',
   },
   confirmed: {
     label: 'Bestätigt',
-    container: 'bg-success/20 border-success',
+    container: 'bg-brand-surface border-success',
     text: 'text-success',
   },
   completed: {
     label: 'Abgeschlossen',
-    container: 'bg-brand-surfaceLight/60 border-brand-muted',
-    text: 'text-brand-muted',
+    container: 'bg-brand-surfaceLight border-brand-border',
+    text: 'text-brand-text',
   },
   cancelled: {
     label: 'Storniert',
-    container: 'bg-error/20 border-error',
+    container: 'bg-brand-surface border-error',
     text: 'text-error',
   },
 };
 
 type StatusBadgeProps = {
-  status: BookingStatus;
+  status: BookingStatus | string | undefined | null;
 };
 
 export function StatusBadge({ status }: StatusBadgeProps) {
-  const config = statusConfig[status];
+  const normalized = normalizeBookingStatus(status);
+  const config = statusConfig[normalized];
 
   return (
     <View className={`self-start rounded-full border px-3 py-0.5 ${config.container}`}>
-      <Text className={`text-xs font-medium ${config.text}`}>{config.label}</Text>
+      <Text className={`text-xs font-semibold ${config.text}`}>{config.label}</Text>
     </View>
   );
 }

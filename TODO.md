@@ -16,7 +16,7 @@
 - [x] Booking confirmation + WhatsApp deeplink
 - [x] Admin booking list + detail (Maps + WhatsApp)
 - [x] Reusable UI components (cards, inputs, badges)
-- [x] Branding tokens + `docs/branding.md` (Tailwind `brand-*`, Expo splash/icon colors)
+- [x] Brand assets + `BrandLogo` / `BrandMark` on home and barber cards
 - [x] Mock data + pricing constants (`constants/pricing.ts`)
 - [x] German app language for visible UI and WhatsApp messages
 - [x] Async data hooks for provider, services, and bookings

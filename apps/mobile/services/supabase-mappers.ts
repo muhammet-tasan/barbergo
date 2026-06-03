@@ -40,8 +40,20 @@ export type BookingRow = {
   updated_at?: string;
 };
 
+const BOOKING_STATUSES: BookingStatus[] = ['pending', 'confirmed', 'completed', 'cancelled'];
+
 function toNumber(value: number | string): number {
   return typeof value === 'number' ? value : Number(value);
+}
+
+export function normalizeBookingStatus(value: unknown): BookingStatus {
+  if (typeof value === 'string') {
+    const normalized = value.trim().toLowerCase();
+    if (BOOKING_STATUSES.includes(normalized as BookingStatus)) {
+      return normalized as BookingStatus;
+    }
+  }
+  return 'pending';
 }
 
 export function mapProvider(row: ProviderRow): Provider {
@@ -72,7 +84,7 @@ export function mapBooking(row: BookingRow): Booking {
     id: row.id,
     providerId: row.provider_id,
     serviceId: row.service_id,
-    status: row.status,
+    status: normalizeBookingStatus(row.status),
     customerName: row.customer_name,
     phone: row.phone,
     address: row.address,

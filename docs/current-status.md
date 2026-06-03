@@ -1,6 +1,6 @@
 # barbergo — Current Status
 
-Last updated: 2026-06-02 (barber selection `/barbers`)
+Last updated: 2026-06-02
 
 ## Project maturity
 
@@ -23,7 +23,7 @@ Last updated: 2026-06-02 (barber selection `/barbers`)
 - Barber → **`/admin`** (Buchungen verwalten); Kunde → Startseite mit **Termine verwalten**
 - **`Anmelden` / `Abmelden`** im Header aller Screens (via `ScreenHeader`)
 - Booking list with pull-to-refresh + offline/demo banner
-- Booking detail: status updates, Maps, WhatsApp
+- Booking detail: status updates (inkl. Reaktivierung stornierter / Rücknahme abgeschlossener Termine), Maps, WhatsApp
 - `/admin/login` (E-Mail + Passwort)
 - Sign out from admin list; home screen hides “Termin buchen” when logged in
 
@@ -74,7 +74,7 @@ See [supabase/README.md](../supabase/README.md).
 
 - Canonical palette: `apps/mobile/constants/theme.ts` + Tailwind `brand-*` / `success` / `warning` / `error`
 - Expo splash + Android adaptive icon background: `#0F172A`
-- Guide: [branding.md](./branding.md) — replace default `assets/images/*` when logo is ready
+- Home with full-width brand header, unified tagline copy, barber profile with personal quote
 
 ## Next recommended tasks
 

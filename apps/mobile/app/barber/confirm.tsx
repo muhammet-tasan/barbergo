@@ -1,5 +1,6 @@
 import { ActivityIndicator, Alert, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
 
@@ -93,8 +94,8 @@ export default function BookingConfirmScreen() {
       <ScrollView className="flex-1 px-4 pt-4" contentContainerClassName="pb-8">
         <DataSourceBanner usingFallback={usingFallback} error={error} />
         <View className="items-center mb-6">
-          <Text className="text-3xl mb-2">✓</Text>
-          <Text className="text-xl font-bold text-brand-text text-center">Anfrage gesendet</Text>
+          <Ionicons name="checkmark-circle" size={56} color={colors.accent} />
+          <Text className="text-xl font-bold text-brand-text text-center mt-3">Anfrage gesendet</Text>
           <Text className="text-brand-muted text-center mt-2 px-4">
             Dein Termin ist angefragt. Schreibe {provider.name} auf WhatsApp, damit er schneller
             bestätigen kann.

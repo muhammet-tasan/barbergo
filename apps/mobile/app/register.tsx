@@ -90,7 +90,7 @@ export default function RegisterScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-brand-dark" edges={['top']}>
-      <ScreenHeader title="Registrieren" onBack={() => router.replace('/')} showAuthAction={false} />
+      <ScreenHeader title="Registrieren" showAuthAction={false} />
       <KeyboardAvoidingView
         className="flex-1"
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}

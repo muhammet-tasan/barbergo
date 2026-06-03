@@ -68,7 +68,7 @@ export default function LoginScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-brand-dark" edges={['top']}>
-      <ScreenHeader title="Anmelden" onBack={() => router.replace('/')} showAuthAction={false} />
+      <ScreenHeader title="Anmelden" showAuthAction={false} />
       <KeyboardAvoidingView
         className="flex-1"
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
