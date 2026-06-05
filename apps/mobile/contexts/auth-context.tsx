@@ -26,7 +26,7 @@ type AuthContextValue = {
   isBarber: boolean;
   isCustomer: boolean;
   isAuthenticated: boolean;
-  postLoginPath: '/' | '/admin';
+  postLoginPath: '/' | '/admin' | '/customer/bookings';
   signIn: (email: string, password: string) => Promise<AuthResult>;
   signUp: (input: SignUpInput) => Promise<AuthResult>;
   signOut: () => Promise<AuthResult>;

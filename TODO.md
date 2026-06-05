@@ -9,14 +9,15 @@
 - [x] Home screen (rollenbasierte CTAs: Gast / Kunde / Barber)
 - [x] Unified login `/login` + Header Anmelden/Abmelden
 - [x] Customer register `/register` + Phase 2 bookings (`0004`, Storno, Meine Termine)
-- [x] Barber selection screen `/barbers` (active providers list; navigates to `/barber`)
-- [x] Barber profile screen
-- [x] Service selection screen
-- [x] Booking form + validation
-- [x] Booking confirmation + WhatsApp deeplink
-- [x] Admin booking list + detail (Maps + WhatsApp)
-- [x] Reusable UI components (cards, inputs, badges)
-- [x] Brand assets + `BrandLogo` / `BrandMark` on home and barber cards
+- [x] Barber selection screen `/barbers` (BarberCard → Services direkt; Profil optional)
+- [x] Barber profile screen (optional, `?providerId=`)
+- [x] Service selection screen (ProviderMiniHeader; Service-Klick → Buchung)
+- [x] Booking form + validation + sticky CTA + BookingSummaryCard
+- [x] Booking confirmation (zentral) + WhatsApp + 3 CTAs
+- [x] Admin booking list + filter tabs + detail (Maps + WhatsApp + Danger-Storno)
+- [x] Reusable UI: ScreenHeader, AuthActionButton, BarberCard, BookingSummaryCard, EmptyState, BookingListCard
+- [x] Brand assets (header logo, wordmark, avatars) in `constants/images.ts`
+- [x] Per-barber routing via `providerId` query param
 - [x] Mock data + pricing constants (`constants/pricing.ts`)
 - [x] German app language for visible UI and WhatsApp messages
 - [x] Async data hooks for provider, services, and bookings
@@ -41,6 +42,10 @@
 - [x] RLS smoke script (`apps/mobile/scripts/verify-rls-0003.mjs`)
 - [ ] Row Level Security policies (production hardening — see `docs/pre-launch-checklist.md`)
 
+- [x] Gastbuchung UX-Fix (validate-on-submit, kein disabled Press-Feedback, lokale Guest-Kopie)
+- [x] Navigation: Stack-Animationen, konsistenter Dark-Background, Header Home/Subpage
+- [x] UX-Runde: Home, BarberCard, Services+Icons, Buchungsformular-Sections, Admin-Gruppen
+
 ### Next recommended tasks
 
 - [ ] Apply migration **`0003_bookings_auth_rls.sql`** on hosted Supabase (if not yet)
@@ -63,8 +68,8 @@ Kurzüberblick (priorisiert nach Product Roadmap — siehe Tabellen dort):
 - [ ] Phase 1: Datenmodell (`profiles`, `customer_id`, Booking-Access-Token) + RLS Go-live
 - [ ] Apply migration **`0004_customer_profiles_and_booking_access.sql`** on hosted Supabase
 - [ ] Manual E2E Phase 2: register customer → book → Meine Termine → Storno; guest book → device list
-- [ ] Per-barber routing (`/barber?providerId=` or `/barbers/[id]`) when multiple providers go live
-- [ ] Phase 3: Barber-Profil bearbeiten, Avatar, modernes Profil (Card-UI); custom app icon / splash assets per `docs/branding.md`
+- [ ] Phase 3: Barber-Profil bearbeiten, Avatar-Upload, Profil in Supabase pflegen
+- [ ] Phase 4: Kalender/Timeslot-Bereich auf Service-Seite (Platzhalter vorhanden)
 - [ ] Phase 4: Kalender/Tagesansicht, Verfügbarkeit, Services in App pflegen
 - [ ] Phase 5: Bewertungen + Durchschnitt auf Profil
 - [ ] Phase 6 / später: Push, Zahlung (TWINT/Stripe), Multi-Barber, Admin-Web, Chat

@@ -10,8 +10,7 @@ import { canCancelBooking, cancelBookingBlockedReason } from '@/utils/booking-ca
 import {
   classifySupabaseError,
   formatBookingIdError,
-  formatCatalogErrorMessage,
-  getEnvConfigStatus,
+  type CatalogFailureReason,
 } from './catalog-errors';
 import { getBookingAccessToken, saveBookingAccessToken } from './booking-tokens';
 import { getSupabaseClient, SupabaseTables } from './supabase';
@@ -336,12 +335,12 @@ function buildMockBooking(input: CreateBookingInput): Booking {
 export async function createBooking(input: CreateBookingInput): Promise<BookingMutationResult> {
   const client = getSupabaseClient();
   if (!client) {
-    const env = getEnvConfigStatus();
-    return {
-      booking: buildMockBooking(input),
-      source: 'mock',
-      error: formatCatalogErrorMessage('env_missing', { missingEnv: env.missing }),
-    };
+    const booking = buildMockBooking(input);
+    if (!input.customerId) {
+      cacheGuestBooking(booking);
+    }
+    console.warn('[barbergo] createBooking: Supabase nicht konfiguriert — Demo-Buchung lokal gespeichert.');
+    return { booking, source: 'mock' };
   }
 
   if (isMockCatalogId(input.providerId) || isMockCatalogId(input.service.id)) {
@@ -385,13 +384,26 @@ export async function createBooking(input: CreateBookingInput): Promise<BookingM
     return { booking, source: 'supabase' };
   } catch (err) {
     const classified = classifySupabaseError(err);
-    const message =
+    const technical =
       classified.reason === 'rls_denied'
-        ? 'Buchung wurde blockiert (RLS). Prüfe Migration 0004 in Supabase.'
-        : classified.detail || 'Buchung konnte nicht gespeichert werden.';
-    console.warn('[barbergo] createBooking failed:', message);
-    return { source: 'mock', error: message };
+        ? `RLS denied: ${classified.detail}`
+        : classified.detail || String(err);
+    console.warn('[barbergo] createBooking failed:', technical);
+    return {
+      source: 'supabase',
+      error: toUserBookingError(classified.reason, technical),
+    };
   }
+}
+
+function toUserBookingError(reason: CatalogFailureReason | undefined, technical: string): string {
+  if (reason === 'rls_denied') {
+    return 'Die Buchung konnte nicht gespeichert werden. Bitte versuche es später erneut.';
+  }
+  if (technical.toLowerCase().includes('fetch') || technical.toLowerCase().includes('network')) {
+    return 'Keine Verbindung zum Server. Bitte prüfe deine Internetverbindung.';
+  }
+  return 'Die Buchung konnte nicht gespeichert werden. Bitte versuche es erneut.';
 }
 
 export async function cancelCustomerBooking(id: string): Promise<BookingMutationResult> {

@@ -1,22 +1,35 @@
 import { Image } from 'expo-image';
 import { View } from 'react-native';
 
-import { BrandMark } from '@/components/BrandLogo';
+import { brandImages } from '@/constants/images';
 
 type ProfileAvatarProps = {
   imageUrl?: string | null;
   size?: number;
   name?: string;
+  /** card = round-dark; small = avatar-round-512 */
+  variant?: 'profile' | 'card' | 'small';
 };
 
-/** Round profile image — provider photo or brand mark fallback. */
-export function ProfileAvatar({ imageUrl, size = 96, name }: ProfileAvatarProps) {
+const fallbackSources = {
+  profile: brandImages.avatarRoundDark,
+  card: brandImages.avatarRoundDark,
+  small: brandImages.avatarRound,
+} as const;
+
+/** Round profile image — provider photo or brand avatar fallback. */
+export function ProfileAvatar({
+  imageUrl,
+  size = 96,
+  name,
+  variant = 'profile',
+}: ProfileAvatarProps) {
   const dimension = { width: size, height: size, borderRadius: size / 2 };
 
   return (
     <View
       style={dimension}
-      className="rounded-full border-2 border-brand-gold overflow-hidden bg-brand-surface items-center justify-center"
+      className="rounded-full border-2 border-brand-gold/70 overflow-hidden items-center justify-center"
     >
       {imageUrl ? (
         <Image
@@ -26,7 +39,12 @@ export function ProfileAvatar({ imageUrl, size = 96, name }: ProfileAvatarProps)
           accessibilityLabel={name ? `Profilbild ${name}` : 'Profilbild'}
         />
       ) : (
-        <BrandMark size={Math.round(size * 0.78)} accessibilityLabel={name ?? 'Barber'} />
+        <Image
+          source={fallbackSources[variant]}
+          style={{ width: size, height: size }}
+          contentFit="cover"
+          accessibilityLabel={name ? `Avatar ${name}` : 'Barber Avatar'}
+        />
       )}
     </View>
   );

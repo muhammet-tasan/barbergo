@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useState } from 'react';
 
-import { fetchDefaultProvider } from '@/services/providers';
+import { fetchDefaultProvider, fetchProviderById } from '@/services/providers';
 import type { CatalogFailureReason } from '@/services/catalog-errors';
 import type { Provider } from '@/types/domain';
 
-export function useProvider() {
+export function useProvider(providerId?: string) {
   const [provider, setProvider] = useState<Provider | null>(null);
   const [loading, setLoading] = useState(true);
   const [usingFallback, setUsingFallback] = useState(false);
@@ -13,13 +13,15 @@ export function useProvider() {
 
   const reload = useCallback(async () => {
     setLoading(true);
-    const result = await fetchDefaultProvider();
+    const result = providerId
+      ? await fetchProviderById(providerId)
+      : await fetchDefaultProvider();
     setProvider(result.provider ?? null);
     setUsingFallback(result.source === 'mock' || !!result.failureReason);
     setError(result.error);
     setFailureReason(result.failureReason);
     setLoading(false);
-  }, []);
+  }, [providerId]);
 
   useEffect(() => {
     reload();

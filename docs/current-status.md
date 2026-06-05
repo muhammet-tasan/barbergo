@@ -1,6 +1,6 @@
 # barbergo — Current Status
 
-Last updated: 2026-06-02
+Last updated: 2026-06-06
 
 ## Project maturity
 
@@ -10,20 +10,22 @@ Last updated: 2026-06-02
 
 ### Customer flow (German UI)
 
-- Home → **Barber wählen** (`/barbers`) → barber profile (`/barber`) → service selection → booking form (`DD.MM.YYYY`, `HH:MM`)
+- Home → **Termin buchen** → **Barber wählen** (`/barbers`) → **Service** (`/barber/services?providerId=`) → **Buchung** → **Bestätigung**
+- Barber-Profil optional über „Profil ansehen“ (`/barber?providerId=`) — kein Pflichtschritt
 - **Guest booking** or **logged-in customer** (`customer_id` on insert after migration `0004`)
-- Booking confirmation + WhatsApp deeplink
-- **`/register`** + **`/login`** (role `customer` / `barber` in user metadata)
-- **`/customer/bookings`** — account bookings from Supabase + device guest list; **Storno** (24h rule)
+- Zentrale Bestätigungsseite: WhatsApp, Meine Termine, Zur Startseite + `BookingSummaryCard`
+- **`/register`** + **`/login`** — Kunde → Meine Termine; Barber → Admin
+- **`/guest/bookings`** + **`/customer/bookings`** — Empty State, Gast-CTA „Konto erstellen“, Storno-Hinweis (24h)
 
 ### Admin flow (login required when configured)
 
 - **`EXPO_PUBLIC_ADMIN_AUTH_REQUIRED=true`** in `.env.example` (recommended)
 - Unified login at **`/login`** (Kunde + Barber); role via Supabase `user_metadata.role`
-- Barber → **`/admin`** (Buchungen verwalten); Kunde → Startseite mit **Termine verwalten**
-- **`Anmelden` / `Abmelden`** im Header aller Screens (via `ScreenHeader`)
-- Booking list with pull-to-refresh + offline/demo banner
-- Booking detail: status updates (inkl. Reaktivierung stornierter / Rücknahme abgeschlossener Termine), Maps, WhatsApp
+- Barber → **`/admin`** (Buchungen verwalten); Kunde → **`/customer/bookings`**
+- **`ScreenHeader`**: Home = Mark-Logo; Unterseiten = Back + Titel + Pill Auth; `slide_from_right` Navigation
+- **Gastbuchung**: Insert ohne `.select()`, lokale Guest-Kopie, validate-on-submit Button
+- Admin-Liste: Filter-Tabs (Offen / Bestätigt / Abgeschlossen / Storniert) + Pull-to-refresh
+- Admin-Detail: WhatsApp → Maps → Abgeschlossen → Storno (Danger + Bestätigungsdialog)
 - `/admin/login` (E-Mail + Passwort)
 - Sign out from admin list; home screen hides “Termin buchen” when logged in
 
@@ -73,8 +75,8 @@ See [supabase/README.md](../supabase/README.md).
 ## Branding
 
 - Canonical palette: `apps/mobile/constants/theme.ts` + Tailwind `brand-*` / `success` / `warning` / `error`
-- Expo splash + Android adaptive icon background: `#0F172A`
-- Home with full-width brand header, unified tagline copy, barber profile with personal quote
+- Assets: `barbergo-header-logo-transparent.png` (Header), `barbergo-wordmark-transparent.png` (Hero), `barbergo-round-dark.png` / `barbergo-avatar-round-512.png` (Avatare), `barbergo-mark-transparent.png` (Empty State)
+- Expo icon/splash/favicon in `app.json` (unchanged paths)
 
 ## Next recommended tasks
 

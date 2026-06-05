@@ -79,6 +79,66 @@ export async function fetchActiveProviders(): Promise<ProvidersLoadResult> {
   }
 }
 
+export async function fetchProviderById(providerId: string): Promise<ProviderLoadResult> {
+  const env = getEnvConfigStatus();
+  const client = getSupabaseClient();
+
+  if (!client) {
+    const match = providerId === defaultProvider.id ? defaultProvider : defaultProvider;
+    return {
+      provider: match,
+      source: 'mock',
+      failureReason: 'env_missing',
+      error: formatCatalogErrorMessage('env_missing', { missingEnv: env.missing }),
+    };
+  }
+
+  try {
+    const { data, error } = await client
+      .from(SupabaseTables.providers)
+      .select(PROVIDER_SELECT)
+      .eq('id', providerId)
+      .eq('is_active', true)
+      .maybeSingle();
+
+    if (error) {
+      throw error;
+    }
+
+    const row = data as ProviderRow | null;
+    if (!row) {
+      if (providerId === defaultProvider.id) {
+        return { provider: defaultProvider, source: 'mock', failureReason: 'providers_empty' };
+      }
+      return {
+        source: 'supabase',
+        failureReason: 'providers_empty',
+        error: 'Barber nicht gefunden.',
+      };
+    }
+
+    return { provider: mapProvider(row), source: 'supabase' };
+  } catch (err) {
+    const { reason, detail } = classifySupabaseError(err);
+    if (__DEV__) {
+      console.warn('[barbergo] fetchProviderById failed:', detail);
+    }
+    if (providerId === defaultProvider.id) {
+      return {
+        provider: defaultProvider,
+        source: 'mock',
+        failureReason: reason,
+        error: formatCatalogErrorMessage(reason, { table: 'providers', detail }),
+      };
+    }
+    return {
+      source: 'mock',
+      failureReason: reason,
+      error: formatCatalogErrorMessage(reason, { table: 'providers', detail }),
+    };
+  }
+}
+
 export async function fetchDefaultProvider(): Promise<ProviderLoadResult> {
   const env = getEnvConfigStatus();
   const client = getSupabaseClient();

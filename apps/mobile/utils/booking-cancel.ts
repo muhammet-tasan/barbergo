@@ -25,7 +25,7 @@ export function cancelBookingBlockedReason(booking: Booking): string | undefined
   if (canCancelBooking(booking)) {
     return undefined;
   }
-  return 'Storno nur bis 24 Stunden vor Terminbeginn möglich.';
+  return 'Storno nur bis 24h vor Termin möglich.';
 }
 
 function parseAppointmentStart(date: string, time: string): Date | null {

@@ -54,3 +54,8 @@ export function validateBookingForm(fields: BookingFormFields): BookingFormError
 export function hasFormErrors(errors: BookingFormErrors): boolean {
   return Object.keys(errors).length > 0;
 }
+
+/** True when all required booking fields are filled (no validation messages). */
+export function isBookingFormComplete(fields: BookingFormFields): boolean {
+  return !hasFormErrors(validateBookingForm(fields));
+}

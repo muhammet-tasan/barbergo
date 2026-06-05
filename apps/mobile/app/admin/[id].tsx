@@ -3,10 +3,12 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
 
+import { ActionSection } from '@/components/ActionSection';
 import { AppButton } from '@/components/AppButton';
-import { AppCard } from '@/components/AppCard';
+import { BookingSummaryCard } from '@/components/BookingSummaryCard';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { StatusBadge } from '@/components/StatusBadge';
+import { StatusTransitionActions } from '@/components/StatusTransitionActions';
 import { formatChf } from '@/constants/pricing';
 import { colors } from '@/constants/theme';
 import { useAuth } from '@/contexts/auth-context';
@@ -17,22 +19,6 @@ import { openAddressInMaps } from '@/services/maps';
 import { openCustomerWhatsApp } from '@/services/whatsapp';
 import type { BookingStatus } from '@/types/domain';
 import { formatSwissDate } from '@/utils/date';
-
-const bookingStatusText: Record<BookingStatus, string> = {
-  pending: 'offen',
-  confirmed: 'bestätigt',
-  completed: 'abgeschlossen',
-  cancelled: 'storniert',
-};
-
-function DetailRow({ label, value }: { label: string; value: string }) {
-  return (
-    <View className="py-2 border-b border-brand-border/80">
-      <Text className="text-brand-muted text-sm">{label}</Text>
-      <Text className="text-brand-text mt-0.5">{value}</Text>
-    </View>
-  );
-}
 
 export default function AdminBookingDetailScreen() {
   const router = useRouter();
@@ -49,8 +35,11 @@ export default function AdminBookingDetailScreen() {
 
   if (sessionLoading || loading || servicesLoading) {
     return (
-      <SafeAreaView className="flex-1 bg-brand-dark items-center justify-center" edges={['top']}>
-        <ActivityIndicator color={colors.accent} />
+      <SafeAreaView className="flex-1 bg-brand-dark" edges={['top']}>
+        <ScreenHeader title="Buchungsdetails" />
+        <View className="flex-1 items-center justify-center bg-brand-dark">
+          <ActivityIndicator color={colors.accent} />
+        </View>
       </SafeAreaView>
     );
   }
@@ -59,8 +48,8 @@ export default function AdminBookingDetailScreen() {
     return (
       <SafeAreaView className="flex-1 bg-brand-dark" edges={['top']}>
         <ScreenHeader title="Buchungsdetails" />
-        <View className="flex-1 px-6 justify-center">
-          <Text className="text-brand-text text-center mb-4">Bitte zuerst als Admin anmelden.</Text>
+        <View className="flex-1 px-6 justify-center bg-brand-dark">
+          <Text className="text-brand-text text-center mb-4">Bitte zuerst anmelden.</Text>
           <AppButton label="Zum Login" onPress={() => router.replace('/login')} />
         </View>
       </SafeAreaView>
@@ -71,7 +60,7 @@ export default function AdminBookingDetailScreen() {
     return (
       <SafeAreaView className="flex-1 bg-brand-dark" edges={['top']}>
         <ScreenHeader title="Buchung" />
-        <View className="flex-1 px-6 justify-center">
+        <View className="flex-1 px-6 justify-center bg-brand-dark">
           <Text className="text-brand-text text-center mb-6">Buchung nicht gefunden.</Text>
           <AppButton label="Zur Liste" onPress={() => router.back()} />
         </View>
@@ -84,24 +73,27 @@ export default function AdminBookingDetailScreen() {
     try {
       const result = await updateBookingStatus(booking.id, status);
       if (!result.booking) {
-        Alert.alert(
-          'Fehler',
-          result.error ?? 'Status konnte nicht aktualisiert werden.'
-        );
+        Alert.alert('Fehler', result.error ?? 'Status konnte nicht aktualisiert werden.');
         return;
       }
-
       if (result.source === 'mock' && result.error) {
-        Alert.alert(
-          'Offline-Modus',
-          'Supabase war nicht erreichbar. Der Status wurde nur lokal geändert.'
-        );
+        console.warn('[barbergo] updateBookingStatus offline:', result.error);
       }
-
       setBooking(result.booking);
     } finally {
       setStatusLoading(false);
     }
+  };
+
+  const confirmCancel = () => {
+    Alert.alert(
+      'Buchung stornieren',
+      `Möchtest du die Buchung von ${booking.customerName} wirklich stornieren?`,
+      [
+        { text: 'Abbrechen', style: 'cancel' },
+        { text: 'Stornieren', style: 'destructive', onPress: () => setStatus('cancelled') },
+      ]
+    );
   };
 
   const runAction = async (key: string, fn: () => Promise<boolean>, errorMsg: string) => {
@@ -117,46 +109,45 @@ export default function AdminBookingDetailScreen() {
   const customerMessage = [
     `Hallo ${booking.customerName},`,
     '',
-    `Dein barbergo Termin (${service?.name ?? 'Service'}) am ${formatSwissDate(booking.appointmentDate)} um ${booking.appointmentTime} ist ${bookingStatusText[booking.status]}.`,
+    `Dein barbergo Termin (${service?.name ?? 'Service'}) am ${formatSwissDate(booking.appointmentDate)} um ${booking.appointmentTime}.`,
     '',
     `Adresse: ${booking.address}`,
     `Gesamt: ${formatChf(booking.totalChf)}`,
   ].join('\n');
 
+  const summaryRows = [
+    { label: 'Kunde', value: booking.customerName, icon: 'person-outline' as const },
+    { label: 'Telefon', value: booking.phone, icon: 'call-outline' as const },
+    { label: 'Service', value: service?.name ?? '—', icon: 'cut-outline' as const },
+    {
+      label: 'Wann',
+      value: `${formatSwissDate(booking.appointmentDate)} · ${booking.appointmentTime}`,
+      icon: 'calendar-outline' as const,
+    },
+    { label: 'Adresse', value: booking.address, icon: 'location-outline' as const },
+    ...(booking.note
+      ? [{ label: 'Notiz', value: booking.note, icon: 'document-text-outline' as const }]
+      : []),
+    { label: 'Gesamt', value: formatChf(booking.totalChf), highlight: true, icon: 'wallet-outline' as const },
+  ];
+
+  const canCancel = booking.status === 'pending' || booking.status === 'confirmed';
+
   return (
     <SafeAreaView className="flex-1 bg-brand-dark" edges={['top']}>
       <ScreenHeader title="Buchungsdetails" />
-      <ScrollView className="flex-1 px-4 pt-4" contentContainerClassName="pb-8">
-        <View className="mb-4 flex-row items-center gap-3">
+      <ScrollView
+        className="flex-1 bg-brand-dark"
+        contentContainerClassName="px-4 pt-4 pb-8"
+      >
+        <View className="mb-4 flex-row items-center justify-between">
+          <Text className="text-brand-muted text-sm">Status</Text>
           <StatusBadge status={booking.status} />
-          <Text className="text-brand-muted text-sm">
-            {bookingStatusText[booking.status] ?? booking.status}
-          </Text>
         </View>
 
-        <AppCard className="mb-4">
-          <DetailRow label="Kunde" value={booking.customerName} />
-          <DetailRow label="Telefon" value={booking.phone} />
-          <DetailRow label="Service" value={service?.name ?? '—'} />
-          <DetailRow
-            label="Wann"
-            value={`${formatSwissDate(booking.appointmentDate)} · ${booking.appointmentTime}`}
-          />
-          <DetailRow label="Adresse" value={booking.address} />
-          {booking.note ? <DetailRow label="Notiz" value={booking.note} /> : null}
-          <DetailRow label="Gesamt" value={formatChf(booking.totalChf)} />
-        </AppCard>
+        <BookingSummaryCard className="mb-6" rows={summaryRows} />
 
-        <Text className="text-brand-muted text-sm mb-2 uppercase tracking-wide">Aktionen</Text>
-        <View className="gap-3 mb-6">
-          <AppButton
-            label="Adresse in Maps öffnen"
-            variant="secondary"
-            loading={actionLoading === 'maps'}
-            onPress={() =>
-              runAction('maps', () => openAddressInMaps(booking.address), 'Maps konnte nicht geöffnet werden.')
-            }
-          />
+        <ActionSection title="Kontakt & Navigation" className="mb-6">
           <AppButton
             label="Kunde per WhatsApp anschreiben"
             variant="secondary"
@@ -169,64 +160,34 @@ export default function AdminBookingDetailScreen() {
               )
             }
           />
-        </View>
+          <AppButton
+            label="Adresse in Maps öffnen"
+            variant="secondary"
+            loading={actionLoading === 'maps'}
+            onPress={() =>
+              runAction('maps', () => openAddressInMaps(booking.address), 'Maps konnte nicht geöffnet werden.')
+            }
+          />
+        </ActionSection>
 
-        <Text className="text-brand-muted text-sm mb-2 uppercase tracking-wide">Status</Text>
-        <View className="gap-2">
-          {booking.status === 'pending' ? (
-            <>
-              <AppButton
-                label="Als bestätigt markieren"
-                loading={statusLoading}
-                onPress={() => setStatus('confirmed')}
-              />
-              <AppButton
-                label="Buchung stornieren"
-                variant="ghost"
-                loading={statusLoading}
-                onPress={() => setStatus('cancelled')}
-              />
-            </>
-          ) : null}
-          {booking.status === 'confirmed' ? (
-            <>
-              <AppButton
-                label="Als abgeschlossen markieren"
-                loading={statusLoading}
-                onPress={() => setStatus('completed')}
-              />
-              <AppButton
-                label="Buchung stornieren"
-                variant="ghost"
-                loading={statusLoading}
-                onPress={() => setStatus('cancelled')}
-              />
-            </>
-          ) : null}
-          {booking.status === 'cancelled' ? (
-            <>
-              <AppButton
-                label="Wieder öffnen"
-                loading={statusLoading}
-                onPress={() => setStatus('pending')}
-              />
-              <AppButton
-                label="Bestätigen"
-                variant="secondary"
-                loading={statusLoading}
-                onPress={() => setStatus('confirmed')}
-              />
-            </>
-          ) : null}
-          {booking.status === 'completed' ? (
+        <ActionSection title="Status ändern" className="mb-6">
+          <StatusTransitionActions
+            currentStatus={booking.status}
+            loading={statusLoading}
+            onTransition={setStatus}
+          />
+        </ActionSection>
+
+        {canCancel ? (
+          <ActionSection title="Gefährliche Aktion">
             <AppButton
-              label="Zurück auf bestätigt"
-              variant="secondary"
+              label="Buchung stornieren"
+              variant="danger"
               loading={statusLoading}
-              onPress={() => setStatus('confirmed')}
+              onPress={confirmCancel}
             />
-          ) : null}
-        </View>
+          </ActionSection>
+        ) : null}
       </ScrollView>
     </SafeAreaView>
   );

@@ -1,24 +1,21 @@
-import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native';
+import { ActivityIndicator, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
 
 import { AppButton } from '@/components/AppButton';
-import { AppCard } from '@/components/AppCard';
+import { BookingListCard } from '@/components/BookingListCard';
+import { EmptyState } from '@/components/EmptyState';
 import { ScreenHeader } from '@/components/ScreenHeader';
-import { StatusBadge } from '@/components/StatusBadge';
-import { formatChf } from '@/constants/pricing';
 import { colors } from '@/constants/theme';
 import { useServices } from '@/hooks/use-services';
 import {
   cancelBookingBlockedReason,
   cancelGuestBooking,
-  canCancelBooking,
   getServiceById,
   listLocalGuestBookings,
 } from '@/services/bookings';
 import type { Booking } from '@/types/domain';
-import { formatSwissDate } from '@/utils/date';
 import { showUserMessage } from '@/utils/show-message';
 
 export default function GuestBookingsScreen() {
@@ -69,62 +66,45 @@ export default function GuestBookingsScreen() {
         </View>
       ) : (
         <ScrollView className="flex-1 px-4 pt-4" contentContainerClassName="pb-8">
-          <Text className="text-brand-muted mb-4">
-            Gastbuchungen von diesem Gerät. Für alle Geräte und Storno: Konto unter „Anmelden“ in
-            der Kopfzeile erstellen.
+          <Text className="text-brand-muted mb-4 leading-5">
+            Du siehst hier deine Buchungen. Mit einem Konto kannst du sie auf allen Geräten
+            verwalten.
           </Text>
 
+          <View className="mb-6">
+            <AppButton
+              label="Konto erstellen"
+              variant="secondary"
+              onPress={() => router.push('/register')}
+            />
+          </View>
+
           {bookings.length === 0 ? (
-            <AppCard>
-              <Text className="text-brand-muted text-center mb-4">Noch keine Termine auf diesem Gerät.</Text>
-              <AppButton label="Termin buchen" onPress={() => router.push('/barbers')} />
-            </AppCard>
+            <EmptyState
+              title="Noch keine Termine"
+              actionLabel="Termin buchen"
+              onAction={() => router.push('/barbers')}
+            />
           ) : (
             bookings.map((booking) => {
               const service = getServiceById(booking.serviceId, services);
-              const cancelAllowed = canCancelBooking(booking);
               return (
-                <AppCard key={booking.id} className="mb-3">
-                  <Pressable
-                    onPress={() =>
-                      router.push({
-                        pathname: '/barber/confirm',
-                        params: {
-                          bookingId: booking.id,
-                          serviceName: service?.name ?? 'Service',
-                        },
-                      })
-                    }
-                    className="active:opacity-90"
-                  >
-                    <View className="flex-row justify-between items-start mb-2">
-                      <Text className="text-brand-text font-semibold text-base flex-1">
-                        {service?.name ?? 'Service'}
-                      </Text>
-                      <StatusBadge status={booking.status} />
-                    </View>
-                    <Text className="text-brand-muted text-sm">
-                      {formatSwissDate(booking.appointmentDate)} · {booking.appointmentTime}
-                    </Text>
-                    <Text className="text-brand-gold font-medium mt-2">{formatChf(booking.totalChf)}</Text>
-                  </Pressable>
-                  {(booking.status === 'pending' || booking.status === 'confirmed') && (
-                    <View className="mt-3 pt-3 border-t border-brand-border">
-                      <AppButton
-                        label="Termin stornieren"
-                        variant="secondary"
-                        loading={cancellingId === booking.id}
-                        disabled={!cancelAllowed}
-                        onPress={() => handleCancel(booking)}
-                      />
-                      {!cancelAllowed ? (
-                        <Text className="text-brand-muted text-xs mt-2">
-                          {cancelBookingBlockedReason(booking)}
-                        </Text>
-                      ) : null}
-                    </View>
-                  )}
-                </AppCard>
+                <BookingListCard
+                  key={booking.id}
+                  booking={booking}
+                  serviceName={service?.name ?? 'Service'}
+                  onViewDetails={() =>
+                    router.push({
+                      pathname: '/barber/confirm',
+                      params: {
+                        bookingId: booking.id,
+                        serviceName: service?.name ?? 'Service',
+                      },
+                    })
+                  }
+                  onCancel={() => handleCancel(booking)}
+                  cancelling={cancellingId === booking.id}
+                />
               );
             })
           )}

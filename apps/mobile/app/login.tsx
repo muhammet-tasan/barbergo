@@ -25,8 +25,10 @@ export default function LoginScreen() {
 
   if (authLoading) {
     return (
-      <SafeAreaView className="flex-1 bg-brand-dark items-center justify-center" edges={['top']}>
-        <ActivityIndicator color={colors.accent} />
+      <SafeAreaView className="flex-1 bg-brand-dark" edges={['top']}>
+        <View className="flex-1 items-center justify-center bg-brand-dark">
+          <ActivityIndicator color={colors.accent} />
+        </View>
       </SafeAreaView>
     );
   }
@@ -70,17 +72,17 @@ export default function LoginScreen() {
     <SafeAreaView className="flex-1 bg-brand-dark" edges={['top']}>
       <ScreenHeader title="Anmelden" showAuthAction={false} />
       <KeyboardAvoidingView
-        className="flex-1"
+        className="flex-1 bg-brand-dark"
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
         <ScrollView
-          className="flex-1 px-4 pt-4"
-          contentContainerClassName="pb-8"
+          className="flex-1 bg-brand-dark"
+          contentContainerClassName="px-4 pt-6 pb-8"
           keyboardShouldPersistTaps="handled"
         >
-          <Text className="text-brand-muted mb-6">
-            Melde dich als Kunde oder Barber an. Accounts werden in Supabase angelegt — Rolle
-            über Benutzer-Metadaten (`customer` oder `barber`).
+          <Text className="text-xl font-bold text-brand-text mb-2">Willkommen zurück</Text>
+          <Text className="text-brand-muted mb-6 leading-5">
+            Melde dich an, um deine Termine zu verwalten.
           </Text>
 
           <AppForm onSubmit={handleSubmit}>

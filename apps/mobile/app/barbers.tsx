@@ -2,8 +2,8 @@ import { ActivityIndicator, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 
+import { BarberCard } from '@/components/BarberCard';
 import { DataSourceBanner } from '@/components/DataSourceBanner';
-import { ProviderCard } from '@/components/ProviderCard';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { colors } from '@/constants/theme';
 import { useProviders } from '@/hooks/use-providers';
@@ -11,6 +11,20 @@ import { useProviders } from '@/hooks/use-providers';
 export default function BarberSelectionScreen() {
   const router = useRouter();
   const { providers, loading, usingFallback, error } = useProviders();
+
+  const navigateToServices = (providerId: string) => {
+    router.push({
+      pathname: '/barber/services',
+      params: { providerId },
+    });
+  };
+
+  const navigateToProfile = (providerId: string) => {
+    router.push({
+      pathname: '/barber',
+      params: { providerId },
+    });
+  };
 
   return (
     <SafeAreaView className="flex-1 bg-brand-dark" edges={['top']}>
@@ -31,10 +45,11 @@ export default function BarberSelectionScreen() {
             <Text className="text-brand-muted text-center">Keine Barber verfügbar.</Text>
           ) : (
             providers.map((provider) => (
-              <ProviderCard
+              <BarberCard
                 key={provider.id}
                 provider={provider}
-                onPress={() => router.push('/barber')}
+                onSelect={() => navigateToServices(provider.id)}
+                onViewProfile={() => navigateToProfile(provider.id)}
               />
             ))
           )}

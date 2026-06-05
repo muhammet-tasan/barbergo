@@ -6,23 +6,23 @@ import {
   Text,
   View,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useMemo, useRef, useState } from 'react';
 
 import { AppButton } from '@/components/AppButton';
 import { AppCard } from '@/components/AppCard';
+import { BookingFormSummaryCard } from '@/components/BookingSummaryCard';
 import { AppForm } from '@/components/AppForm';
 import { AppInput } from '@/components/AppInput';
+import { SectionHeader } from '@/components/SectionHeader';
 import { ScreenHeader } from '@/components/ScreenHeader';
-import { calculateBookingTotal, formatChf } from '@/constants/pricing';
 import { colors } from '@/constants/theme';
 import { AUTOFILL } from '@/constants/form-autofill';
 import { useProvider } from '@/hooks/use-provider';
 import { useServices } from '@/hooks/use-services';
 import { useAuth } from '@/contexts/auth-context';
 import { createBooking, getServiceById } from '@/services/bookings';
-import { showUserMessage } from '@/utils/show-message';
 import { resolveCatalogDisplayError } from '@/utils/catalog-error-display';
 import { isMockCatalogId, isValidUuid } from '@/utils/uuid';
 import {
@@ -33,15 +33,22 @@ import {
 
 export default function BookingFormScreen() {
   const router = useRouter();
-  const { serviceId } = useLocalSearchParams<{ serviceId: string }>();
+  const insets = useSafeAreaInsets();
+  const { serviceId, providerId } = useLocalSearchParams<{
+    serviceId: string;
+    providerId?: string;
+  }>();
   const { isCustomer, session } = useAuth();
-  const { provider, loading: providerLoading, usingFallback, error: providerError } = useProvider();
+  const { provider, loading: providerLoading, error: providerError } = useProvider(providerId);
   const providerIdForServices =
     provider && isValidUuid(provider.id) ? provider.id : undefined;
   const { services, loading: servicesLoading, error: servicesError } =
     useServices(providerIdForServices);
   const catalogError = resolveCatalogDisplayError(provider, providerError, servicesError);
-  const catalogBlocked = usingFallback || !!catalogError;
+  const catalogBlocked =
+    !!catalogError ||
+    (provider ? isMockCatalogId(provider.id) : false) ||
+    (serviceId ? isMockCatalogId(serviceId) : false);
   const scrollRef = useRef<ScrollView>(null);
 
   const service = useMemo(
@@ -59,13 +66,23 @@ export default function BookingFormScreen() {
   const [submitting, setSubmitting] = useState(false);
   const [submitBanner, setSubmitBanner] = useState<string | null>(null);
 
-  const totals = service ? calculateBookingTotal(service.priceChf) : null;
+  const formFields = {
+    customerName,
+    phone,
+    address,
+    appointmentDate,
+    appointmentTime,
+    note,
+  };
   const loading = providerLoading || servicesLoading;
 
   if (loading) {
     return (
-      <SafeAreaView className="flex-1 bg-brand-dark items-center justify-center" edges={['top']}>
-        <ActivityIndicator color={colors.accent} />
+      <SafeAreaView className="flex-1 bg-brand-dark" edges={['top']}>
+        <ScreenHeader title="Termin buchen" />
+        <View className="flex-1 items-center justify-center bg-brand-dark">
+          <ActivityIndicator color={colors.accent} />
+        </View>
       </SafeAreaView>
     );
   }
@@ -74,49 +91,38 @@ export default function BookingFormScreen() {
     return (
       <SafeAreaView className="flex-1 bg-brand-dark" edges={['top']}>
         <ScreenHeader title="Termin buchen" />
-        <View className="flex-1 px-6 justify-center">
+        <View className="flex-1 px-6 justify-center bg-brand-dark">
           <Text className="text-brand-text text-center mb-6">
             Service nicht gefunden. Bitte wähle einen Service aus.
           </Text>
-          <AppButton label="Service auswählen" onPress={() => router.replace('/barber/services')} />
+          <AppButton
+            label="Service auswählen"
+            onPress={() =>
+              router.push({
+                pathname: '/barber/services',
+                params: providerId ? { providerId } : undefined,
+              })
+            }
+          />
         </View>
       </SafeAreaView>
     );
   }
 
   const handleSubmit = async () => {
+    if (submitting) return;
     setSubmitBanner(null);
 
     if (catalogBlocked) {
-      const msg =
-        catalogError ||
-        'Barber und Services müssen aus Supabase geladen werden, bevor du buchen kannst.';
-      setSubmitBanner(msg);
-      showUserMessage('Supabase nicht bereit', msg);
+      setSubmitBanner('Buchung derzeit nicht möglich. Bitte versuche es später erneut.');
       scrollRef.current?.scrollTo({ y: 0, animated: true });
       return;
     }
 
-    if (!isValidUuid(provider.id) || !isValidUuid(service.id) || isMockCatalogId(provider.id) || isMockCatalogId(service.id)) {
-      const msg = catalogError || 'Ungültige Barber-/Service-IDs — bitte Supabase-Daten laden.';
-      setSubmitBanner(msg);
-      showUserMessage('Ungültige IDs', msg);
-      return;
-    }
-
-    const formErrors = validateBookingForm({
-      customerName,
-      phone,
-      address,
-      appointmentDate,
-      appointmentTime,
-      note,
-    });
+    const formErrors = validateBookingForm(formFields);
     setErrors(formErrors);
     if (hasFormErrors(formErrors)) {
-      const msg = 'Bitte markierte Felder prüfen (Datum: TT.MM.JJJJ, Uhrzeit: HH:MM).';
-      setSubmitBanner(msg);
-      showUserMessage('Formular unvollständig', msg);
+      setSubmitBanner('Bitte prüfe die markierten Felder.');
       scrollRef.current?.scrollTo({ y: 0, animated: true });
       return;
     }
@@ -136,19 +142,10 @@ export default function BookingFormScreen() {
       });
 
       if (!result.booking) {
-        const msg =
-          result.error ?? 'Die Buchung konnte nicht gespeichert werden. Bitte versuche es erneut.';
-        setSubmitBanner(msg);
-        showUserMessage('Fehler', msg);
-        return;
-      }
-
-      if (result.source === 'mock') {
-        const msg =
-          result.error ??
-          'Die Buchung wurde nur temporär im Demo-Modus angezeigt und geht nach einem Neustart verloren.';
-        setSubmitBanner(msg);
-        showUserMessage('Nicht in Supabase gespeichert', msg);
+        setSubmitBanner(
+          result.error ?? 'Die Buchung konnte nicht gespeichert werden. Bitte versuche es erneut.'
+        );
+        scrollRef.current?.scrollTo({ y: 0, animated: true });
         return;
       }
 
@@ -156,134 +153,146 @@ export default function BookingFormScreen() {
         pathname: '/barber/confirm',
         params: { bookingId: result.booking.id, serviceName: service.name },
       });
-    } catch (err) {
-      const msg =
-        err instanceof Error
-          ? err.message
-          : 'Die Buchung konnte nicht gespeichert werden. Bitte versuche es erneut.';
-      setSubmitBanner(msg);
-      showUserMessage('Fehler', msg);
+    } catch {
+      setSubmitBanner('Die Buchung konnte nicht gespeichert werden. Bitte versuche es erneut.');
+      scrollRef.current?.scrollTo({ y: 0, animated: true });
     } finally {
       setSubmitting(false);
     }
   };
 
+  const bottomPad = Math.max(insets.bottom, 16) + 96;
+
   return (
     <SafeAreaView className="flex-1 bg-brand-dark" edges={['top']}>
       <ScreenHeader title="Termin buchen" />
       <KeyboardAvoidingView
-        className="flex-1"
+        className="flex-1 bg-brand-dark"
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
         <ScrollView
           ref={scrollRef}
-          className="flex-1 px-4 pt-4"
+          className="flex-1 bg-brand-dark"
           keyboardShouldPersistTaps="always"
+          contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: bottomPad }}
         >
           {catalogBlocked ? (
             <View className="mb-4 rounded-xl border border-warning/60 bg-warning/10 px-4 py-3">
-              <Text className="text-warning font-semibold">Buchung blockiert</Text>
+              <Text className="text-warning font-semibold">Buchung nicht verfügbar</Text>
               <Text className="text-warning/80 text-sm mt-1">
-                {catalogError ||
-                  'Provider/Services kommen nicht aus Supabase. Prüfe .env, Migration 0001/0002 und seed.sql.'}
+                Barber und Services konnten nicht geladen werden.
               </Text>
             </View>
           ) : null}
 
           {submitBanner ? (
             <View className="mb-4 rounded-xl border border-error/60 bg-error/10 px-4 py-3">
-              <Text className="text-error font-semibold">Hinweis</Text>
-              <Text className="text-error/90 text-sm mt-1">{submitBanner}</Text>
+              <Text className="text-error text-sm">{submitBanner}</Text>
             </View>
           ) : null}
 
-          <AppCard className="mb-4">
-            <Text className="text-brand-text font-semibold text-lg">{service.name}</Text>
-            <Text className="text-brand-muted mt-1">{service.durationMinutes} Minuten</Text>
-            {totals ? (
-              <Text className="text-brand-gold font-bold mt-2 text-lg">
-                {formatChf(totals.totalChf)} gesamt
-                <Text className="text-brand-muted font-normal text-sm">
-                  {' '}
-                  (inkl. {formatChf(totals.serviceFeeChf)} Gebühr)
-                </Text>
-              </Text>
-            ) : null}
-          </AppCard>
+          <SectionHeader title="Deine Auswahl" />
+          <BookingFormSummaryCard
+            className="mb-6"
+            barberName={provider.name}
+            serviceName={service.name}
+            durationMinutes={service.durationMinutes}
+            priceChf={service.priceChf}
+          />
 
-          <AppForm onSubmit={handleSubmit}>
-            <AppInput
-              label="Dein Name"
-              value={customerName}
-              onChangeText={setCustomerName}
-              error={errors.customerName}
-              autofill={AUTOFILL.name}
-              autoCapitalize="words"
-              placeholder="Max Mustermann"
-              returnKeyType="next"
-            />
-            <AppInput
-              label="Telefon (WhatsApp)"
-              value={phone}
-              onChangeText={setPhone}
-              error={errors.phone}
-              autofill={AUTOFILL.tel}
-              keyboardType="phone-pad"
-              placeholder="+41 79 123 45 67"
-              returnKeyType="next"
-            />
-            <AppInput
-              label="Adresse"
-              value={address}
-              onChangeText={setAddress}
-              error={errors.address}
-              autofill={AUTOFILL.streetAddress}
-              placeholder="Musterstrasse 1, 4051 Basel"
-              multiline
-              returnKeyType="next"
-            />
-            <AppInput
-              label="Datum"
-              value={appointmentDate}
-              onChangeText={setAppointmentDate}
-              error={errors.appointmentDate}
-              autofill={AUTOFILL.off}
-              placeholder="20.05.2026"
-              keyboardType="numbers-and-punctuation"
-              returnKeyType="next"
-            />
-            <AppInput
-              label="Uhrzeit"
-              value={appointmentTime}
-              onChangeText={setAppointmentTime}
-              error={errors.appointmentTime}
-              autofill={AUTOFILL.off}
-              placeholder="14:30"
-              keyboardType="numbers-and-punctuation"
-              returnKeyType="next"
-            />
-            <AppInput
-              label="Notiz (optional)"
-              value={note}
-              onChangeText={setNote}
-              autofill={AUTOFILL.off}
-              placeholder="Bitte klingeln, usw."
-              multiline
-              returnKeyType="go"
-              onSubmitEditing={handleSubmit}
-            />
-
-            <View className="mb-8">
-              <AppButton
-                label="Buchung bestätigen"
-                onPress={handleSubmit}
-                loading={submitting}
-                disabled={catalogBlocked}
-                submit
+          <SectionHeader title="Deine Daten" />
+          <AppCard className="mb-4 px-1">
+            <AppForm onSubmit={handleSubmit}>
+              <AppInput
+                label="Dein Name"
+                value={customerName}
+                onChangeText={(v) => {
+                  setCustomerName(v);
+                  if (errors.customerName) setErrors((e) => ({ ...e, customerName: undefined }));
+                }}
+                error={errors.customerName}
+                autofill={AUTOFILL.name}
+                autoCapitalize="words"
+                placeholder="Max Mustermann"
+                returnKeyType="next"
               />
-            </View>
-          </AppForm>
+              <AppInput
+                label="Telefon (WhatsApp)"
+                value={phone}
+                onChangeText={(v) => {
+                  setPhone(v);
+                  if (errors.phone) setErrors((e) => ({ ...e, phone: undefined }));
+                }}
+                error={errors.phone}
+                autofill={AUTOFILL.tel}
+                keyboardType="phone-pad"
+                placeholder="+41 79 123 45 67"
+                returnKeyType="next"
+              />
+              <AppInput
+                label="Adresse"
+                value={address}
+                onChangeText={(v) => {
+                  setAddress(v);
+                  if (errors.address) setErrors((e) => ({ ...e, address: undefined }));
+                }}
+                error={errors.address}
+                autofill={AUTOFILL.streetAddress}
+                placeholder="Musterstrasse 1, 4051 Basel"
+                multiline
+                returnKeyType="next"
+              />
+              <AppInput
+                label="Datum"
+                value={appointmentDate}
+                onChangeText={(v) => {
+                  setAppointmentDate(v);
+                  if (errors.appointmentDate) setErrors((e) => ({ ...e, appointmentDate: undefined }));
+                }}
+                error={errors.appointmentDate}
+                autofill={AUTOFILL.off}
+                placeholder="20.05.2026"
+                keyboardType="numbers-and-punctuation"
+                returnKeyType="next"
+              />
+              <AppInput
+                label="Uhrzeit"
+                value={appointmentTime}
+                onChangeText={(v) => {
+                  setAppointmentTime(v);
+                  if (errors.appointmentTime) setErrors((e) => ({ ...e, appointmentTime: undefined }));
+                }}
+                error={errors.appointmentTime}
+                autofill={AUTOFILL.off}
+                placeholder="14:30"
+                keyboardType="numbers-and-punctuation"
+                returnKeyType="next"
+              />
+              <AppInput
+                label="Notiz (optional)"
+                value={note}
+                onChangeText={setNote}
+                autofill={AUTOFILL.off}
+                placeholder="Bitte klingeln, usw."
+                multiline
+                returnKeyType="go"
+                onSubmitEditing={handleSubmit}
+              />
+            </AppForm>
+          </AppCard>
         </ScrollView>
+
+        <View
+          className="absolute left-0 right-0 border-t border-brand-border bg-brand-dark px-4 pt-3"
+          style={{ bottom: 0, paddingBottom: Math.max(insets.bottom, 12) }}
+        >
+          <AppButton
+            label="Buchung bestätigen"
+            onPress={handleSubmit}
+            loading={submitting}
+            disabled={submitting || catalogBlocked}
+          />
+        </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );

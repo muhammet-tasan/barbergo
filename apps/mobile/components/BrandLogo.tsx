@@ -30,9 +30,9 @@ type BrandLogoProps = {
 };
 
 const logoSources = {
-  hero: brandImages.heroLogoWide,
-  horizontal: brandImages.logoHorizontal,
-  vertical: brandImages.logoVertical,
+  hero: brandImages.wordmark,
+  horizontal: brandImages.headerLogo,
+  vertical: brandImages.wordmark,
 } as const;
 
 /** Full wordmark — hero (start), horizontal (header), vertical (splash-style). */
@@ -45,10 +45,10 @@ export function BrandLogo({
 }: BrandLogoProps) {
   const defaults =
     variant === 'hero'
-      ? { width: 320, height: 96 }
+      ? { width: 300, height: 88 }
       : variant === 'vertical'
-        ? { width: 220, height: 280 }
-        : { width: 160, height: 40 };
+        ? { width: 280, height: 88 }
+        : { width: 165, height: 48 };
 
   const resolvedHeight = height ?? (fullWidth ? 72 : defaults.height);
   const resolvedWidth = width ?? defaults.width;

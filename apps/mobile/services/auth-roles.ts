@@ -34,6 +34,8 @@ export function isCustomerRole(session: Session | null): boolean {
   return getUserRole(session) === 'customer';
 }
 
-export function getPostLoginPath(session: Session | null): '/' | '/admin' {
-  return isBarberRole(session) ? '/admin' : '/';
+export function getPostLoginPath(session: Session | null): '/' | '/admin' | '/customer/bookings' {
+  if (isBarberRole(session)) return '/admin';
+  if (isCustomerRole(session)) return '/customer/bookings';
+  return '/';
 }

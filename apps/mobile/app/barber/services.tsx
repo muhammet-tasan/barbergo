@@ -1,9 +1,8 @@
 import { ActivityIndicator, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 
-import { AppButton } from '@/components/AppButton';
+import { ProviderMiniHeader } from '@/components/ProviderMiniHeader';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { ServiceCard } from '@/components/ServiceCard';
 import { colors } from '@/constants/theme';
@@ -14,8 +13,8 @@ import { resolveCatalogDisplayError } from '@/utils/catalog-error-display';
 
 export default function ServiceSelectionScreen() {
   const router = useRouter();
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-  const { provider, loading: providerLoading, error: providerError } = useProvider();
+  const { providerId } = useLocalSearchParams<{ providerId?: string }>();
+  const { provider, loading: providerLoading, error: providerError } = useProvider(providerId);
   const providerIdForServices =
     provider && isValidUuid(provider.id) ? provider.id : undefined;
   const { services, loading: servicesLoading, error: servicesError } =
@@ -24,24 +23,47 @@ export default function ServiceSelectionScreen() {
   const loading = providerLoading || servicesLoading;
   const catalogError = resolveCatalogDisplayError(provider, providerError, servicesError);
 
+  const goToProfile = () => {
+    if (!provider) return;
+    router.push({
+      pathname: '/barber',
+      params: { providerId: provider.id },
+    });
+  };
+
+  const goToBooking = (serviceId: string) => {
+    if (!provider) return;
+    router.push({
+      pathname: '/barber/book',
+      params: { providerId: provider.id, serviceId },
+    });
+  };
+
   return (
     <SafeAreaView className="flex-1 bg-brand-dark" edges={['top']}>
       <ScreenHeader title="Service auswählen" />
       {loading ? (
-        <View className="flex-1 items-center justify-center">
+        <View className="flex-1 items-center justify-center bg-brand-dark">
           <ActivityIndicator color={colors.accent} />
         </View>
       ) : (
-        <ScrollView className="flex-1 px-4 pt-4" contentContainerClassName="pb-8">
+        <ScrollView
+          className="flex-1 bg-brand-dark"
+          contentContainerClassName="px-4 pt-4 pb-8"
+        >
+          {provider ? (
+            <ProviderMiniHeader provider={provider} onViewProfile={goToProfile} />
+          ) : null}
+
           {catalogError ? (
             <View className="mb-4 rounded-xl border border-error/60 bg-error/10 px-4 py-3">
-              <Text className="text-error font-semibold">Supabase-Daten fehlen</Text>
+              <Text className="text-error font-semibold">Daten nicht verfügbar</Text>
               <Text className="text-error/90 text-sm mt-1">{catalogError}</Text>
             </View>
           ) : null}
 
-          <Text className="text-brand-muted mb-4">
-            Alle Preise in CHF. +CHF 1 Servicegebühr beim Buchen.
+          <Text className="text-brand-muted text-sm mb-4">
+            Alle Preise in CHF, inkl. MwSt.
           </Text>
 
           {!catalogError && services.length === 0 ? (
@@ -51,24 +73,12 @@ export default function ServiceSelectionScreen() {
               <ServiceCard
                 key={service.id}
                 service={service}
-                selected={selectedId === service.id}
-                onPress={() => setSelectedId(service.id)}
+                onPress={() => goToBooking(service.id)}
               />
             ))
           ) : null}
 
-          <View className="mt-4">
-            <AppButton
-              label="Weiter zur Buchung"
-              disabled={!selectedId || !!catalogError}
-              onPress={() =>
-                router.push({
-                  pathname: '/barber/book',
-                  params: { serviceId: selectedId! },
-                })
-              }
-            />
-          </View>
+          <View className="mt-2" />
         </ScrollView>
       )}
     </SafeAreaView>
