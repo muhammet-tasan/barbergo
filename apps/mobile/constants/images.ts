@@ -1,3 +1,11 @@
+/** Known aspect ratios (width / height) for layout without resolveAssetSource (web-safe). */
+export const brandImageAspect = {
+  /** barbergo-header-logo-transparent.png — 1000×260 */
+  headerLogo: 1000 / 260,
+  /** barbergo-wordmark-transparent.png — 1080×400 */
+  wordmark: 1080 / 400,
+} as const;
+
 /** BarberGo raster assets — all under `apps/mobile/assets/images/`. */
 export const brandImages = {
   headerLogo: require('../assets/images/barbergo-header-logo-transparent.png'),

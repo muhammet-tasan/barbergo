@@ -18,14 +18,15 @@ export const layout = {
   buttonHeightMain: 56,
 } as const;
 
-/** Tailwind class helpers for shared layout rhythm. */
+/** Tailwind class helpers — form/detail screens only (not home hero). */
 export const layoutClasses = {
   screenX: 'px-4',
   screenTop: 'pt-4',
   screenBottom: 'pb-8',
-  sectionAfterCard: 'mt-9',
+  /** 32px — section label after a card (e.g. Termin buchen). */
+  sectionAfterCard: 'mt-8',
   sectionSpaced: 'mt-8',
+  /** 12px — space below section label before content. */
   sectionBottom: 'mb-3',
   buttonGroup: 'gap-3',
-  cardAfterSection: 'mb-0',
 } as const;

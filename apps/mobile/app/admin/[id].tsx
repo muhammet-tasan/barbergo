@@ -19,6 +19,7 @@ import { openAddressInMaps } from '@/services/maps';
 import { openCustomerWhatsApp } from '@/services/whatsapp';
 import type { BookingStatus } from '@/types/domain';
 import { formatSwissDate } from '@/utils/date';
+import { confirmUserAction } from '@/utils/show-message';
 
 export default function AdminBookingDetailScreen() {
   const router = useRouter();
@@ -86,13 +87,11 @@ export default function AdminBookingDetailScreen() {
   };
 
   const confirmCancel = () => {
-    Alert.alert(
+    confirmUserAction(
       'Buchung stornieren',
       `Möchtest du die Buchung von ${booking.customerName} wirklich stornieren?`,
-      [
-        { text: 'Abbrechen', style: 'cancel' },
-        { text: 'Stornieren', style: 'destructive', onPress: () => setStatus('cancelled') },
-      ]
+      () => setStatus('cancelled'),
+      'Stornieren'
     );
   };
 
@@ -163,24 +162,14 @@ export default function AdminBookingDetailScreen() {
           />
         </ActionSection>
 
-        <ActionSection title="Status ändern" className="mb-2">
+        <ActionSection title="Status ändern">
           <StatusTransitionActions
             currentStatus={booking.status}
             loading={statusLoading}
             onTransition={setStatus}
+            onCancel={canCancel ? confirmCancel : undefined}
           />
         </ActionSection>
-
-        {canCancel ? (
-          <ActionSection title="Gefährliche Aktion">
-            <AppButton
-              label="Buchung stornieren"
-              variant="danger"
-              loading={statusLoading}
-              onPress={confirmCancel}
-            />
-          </ActionSection>
-        ) : null}
       </ScrollView>
     </SafeAreaView>
   );

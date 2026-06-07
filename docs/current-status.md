@@ -79,6 +79,7 @@ See [supabase/README.md](../supabase/README.md).
 - Service-Auswahl: `kopf_1_haarschnitt` … `kopf_4_kind` via `ServiceIcon` + `constants/images.ts` (`serviceImages`)
 - UI-System: `AppButton` (primary/secondary/tertiary/danger), kompakte `StatusBadge`, einheitliche `SectionHeader` + `BookingSummaryCard`-Zeilen
 - Layout: `constants/layout.ts` (Spacing-Tokens), `AppInput` mit Fokus-State, pressable `BookingListCard`, Sektionen auf Service-/Buchungs-Screens
+- Home: `HomeHero` — vier visuelle Gruppen, Logo bis 320px (`hero-logo-wide`), Premium-Typografie
 - Expo icon/splash/favicon in `app.json` (unchanged paths)
 
 ## Next recommended tasks

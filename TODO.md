@@ -20,6 +20,7 @@
 - [x] Service-Kopf-Bilder (`kopf_1`–`kopf_4`) in Service-Auswahl statt Ionicons
 - [x] UI-System: Button-Varianten (primary/secondary/tertiary/danger), kompakte StatusBadge, SectionHeader
 - [x] Layout-Tokens (`constants/layout.ts`), Formularfelder, Spacing & pressable Booking-Karten
+- [x] Home-Hero (`HomeHero`) mit Brand-/Text-/Badge-/Action-Gruppen und größerem Logo
 - [x] Per-barber routing via `providerId` query param
 - [x] Mock data + pricing constants (`constants/pricing.ts`)
 - [x] German app language for visible UI and WhatsApp messages

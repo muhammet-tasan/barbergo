@@ -39,13 +39,13 @@ const labelStyles: Record<'primary' | 'secondary' | 'tertiary' | 'danger', strin
 };
 
 const sizeStyles: Record<ButtonSize, string> = {
-  main: 'min-h-[56px] px-6 py-3.5',
-  compact: 'min-h-[36px] px-4 py-2',
+  main: 'min-h-[58px] px-6 py-3.5 rounded-[17px]',
+  compact: 'min-h-[36px] px-4 py-2 rounded-xl',
 };
 
-const labelSizeStyles: Record<ButtonSize, string> = {
-  main: 'text-base font-semibold',
-  compact: 'text-sm font-semibold',
+const labelSizeStyles: Record<ButtonSize, { base: string; primary: string }> = {
+  main: { base: 'text-base font-semibold', primary: 'text-base font-bold' },
+  compact: { base: 'text-sm font-semibold', primary: 'text-sm font-bold' },
 };
 
 const webButtonClass = (
@@ -54,7 +54,7 @@ const webButtonClass = (
   fullWidth: boolean,
   isDisabled: boolean
 ) =>
-  `rounded-2xl flex items-center justify-center border-0 cursor-pointer ${sizeStyles[buttonSize]} ${
+  `flex items-center justify-center border-0 cursor-pointer ${sizeStyles[buttonSize]} ${
     fullWidth ? 'w-full' : ''
   } ${containerStyles[resolved]} ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}`;
 
@@ -101,7 +101,11 @@ export function AppButton({
         {loading ? (
           <ActivityIndicator color={spinnerColor} />
         ) : (
-          <span className={`${labelSizeStyles[size]} ${labelStyles[resolved]}`}>{label}</span>
+          <span
+            className={`${resolved === 'primary' ? labelSizeStyles[size].primary : labelSizeStyles[size].base} ${labelStyles[resolved]}`}
+          >
+            {label}
+          </span>
         )}
       </button>
     );
@@ -113,14 +117,18 @@ export function AppButton({
       disabled={isDisabled}
       accessibilityRole="button"
       accessibilityState={{ disabled: isDisabled }}
-      className={`${widthClass} rounded-2xl items-center justify-center ${sizeStyles[size]} ${
+      className={`${widthClass} items-center justify-center ${sizeStyles[size]} ${
         containerStyles[resolved]
       } ${isDisabled ? 'opacity-50' : 'active:opacity-80'}`}
     >
       {loading ? (
         <ActivityIndicator color={spinnerColor} />
       ) : (
-        <Text className={`${labelSizeStyles[size]} ${labelStyles[resolved]}`}>{label}</Text>
+        <Text
+          className={`${resolved === 'primary' ? labelSizeStyles[size].primary : labelSizeStyles[size].base} ${labelStyles[resolved]}`}
+        >
+          {label}
+        </Text>
       )}
     </Pressable>
   );

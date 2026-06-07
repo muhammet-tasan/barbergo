@@ -28,16 +28,19 @@ type StatusTransitionActionsProps = {
   currentStatus: BookingStatus;
   loading?: boolean;
   onTransition: (status: BookingStatus) => void;
+  /** Shown for pending/confirmed — opens confirmation before cancelling. */
+  onCancel?: () => void;
 };
 
 export function StatusTransitionActions({
   currentStatus,
   loading = false,
   onTransition,
+  onCancel,
 }: StatusTransitionActionsProps) {
   const actions = STATUS_ACTIONS[currentStatus] ?? [];
 
-  if (actions.length === 0) return null;
+  if (actions.length === 0 && !onCancel) return null;
 
   return (
     <View className="gap-3">
@@ -50,6 +53,14 @@ export function StatusTransitionActions({
           onPress={() => onTransition(action.status)}
         />
       ))}
+      {onCancel ? (
+        <AppButton
+          label="Buchung stornieren"
+          variant="danger"
+          disabled={loading}
+          onPress={onCancel}
+        />
+      ) : null}
     </View>
   );
 }

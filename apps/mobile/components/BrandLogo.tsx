@@ -30,7 +30,7 @@ type BrandLogoProps = {
 };
 
 const logoSources = {
-  hero: brandImages.wordmark,
+  hero: brandImages.headerLogo,
   horizontal: brandImages.headerLogo,
   vertical: brandImages.wordmark,
 } as const;
@@ -45,7 +45,7 @@ export function BrandLogo({
 }: BrandLogoProps) {
   const defaults =
     variant === 'hero'
-      ? { width: 300, height: 88 }
+      ? { width: 360, height: 105 }
       : variant === 'vertical'
         ? { width: 280, height: 88 }
         : { width: 165, height: 48 };
