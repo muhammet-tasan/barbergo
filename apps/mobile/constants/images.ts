@@ -4,12 +4,15 @@ export const brandImageAspect = {
   headerLogo: 1000 / 260,
   /** barbergo-wordmark-transparent.png — 1080×400 */
   wordmark: 1080 / 400,
+  /** barbergodark-preview.png — 853×337 */
+  heroDarkPreview: 853 / 337,
 } as const;
 
 /** BarberGo raster assets — all under `apps/mobile/assets/images/`. */
 export const brandImages = {
   headerLogo: require('../assets/images/barbergo-header-logo-transparent.png'),
   wordmark: require('../assets/images/barbergo-wordmark-transparent.png'),
+  heroDarkPreview: require('../assets/images/barbergodark-preview.png'),
   heroLogoWide: require('../assets/images/hero-logo-wide.png'),
   logoHorizontal: require('../assets/images/barbergo-header-logo-transparent.png'),
   logoVertical: require('../assets/images/barbergo-wordmark-transparent.png'),

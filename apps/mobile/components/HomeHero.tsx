@@ -24,8 +24,8 @@ const HOME = {
   heroLiftRatio: 0.07,
 } as const;
 
-const heroLogoSource = brandImages.wordmark;
-const HERO_LOGO_ASPECT = brandImageAspect.wordmark;
+const heroLogoSource = brandImages.heroDarkPreview;
+const HERO_LOGO_ASPECT = brandImageAspect.heroDarkPreview;
 
 type HomeHeroProps = {
   loading: boolean;
