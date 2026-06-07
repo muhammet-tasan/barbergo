@@ -1,39 +1,30 @@
 import { Text, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 
 import { AppCard } from '@/components/AppCard';
 import { StatusBadge } from '@/components/StatusBadge';
 import { calculateBookingTotal, formatChf } from '@/constants/pricing';
-import { colors } from '@/constants/theme';
 import type { BookingStatus } from '@/types/domain';
 import { formatSwissDate } from '@/utils/date';
 
 type SummaryRow = {
   label: string;
-  value: string;
+  value?: string;
   highlight?: boolean;
-  icon?: keyof typeof Ionicons.glyphMap;
 };
 
 type BookingSummaryCardProps = {
   rows: SummaryRow[];
   status?: BookingStatus;
-  statusLabel?: string;
   className?: string;
 };
 
-function SummaryRowItem({ label, value, highlight, icon }: SummaryRow) {
+function SummaryRowItem({ label, value = '', highlight }: SummaryRow) {
   return (
-    <View className="flex-row items-start py-2.5 border-b border-brand-border/80 last:border-b-0">
-      {icon ? (
-        <Ionicons name={icon} size={16} color={colors.textMuted} style={{ marginTop: 2 }} />
-      ) : (
-        <View className="w-4" />
-      )}
-      <Text className="text-brand-muted text-sm ml-2 w-[108px]">{label}</Text>
+    <View className="flex-row items-center justify-between py-3 border-b border-brand-border/80 last:border-b-0">
+      <Text className="text-sm text-brand-muted shrink-0 mr-4">{label}</Text>
       <Text
-        className={`flex-1 font-medium ${
-          highlight ? 'text-brand-gold text-base' : 'text-brand-text'
+        className={`flex-1 text-right font-medium ${
+          highlight ? 'text-brand-gold text-base font-semibold' : 'text-brand-text text-sm'
         }`}
         numberOfLines={3}
       >
@@ -46,16 +37,13 @@ function SummaryRowItem({ label, value, highlight, icon }: SummaryRow) {
 export function BookingSummaryCard({
   rows,
   status,
-  statusLabel,
   className,
 }: BookingSummaryCardProps) {
   return (
     <AppCard className={className}>
       {status ? (
-        <View className="flex-row items-center justify-between mb-2 pb-2 border-b border-brand-border/80">
-          <Text className="text-brand-muted text-sm">
-            {statusLabel ?? 'Status'}
-          </Text>
+        <View className="flex-row items-center justify-between py-3 border-b border-brand-border/80">
+          <Text className="text-sm text-brand-muted">Status</Text>
           <StatusBadge status={status} />
         </View>
       ) : null}
@@ -88,12 +76,12 @@ export function BookingFormSummaryCard({
     <BookingSummaryCard
       className={className}
       rows={[
-        { label: 'Barber', value: barberName, icon: 'person-outline' },
-        { label: 'Service', value: serviceName, icon: 'cut-outline' },
-        { label: 'Dauer', value: `${durationMinutes} Min.`, icon: 'time-outline' },
-        { label: 'Preis', value: formatChf(priceChf), icon: 'pricetag-outline' },
-        { label: 'Servicegebühr', value: formatChf(totals.serviceFeeChf), icon: 'add-circle-outline' },
-        { label: 'Gesamt', value: formatChf(totals.totalChf), highlight: true, icon: 'wallet-outline' },
+        { label: 'Barber', value: barberName },
+        { label: 'Service', value: serviceName },
+        { label: 'Dauer', value: `${durationMinutes} Min.` },
+        { label: 'Preis', value: formatChf(priceChf) },
+        { label: 'Servicegebühr', value: formatChf(totals.serviceFeeChf) },
+        { label: 'Gesamt', value: formatChf(totals.totalChf), highlight: true },
       ]}
     />
   );
@@ -123,13 +111,12 @@ export function BookingConfirmSummaryCard({
     <BookingSummaryCard
       className={className}
       status={status}
-      statusLabel="Status"
       rows={[
-        { label: 'Service', value: serviceName, icon: 'cut-outline' },
-        { label: 'Datum', value: formatSwissDate(appointmentDate), icon: 'calendar-outline' },
-        { label: 'Uhrzeit', value: appointmentTime, icon: 'time-outline' },
-        { label: 'Adresse', value: address, icon: 'location-outline' },
-        { label: 'Gesamt', value: formatChf(totalChf), highlight: true, icon: 'wallet-outline' },
+        { label: 'Service', value: serviceName },
+        { label: 'Datum', value: formatSwissDate(appointmentDate) },
+        { label: 'Uhrzeit', value: appointmentTime },
+        { label: 'Adresse', value: address },
+        { label: 'Gesamt', value: formatChf(totalChf), highlight: true },
       ]}
     />
   );

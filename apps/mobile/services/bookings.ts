@@ -267,7 +267,7 @@ async function fetchGuestBookingViaRpc(
 export async function listCustomerBookings(): Promise<BookingsLoadResult> {
   const client = getSupabaseClient();
   if (!client) {
-    return { bookings: [], source: 'mock', error: 'Supabase ist nicht konfiguriert.' };
+    return { bookings: [], source: 'mock', error: 'Termine konnten nicht geladen werden.' };
   }
 
   try {

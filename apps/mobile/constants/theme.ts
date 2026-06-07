@@ -37,6 +37,9 @@ export const spacing = {
   xxl: 48,
 } as const;
 
+/** Screen rhythm tokens — see `constants/layout.ts` for Tailwind class helpers. */
+export { layout, layoutClasses } from '@/constants/layout';
+
 export const radius = {
   sm: 8,
   md: 12,

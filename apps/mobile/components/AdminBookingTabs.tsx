@@ -30,16 +30,16 @@ export function AdminBookingTabs({ active, onChange }: AdminBookingTabsProps) {
           <Pressable
             key={tab.key}
             onPress={() => onChange(tab.key)}
-            className={`rounded-full px-4 min-h-[40px] items-center justify-center border ${
+            className={`rounded-full px-3.5 h-[34px] items-center justify-center border ${
               selected
-                ? 'bg-brand-gold/15 border-brand-gold'
-                : 'bg-brand-surface border-brand-border'
+                ? 'bg-brand-gold/12 border-brand-gold/60'
+                : 'bg-brand-surface border-brand-border/80'
             }`}
             accessibilityRole="tab"
             accessibilityState={{ selected }}
           >
             <Text
-              className={`text-sm font-semibold ${
+              className={`text-xs font-medium ${
                 selected ? 'text-brand-gold' : 'text-brand-muted'
               }`}
             >

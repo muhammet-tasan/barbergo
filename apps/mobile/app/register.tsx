@@ -70,8 +70,7 @@ export default function RegisterScreen() {
 
       if (result.needsEmailConfirmation) {
         setSuccessMessage(
-          'Konto angelegt. Bitte bestätige deine E-Mail (Link von Supabase) und melde dich danach an. ' +
-            'Tipp für Tests: Supabase → Authentication → Providers → Email → „Confirm email“ deaktivieren.'
+          'Konto angelegt. Bitte bestätige deine E-Mail und melde dich danach an.'
         );
         return;
       }
@@ -82,7 +81,7 @@ export default function RegisterScreen() {
         return;
       }
 
-      setFormError('Registrierung ohne Session — bitte erneut anmelden.');
+      setFormError('Bitte melde dich mit deinen Zugangsdaten an.');
     } finally {
       setSubmitting(false);
     }

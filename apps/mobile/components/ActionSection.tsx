@@ -1,18 +1,21 @@
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
+
+import { SectionHeader } from '@/components/SectionHeader';
+import { layoutClasses } from '@/constants/layout';
 
 type ActionSectionProps = {
   title: string;
   children: React.ReactNode;
   className?: string;
+  /** Adds top spacing before this action group (default: true). */
+  spaced?: boolean;
 };
 
-export function ActionSection({ title, children, className }: ActionSectionProps) {
+export function ActionSection({ title, children, className, spaced = true }: ActionSectionProps) {
   return (
     <View className={className}>
-      <Text className="text-brand-muted text-xs font-semibold uppercase tracking-wider mb-3">
-        {title}
-      </Text>
-      <View className="gap-3">{children}</View>
+      <SectionHeader title={title} spaced={spaced} />
+      <View className={layoutClasses.buttonGroup}>{children}</View>
     </View>
   );
 }

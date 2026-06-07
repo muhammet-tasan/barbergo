@@ -103,11 +103,14 @@ export default function AdminBookingListScreen() {
                       </Text>
                     </View>
 
-                    <View className="flex-row justify-between items-center pt-3 border-t border-brand-border">
+                    <View className="flex-row justify-between items-center pt-3 border-t border-brand-border/80">
                       <Text className="text-brand-gold font-semibold text-base">
                         {formatChf(booking.totalChf)}
                       </Text>
-                      <Text className="text-brand-gold text-sm font-medium">Details →</Text>
+                      <View className="flex-row items-center">
+                        <Text className="text-brand-muted text-sm font-medium">Details</Text>
+                        <Ionicons name="chevron-forward" size={16} color={colors.textMuted} />
+                      </View>
                     </View>
                   </AppCard>
                 </Pressable>

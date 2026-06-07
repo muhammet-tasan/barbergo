@@ -4,12 +4,14 @@ import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
 
-import { AppButton } from '@/components/AppButton';
+import { AppButton, ButtonGroup } from '@/components/AppButton';
 import { BookingConfirmSummaryCard } from '@/components/BookingSummaryCard';
 import { DataSourceBanner } from '@/components/DataSourceBanner';
 import { ScreenHeader } from '@/components/ScreenHeader';
+import { SectionHeader } from '@/components/SectionHeader';
 import { colors } from '@/constants/theme';
 import { useAuth } from '@/contexts/auth-context';
+import { getBookingsListPath } from '@/services/auth-roles';
 import { useBooking } from '@/hooks/use-booking';
 import { useProvider } from '@/hooks/use-provider';
 import { useServices } from '@/hooks/use-services';
@@ -22,7 +24,7 @@ export default function BookingConfirmScreen() {
     bookingId: string;
     serviceName?: string;
   }>();
-  const { isCustomer } = useAuth();
+  const { session } = useAuth();
   const { booking, loading: bookingLoading, usingFallback, error } = useBooking(bookingId);
   const { provider, loading: providerLoading } = useProvider(booking?.providerId);
   const { services, loading: servicesLoading } = useServices(provider?.id);
@@ -35,7 +37,7 @@ export default function BookingConfirmScreen() {
   }, [booking, services, serviceNameParam]);
 
   const loading = bookingLoading || providerLoading || servicesLoading;
-  const bookingsPath = isCustomer ? '/customer/bookings' : '/guest/bookings';
+  const bookingsPath = getBookingsListPath(session);
 
   if (loading) {
     return (
@@ -54,7 +56,7 @@ export default function BookingConfirmScreen() {
         <ScreenHeader title="Bestätigung" onBack={() => router.replace('/')} />
         <View className="flex-1 px-6 justify-center bg-brand-dark">
           <Text className="text-brand-text text-center mb-6">Buchung nicht gefunden.</Text>
-          <AppButton label="Zur Startseite" onPress={() => router.replace('/')} />
+          <AppButton label="Zur Startseite" variant="tertiary" onPress={() => router.replace('/')} />
         </View>
       </SafeAreaView>
     );
@@ -93,8 +95,9 @@ export default function BookingConfirmScreen() {
           </Text>
         </View>
 
+        <SectionHeader title="Buchungsübersicht" />
         <BookingConfirmSummaryCard
-          className="mb-6"
+          className="mb-2"
           serviceName={serviceName}
           appointmentDate={booking.appointmentDate}
           appointmentTime={booking.appointmentTime}
@@ -103,7 +106,7 @@ export default function BookingConfirmScreen() {
           status={booking.status}
         />
 
-        <View className="gap-3">
+        <ButtonGroup>
           <AppButton
             label="Per WhatsApp senden"
             onPress={handleWhatsApp}
@@ -116,10 +119,10 @@ export default function BookingConfirmScreen() {
           />
           <AppButton
             label="Zur Startseite"
-            variant="ghost"
+            variant="tertiary"
             onPress={() => router.push('/')}
           />
-        </View>
+        </ButtonGroup>
       </ScrollView>
     </SafeAreaView>
   );

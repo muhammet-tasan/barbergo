@@ -8,7 +8,7 @@ type AppCardProps = ViewProps & {
 export function AppCard({ children, className, ...props }: AppCardProps) {
   return (
     <View
-      className={`rounded-2xl bg-brand-surface border border-brand-border p-4 ${className ?? ''}`}
+      className={`rounded-2xl bg-brand-surface border border-brand-border/90 p-4 ${className ?? ''}`}
       {...props}
     >
       {children}

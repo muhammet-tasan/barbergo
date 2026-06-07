@@ -1,13 +1,16 @@
 import { ActivityIndicator, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useFocusEffect, useRouter } from 'expo-router';
+import { Redirect, useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
 
 import { AppButton } from '@/components/AppButton';
 import { BookingListCard } from '@/components/BookingListCard';
 import { EmptyState } from '@/components/EmptyState';
 import { ScreenHeader } from '@/components/ScreenHeader';
+import { SectionHeader } from '@/components/SectionHeader';
 import { colors } from '@/constants/theme';
+import { useAuth } from '@/contexts/auth-context';
+import { getPostLoginPath } from '@/services/auth-roles';
 import { useServices } from '@/hooks/use-services';
 import {
   cancelBookingBlockedReason,
@@ -20,6 +23,7 @@ import { showUserMessage } from '@/utils/show-message';
 
 export default function GuestBookingsScreen() {
   const router = useRouter();
+  const { loading: authLoading, isAuthenticated, session } = useAuth();
   const { services } = useServices();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
@@ -36,6 +40,18 @@ export default function GuestBookingsScreen() {
       reload();
     }, [reload])
   );
+
+  if (authLoading) {
+    return (
+      <SafeAreaView className="flex-1 bg-brand-dark items-center justify-center" edges={['top']}>
+        <ActivityIndicator color={colors.accent} />
+      </SafeAreaView>
+    );
+  }
+
+  if (isAuthenticated) {
+    return <Redirect href={getPostLoginPath(session)} />;
+  }
 
   const handleCancel = async (booking: Booking) => {
     const blocked = cancelBookingBlockedReason(booking);
@@ -67,17 +83,14 @@ export default function GuestBookingsScreen() {
       ) : (
         <ScrollView className="flex-1 px-4 pt-4" contentContainerClassName="pb-8">
           <Text className="text-brand-muted mb-4 leading-5">
-            Du siehst hier deine Buchungen. Mit einem Konto kannst du sie auf allen Geräten
-            verwalten.
+            Termine von diesem Gerät. Mit einem Konto kannst du sie auf allen Geräten verwalten.
           </Text>
 
-          <View className="mb-6">
-            <AppButton
-              label="Konto erstellen"
-              variant="secondary"
-              onPress={() => router.push('/register')}
-            />
-          </View>
+          <SectionHeader title="Konto" />
+          <AppButton
+            label="Konto erstellen"
+            onPress={() => router.push('/register')}
+          />
 
           {bookings.length === 0 ? (
             <EmptyState
@@ -86,7 +99,9 @@ export default function GuestBookingsScreen() {
               onAction={() => router.push('/barbers')}
             />
           ) : (
-            bookings.map((booking) => {
+            <>
+              <SectionHeader title="Anstehende Termine" spaced />
+              {bookings.map((booking) => {
               const service = getServiceById(booking.serviceId, services);
               return (
                 <BookingListCard
@@ -106,7 +121,8 @@ export default function GuestBookingsScreen() {
                   cancelling={cancellingId === booking.id}
                 />
               );
-            })
+            })}
+            </>
           )}
         </ScrollView>
       )}

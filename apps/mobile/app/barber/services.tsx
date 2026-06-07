@@ -4,6 +4,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 
 import { ProviderMiniHeader } from '@/components/ProviderMiniHeader';
 import { ScreenHeader } from '@/components/ScreenHeader';
+import { SectionHeader } from '@/components/SectionHeader';
 import { ServiceCard } from '@/components/ServiceCard';
 import { colors } from '@/constants/theme';
 import { useProvider } from '@/hooks/use-provider';
@@ -52,7 +53,10 @@ export default function ServiceSelectionScreen() {
           contentContainerClassName="px-4 pt-4 pb-8"
         >
           {provider ? (
-            <ProviderMiniHeader provider={provider} onViewProfile={goToProfile} />
+            <>
+              <SectionHeader title="Dein Barber" />
+              <ProviderMiniHeader provider={provider} onViewProfile={goToProfile} />
+            </>
           ) : null}
 
           {catalogError ? (
@@ -62,23 +66,23 @@ export default function ServiceSelectionScreen() {
             </View>
           ) : null}
 
-          <Text className="text-brand-muted text-sm mb-4">
-            Alle Preise in CHF, inkl. MwSt.
-          </Text>
-
           {!catalogError && services.length === 0 ? (
             <Text className="text-brand-muted text-center">Keine Services verfügbar.</Text>
           ) : !catalogError ? (
-            services.map((service) => (
-              <ServiceCard
-                key={service.id}
-                service={service}
-                onPress={() => goToBooking(service.id)}
-              />
-            ))
+            <>
+              <SectionHeader title="Services" spaced />
+              <Text className="text-brand-muted text-sm mb-3">
+                Alle Preise in CHF, inkl. MwSt.
+              </Text>
+              {services.map((service) => (
+                <ServiceCard
+                  key={service.id}
+                  service={service}
+                  onPress={() => goToBooking(service.id)}
+                />
+              ))}
+            </>
           ) : null}
-
-          <View className="mt-2" />
         </ScrollView>
       )}
     </SafeAreaView>

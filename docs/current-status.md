@@ -77,6 +77,8 @@ See [supabase/README.md](../supabase/README.md).
 - Canonical palette: `apps/mobile/constants/theme.ts` + Tailwind `brand-*` / `success` / `warning` / `error`
 - Assets: `barbergo-header-logo-transparent.png` (Header), `barbergo-wordmark-transparent.png` (Hero), `barbergo-round-dark.png` / `barbergo-avatar-round-512.png` (Avatare), `barbergo-mark-transparent.png` (Empty State)
 - Service-Auswahl: `kopf_1_haarschnitt` … `kopf_4_kind` via `ServiceIcon` + `constants/images.ts` (`serviceImages`)
+- UI-System: `AppButton` (primary/secondary/tertiary/danger), kompakte `StatusBadge`, einheitliche `SectionHeader` + `BookingSummaryCard`-Zeilen
+- Layout: `constants/layout.ts` (Spacing-Tokens), `AppInput` mit Fokus-State, pressable `BookingListCard`, Sektionen auf Service-/Buchungs-Screens
 - Expo icon/splash/favicon in `app.json` (unchanged paths)
 
 ## Next recommended tasks

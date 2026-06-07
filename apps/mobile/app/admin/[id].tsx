@@ -7,7 +7,7 @@ import { ActionSection } from '@/components/ActionSection';
 import { AppButton } from '@/components/AppButton';
 import { BookingSummaryCard } from '@/components/BookingSummaryCard';
 import { ScreenHeader } from '@/components/ScreenHeader';
-import { StatusBadge } from '@/components/StatusBadge';
+import { SectionHeader } from '@/components/SectionHeader';
 import { StatusTransitionActions } from '@/components/StatusTransitionActions';
 import { formatChf } from '@/constants/pricing';
 import { colors } from '@/constants/theme';
@@ -116,19 +116,16 @@ export default function AdminBookingDetailScreen() {
   ].join('\n');
 
   const summaryRows = [
-    { label: 'Kunde', value: booking.customerName, icon: 'person-outline' as const },
-    { label: 'Telefon', value: booking.phone, icon: 'call-outline' as const },
-    { label: 'Service', value: service?.name ?? '—', icon: 'cut-outline' as const },
+    { label: 'Kunde', value: booking.customerName },
+    { label: 'Telefon', value: booking.phone },
+    { label: 'Service', value: service?.name ?? '—' },
     {
       label: 'Wann',
       value: `${formatSwissDate(booking.appointmentDate)} · ${booking.appointmentTime}`,
-      icon: 'calendar-outline' as const,
     },
-    { label: 'Adresse', value: booking.address, icon: 'location-outline' as const },
-    ...(booking.note
-      ? [{ label: 'Notiz', value: booking.note, icon: 'document-text-outline' as const }]
-      : []),
-    { label: 'Gesamt', value: formatChf(booking.totalChf), highlight: true, icon: 'wallet-outline' as const },
+    { label: 'Adresse', value: booking.address },
+    ...(booking.note ? [{ label: 'Notiz', value: booking.note }] : []),
+    { label: 'Gesamt', value: formatChf(booking.totalChf), highlight: true },
   ];
 
   const canCancel = booking.status === 'pending' || booking.status === 'confirmed';
@@ -140,14 +137,10 @@ export default function AdminBookingDetailScreen() {
         className="flex-1 bg-brand-dark"
         contentContainerClassName="px-4 pt-4 pb-8"
       >
-        <View className="mb-4 flex-row items-center justify-between">
-          <Text className="text-brand-muted text-sm">Status</Text>
-          <StatusBadge status={booking.status} />
-        </View>
+        <SectionHeader title="Buchungsübersicht" />
+        <BookingSummaryCard className="mb-2" rows={summaryRows} status={booking.status} />
 
-        <BookingSummaryCard className="mb-6" rows={summaryRows} />
-
-        <ActionSection title="Kontakt & Navigation" className="mb-6">
+        <ActionSection title="Kontakt & Navigation" className="mb-2">
           <AppButton
             label="Kunde per WhatsApp anschreiben"
             variant="secondary"
@@ -170,7 +163,7 @@ export default function AdminBookingDetailScreen() {
           />
         </ActionSection>
 
-        <ActionSection title="Status ändern" className="mb-6">
+        <ActionSection title="Status ändern" className="mb-2">
           <StatusTransitionActions
             currentStatus={booking.status}
             loading={statusLoading}

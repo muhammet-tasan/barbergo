@@ -19,7 +19,7 @@ export async function getCurrentSession(): Promise<Session | null> {
 export async function signInWithEmail(email: string, password: string): Promise<AuthResult> {
   const client = getSupabaseClient();
   if (!client) {
-    return { error: 'Supabase ist nicht konfiguriert.' };
+    return { error: 'Anmeldung ist derzeit nicht verfügbar.' };
   }
 
   const { error } = await client.auth.signInWithPassword({
@@ -43,7 +43,7 @@ export type SignUpInput = {
 export async function signUpWithEmail(input: SignUpInput): Promise<AuthResult> {
   const client = getSupabaseClient();
   if (!client) {
-    return { error: 'Supabase ist nicht konfiguriert.' };
+    return { error: 'Registrierung ist derzeit nicht verfügbar.' };
   }
 
   const { data, error } = await client.auth.signUp({
@@ -71,7 +71,7 @@ export async function signUpWithEmail(input: SignUpInput): Promise<AuthResult> {
 export async function signInWithMagicLink(email: string): Promise<AuthResult> {
   const client = getSupabaseClient();
   if (!client) {
-    return { error: 'Supabase ist nicht konfiguriert. Prüfe apps/mobile/.env und starte Expo neu.' };
+    return { error: 'Anmeldung ist derzeit nicht verfügbar.' };
   }
 
   const { error } = await client.auth.signInWithOtp({

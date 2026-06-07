@@ -193,15 +193,14 @@ export default function BookingFormScreen() {
 
           <SectionHeader title="Deine Auswahl" />
           <BookingFormSummaryCard
-            className="mb-6"
             barberName={provider.name}
             serviceName={service.name}
             durationMinutes={service.durationMinutes}
             priceChf={service.priceChf}
           />
 
-          <SectionHeader title="Deine Daten" />
-          <AppCard className="mb-4 px-1">
+          <SectionHeader title="Deine Daten" followsCard />
+          <AppCard className="mb-4">
             <AppForm onSubmit={handleSubmit}>
               <AppInput
                 label="Dein Name"

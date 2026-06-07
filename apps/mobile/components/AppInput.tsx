@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Platform, Text, TextInput, View, type TextInputProps } from 'react-native';
 
 import type { AutofillPreset } from '@/constants/form-autofill';
@@ -10,6 +11,12 @@ type AppInputProps = TextInputProps & {
   autofill?: AutofillPreset;
 };
 
+const labelClass = 'text-[13px] font-medium text-brand-muted mb-2';
+const inputBaseClass =
+  'rounded-[13px] bg-brand-dark border px-4 text-[15px] text-brand-text leading-5';
+const inputSingleClass = 'min-h-[52px] py-3';
+const inputMultilineClass = 'min-h-[88px] max-h-[120px] py-3';
+
 export function AppInput({
   label,
   error,
@@ -18,11 +25,21 @@ export function AppInput({
   autoComplete,
   textContentType,
   nativeID,
+  multiline,
+  onFocus,
+  onBlur,
   ...props
 }: AppInputProps) {
+  const [focused, setFocused] = useState(false);
   const fieldName = autofill?.name ?? nativeID;
   const resolvedAutoComplete = autoComplete ?? autofill?.autoComplete;
   const resolvedTextContentType = textContentType ?? autofill?.textContentType;
+
+  const borderClass = error
+    ? 'border-error'
+    : focused
+      ? 'border-brand-gold/55'
+      : 'border-brand-border/80';
 
   const webFieldProps =
     Platform.OS === 'web' && fieldName
@@ -36,29 +53,40 @@ export function AppInput({
           htmlFor={fieldName}
           style={{
             display: 'block',
-            fontSize: 14,
+            fontSize: 13,
+            fontWeight: 500,
             color: colors.textMuted,
-            marginBottom: 6,
+            marginBottom: 8,
           }}
         >
           {label}
         </label>
       ) : (
-        <Text className="text-sm text-brand-muted mb-1.5">{label}</Text>
+        <Text className={labelClass}>{label}</Text>
       )}
       <TextInput
         nativeID={fieldName}
-        placeholderTextColor={colors.textMuted}
+        placeholderTextColor="#7C8EA3"
         importantForAutofill="yes"
         autoComplete={resolvedAutoComplete}
         textContentType={resolvedTextContentType}
-        className={`rounded-xl bg-brand-surface border px-4 py-3 text-brand-text text-base ${
-          error ? 'border-error' : 'border-brand-border'
-        } ${className ?? ''}`}
+        multiline={multiline}
+        textAlignVertical={multiline ? 'top' : 'center'}
+        className={`${inputBaseClass} ${multiline ? inputMultilineClass : inputSingleClass} ${borderClass} ${
+          className ?? ''
+        }`}
+        onFocus={(event) => {
+          setFocused(true);
+          onFocus?.(event);
+        }}
+        onBlur={(event) => {
+          setFocused(false);
+          onBlur?.(event);
+        }}
         {...webFieldProps}
         {...props}
       />
-      {error ? <Text className="text-error text-sm mt-1">{error}</Text> : null}
+      {error ? <Text className="text-error text-[13px] mt-1.5">{error}</Text> : null}
     </View>
   );
 }

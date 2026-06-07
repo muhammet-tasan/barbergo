@@ -39,3 +39,8 @@ export function getPostLoginPath(session: Session | null): '/' | '/admin' | '/cu
   if (isCustomerRole(session)) return '/customer/bookings';
   return '/';
 }
+
+/** Meine Termine — Konto wenn eingeloggt als Kunde, sonst Geräte-Gastliste. */
+export function getBookingsListPath(session: Session | null): '/customer/bookings' | '/guest/bookings' {
+  return isCustomerRole(session) ? '/customer/bookings' : '/guest/bookings';
+}

@@ -9,7 +9,7 @@ type AuthActionButtonProps = {
   compact?: boolean;
 };
 
-/** Compact pill — login/logout in app header (min 40px touch height). */
+/** Small header outline button — visually distinct from status badges and main CTAs. */
 export function AuthActionButton({ compact = false }: AuthActionButtonProps) {
   const router = useRouter();
   const { session, loading, signOut } = useAuth();
@@ -17,19 +17,19 @@ export function AuthActionButton({ compact = false }: AuthActionButtonProps) {
 
   if (loading) {
     return (
-      <View className="min-h-[36px] min-w-[64px] items-center justify-center">
-        <ActivityIndicator size="small" color={colors.accent} />
+      <View className="min-h-[36px] min-w-[72px] items-center justify-center">
+        <ActivityIndicator size="small" color={colors.textMuted} />
       </View>
     );
   }
 
   const pillClass = compact
-    ? 'rounded-full border border-brand-gold/80 bg-brand-surface px-3 min-h-[36px] justify-center items-center'
-    : 'rounded-full border border-brand-gold bg-brand-surface px-4 min-h-[40px] justify-center items-center';
+    ? 'rounded-xl border border-brand-border bg-brand-surface/90 px-3 min-h-[36px] justify-center items-center'
+    : 'rounded-xl border border-brand-border bg-brand-surface/90 px-4 min-h-[38px] justify-center items-center';
 
   const textClass = compact
-    ? 'text-brand-gold text-xs font-semibold'
-    : 'text-brand-gold text-sm font-semibold';
+    ? 'text-brand-text text-xs font-semibold'
+    : 'text-brand-text text-sm font-semibold';
 
   if (!session) {
     return (

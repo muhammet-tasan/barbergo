@@ -38,41 +38,41 @@ export function classifySupabaseError(err: unknown): {
   return { reason: 'query_failed', detail: message };
 }
 
+/** User-facing catalog error — no dev/test hints. Technical detail → console.warn in services. */
 export function formatCatalogErrorMessage(
   reason: CatalogFailureReason,
   context?: { table?: string; detail?: string; missingEnv?: string[] }
 ): string {
+  if (context?.detail) {
+    console.warn('[barbergo] catalog error:', reason, context.detail);
+  }
+
   switch (reason) {
     case 'env_missing':
-      return `Supabase-Umgebung fehlt in der App (${context?.missingEnv?.join(', ') ?? 'EXPO_PUBLIC_*'}). .env liegt unter apps/mobile — danach npx expo start -c und Reload. Prüfe Debug-Box: „Supabase URL present“.`;
+      return 'Die App kann derzeit keine Live-Daten laden. Bitte versuche es später erneut.';
     case 'providers_empty':
-      return 'Tabelle providers: kein aktiver Barber gefunden. Führe supabase/migrations/0001_initial_schema.sql und supabase/seed.sql im Supabase SQL Editor aus.';
+      return 'Kein Barber verfügbar. Bitte versuche es später erneut.';
     case 'services_empty':
-      return 'Tabelle services: keine aktiven Services für diesen Barber. Prüfe seed.sql (provider_id muss zur Provider-UUID passen).';
+      return 'Keine Services verfügbar. Bitte versuche es später erneut.';
     case 'rls_denied':
-      return `Zugriff blockiert (RLS)${context?.table ? ` auf ${context.table}` : ''}: ${context?.detail ?? 'Keine Berechtigung für anon'}. Erlaube anon SELECT auf providers und services (Migration 0001) bzw. bookings (Migration 0002).`;
+      return 'Zugriff verweigert. Bitte versuche es später erneut.';
     case 'query_failed':
-      return `Supabase-Abfrage fehlgeschlagen${context?.table ? ` (${context.table})` : ''}: ${context?.detail ?? 'Unbekannter Fehler'}`;
+      return 'Daten konnten nicht geladen werden. Bitte versuche es später erneut.';
     case 'mock_provider_id':
-      return 'Barber verwendet Demo-ID (z. B. provider-1) statt Supabase-UUID. Provider konnte nicht aus der Datenbank geladen werden — Fehler oben prüfen.';
+      return 'Barber-Daten nicht verfügbar. Bitte versuche es später erneut.';
     case 'mock_service_id':
-      return 'Service verwendet Demo-ID (z. B. service-1) statt Supabase-UUID. Services konnten nicht aus der Datenbank geladen werden — Fehler oben prüfen.';
+      return 'Service-Daten nicht verfügbar. Bitte versuche es später erneut.';
     default:
-      return context?.detail ?? 'Unbekannter Katalogfehler';
+      return 'Ein Fehler ist aufgetreten. Bitte versuche es später erneut.';
   }
 }
 
 export function formatBookingIdError(providerId: string, serviceId: string): string {
-  const parts: string[] = [];
-  if (isMockCatalogId(providerId)) {
-    parts.push(formatCatalogErrorMessage('mock_provider_id'));
-  } else if (!isValidUuid(providerId)) {
-    parts.push(`Ungültige Provider-ID: ${providerId}`);
+  if (isMockCatalogId(providerId) || isMockCatalogId(serviceId)) {
+    return 'Buchung derzeit nicht möglich. Bitte versuche es später erneut.';
   }
-  if (isMockCatalogId(serviceId)) {
-    parts.push(formatCatalogErrorMessage('mock_service_id'));
-  } else if (!isValidUuid(serviceId)) {
-    parts.push(`Ungültige Service-ID: ${serviceId}`);
+  if (!isValidUuid(providerId) || !isValidUuid(serviceId)) {
+    return 'Ungültige Buchungsdaten. Bitte wähle Barber und Service erneut.';
   }
-  return parts.join('\n\n');
+  return 'Buchung derzeit nicht möglich. Bitte versuche es später erneut.';
 }

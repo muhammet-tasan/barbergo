@@ -1,12 +1,13 @@
 import { ActivityIndicator, Alert, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Redirect, useFocusEffect, useRouter } from 'expo-router';
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 import { BookingListCard } from '@/components/BookingListCard';
 import { DataSourceBanner } from '@/components/DataSourceBanner';
 import { EmptyState } from '@/components/EmptyState';
 import { ScreenHeader } from '@/components/ScreenHeader';
+import { SectionHeader } from '@/components/SectionHeader';
 import { colors } from '@/constants/theme';
 import { useAuth } from '@/contexts/auth-context';
 import { useServices } from '@/hooks/use-services';
@@ -20,6 +21,18 @@ import {
 import type { Booking } from '@/types/domain';
 import { formatSwissDate } from '@/utils/date';
 
+function mergeCustomerBookings(account: Booking[], device: Booking[]): {
+  bookings: Booking[];
+  hasPreLoginDeviceBookings: boolean;
+} {
+  const accountIds = new Set(account.map((b) => b.id));
+  const deviceOnly = device.filter((b) => !accountIds.has(b.id));
+  return {
+    bookings: [...account, ...deviceOnly],
+    hasPreLoginDeviceBookings: deviceOnly.length > 0,
+  };
+}
+
 export default function CustomerBookingsScreen() {
   const router = useRouter();
   const { loading: authLoading, isCustomer } = useAuth();
@@ -30,6 +43,11 @@ export default function CustomerBookingsScreen() {
   const [usingFallback, setUsingFallback] = useState(false);
   const [error, setError] = useState<string | undefined>();
   const [cancellingId, setCancellingId] = useState<string | null>(null);
+
+  const { bookings: allBookings, hasPreLoginDeviceBookings } = useMemo(
+    () => mergeCustomerBookings(accountBookings, deviceBookings),
+    [accountBookings, deviceBookings]
+  );
 
   const reload = useCallback(async () => {
     setLoading(true);
@@ -102,8 +120,6 @@ export default function CustomerBookingsScreen() {
     return <Redirect href="/login" />;
   }
 
-  const hasAny = accountBookings.length > 0 || deviceBookings.length > 0;
-
   return (
     <SafeAreaView className="flex-1 bg-brand-dark" edges={['top']}>
       <ScreenHeader title="Meine Termine" onBack={() => router.replace('/')} />
@@ -116,60 +132,42 @@ export default function CustomerBookingsScreen() {
           <DataSourceBanner usingFallback={usingFallback} error={error} />
 
           <Text className="text-brand-muted mb-4 leading-5">
-            Du siehst hier deine Buchungen. Mit einem Konto kannst du sie auf allen Geräten
-            verwalten.
+            Deine Termine auf diesem Konto — auf allen Geräten verfügbar, sobald du angemeldet
+            bist.
           </Text>
 
-          {!hasAny ? (
+          {hasPreLoginDeviceBookings ? (
+            <Text className="text-brand-muted text-xs mb-4 leading-5">
+              Mindestens ein Termin wurde vor der Anmeldung auf diesem Gerät gebucht. Neue
+              Buchungen werden automatisch deinem Konto zugeordnet.
+            </Text>
+          ) : null}
+
+          {allBookings.length === 0 ? (
             <EmptyState
               title="Noch keine Termine"
               actionLabel="Termin buchen"
               onAction={() => router.push('/barbers')}
             />
-          ) : null}
-
-          {accountBookings.length > 0 ? (
+          ) : (
             <>
-              <Text className="text-brand-text font-semibold mb-3">Dein Konto</Text>
-              {accountBookings.map((booking) => {
-                const service = getServiceById(booking.serviceId, services);
-                const serviceName = service?.name ?? 'Service';
-                return (
-                  <BookingListCard
-                    key={booking.id}
-                    booking={booking}
-                    serviceName={serviceName}
-                    onViewDetails={() => openBooking(booking, serviceName)}
-                    onCancel={() => handleCancel(booking)}
-                    cancelling={cancellingId === booking.id}
-                  />
-                );
-              })}
+              <SectionHeader title="Anstehende Termine" />
+              {allBookings.map((booking) => {
+              const service = getServiceById(booking.serviceId, services);
+              const serviceName = service?.name ?? 'Service';
+              return (
+                <BookingListCard
+                  key={booking.id}
+                  booking={booking}
+                  serviceName={serviceName}
+                  onViewDetails={() => openBooking(booking, serviceName)}
+                  onCancel={() => handleCancel(booking)}
+                  cancelling={cancellingId === booking.id}
+                />
+              );
+            })}
             </>
-          ) : null}
-
-          {deviceBookings.length > 0 ? (
-            <>
-              <Text className="text-brand-text font-semibold mb-3 mt-4">Von diesem Gerät (Gast)</Text>
-              <Text className="text-brand-muted text-xs mb-3">
-                Gastbuchungen ohne Konto — nur auf diesem Gerät sichtbar.
-              </Text>
-              {deviceBookings.map((booking) => {
-                const service = getServiceById(booking.serviceId, services);
-                const serviceName = service?.name ?? 'Service';
-                return (
-                  <BookingListCard
-                    key={`local-${booking.id}`}
-                    booking={booking}
-                    serviceName={serviceName}
-                    onViewDetails={() => openBooking(booking, serviceName)}
-                    onCancel={() => handleCancel(booking)}
-                    cancelling={cancellingId === booking.id}
-                  />
-                );
-              })}
-            </>
-          ) : null}
+          )}
         </ScrollView>
       )}
     </SafeAreaView>
