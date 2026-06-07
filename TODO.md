@@ -17,6 +17,7 @@
 - [x] Admin booking list + filter tabs + detail (Maps + WhatsApp + Danger-Storno)
 - [x] Reusable UI: ScreenHeader, AuthActionButton, BarberCard, BookingSummaryCard, EmptyState, BookingListCard
 - [x] Brand assets (header logo, wordmark, avatars) in `constants/images.ts`
+- [x] Service-Kopf-Bilder (`kopf_1`–`kopf_4`) in Service-Auswahl statt Ionicons
 - [x] Per-barber routing via `providerId` query param
 - [x] Mock data + pricing constants (`constants/pricing.ts`)
 - [x] German app language for visible UI and WhatsApp messages

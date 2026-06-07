@@ -10,3 +10,11 @@ export const brandImages = {
   avatarRoundDark: require('../assets/images/barbergo-round-dark.png'),
   logoIconOnly: require('../assets/images/android-icon-foreground.png'),
 } as const;
+
+/** Service-Kopf-Illustrationen — Service-Auswahl statt generischer Icons. */
+export const serviceImages = {
+  haircut: require('../assets/images/kopf_1_haarschnitt.png'),
+  beard: require('../assets/images/kopf_2_bart.png'),
+  combo: require('../assets/images/kopf_3_haare_und_bart.png'),
+  kids: require('../assets/images/kopf_4_kind.png'),
+} as const;

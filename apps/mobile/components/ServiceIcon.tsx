@@ -1,19 +1,19 @@
+import { Image } from 'expo-image';
 import { View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 
-import { colors } from '@/constants/theme';
+import { serviceImages } from '@/constants/images';
 
-type ServiceIconName = keyof typeof SERVICE_ICON_MAP;
+type ServiceImageKey = keyof typeof serviceImages | 'default';
 
-const SERVICE_ICON_MAP = {
-  haircut: 'cut-outline',
-  beard: 'man-outline',
-  combo: 'sparkles-outline',
-  kids: 'happy-outline',
-  default: 'cut-outline',
-} as const;
+const SERVICE_IMAGE_MAP: Record<ServiceImageKey, (typeof serviceImages)[keyof typeof serviceImages]> = {
+  haircut: serviceImages.haircut,
+  beard: serviceImages.beard,
+  combo: serviceImages.combo,
+  kids: serviceImages.kids,
+  default: serviceImages.haircut,
+};
 
-function resolveServiceIconKey(serviceName: string): ServiceIconName {
+function resolveServiceImageKey(serviceName: string): ServiceImageKey {
   const name = serviceName.toLowerCase();
   if (name.includes('kinder')) return 'kids';
   if (name.includes('bart') && (name.includes('+') || name.includes('und') || name.includes('&'))) {
@@ -29,13 +29,18 @@ type ServiceIconProps = {
   size?: number;
 };
 
-export function ServiceIcon({ serviceName, size = 28 }: ServiceIconProps) {
-  const key = resolveServiceIconKey(serviceName);
-  const iconName = SERVICE_ICON_MAP[key];
+export function ServiceIcon({ serviceName, size = 44 }: ServiceIconProps) {
+  const key = resolveServiceImageKey(serviceName);
+  const source = SERVICE_IMAGE_MAP[key];
 
   return (
-    <View className="w-11 h-11 rounded-xl bg-brand-dark/80 border border-brand-border/60 items-center justify-center mr-3">
-      <Ionicons name={iconName} size={size} color={colors.accent} />
+    <View className="w-11 h-11 rounded-xl bg-brand-dark/80 border border-brand-border/60 items-center justify-center mr-3 overflow-hidden">
+      <Image
+        source={source}
+        style={{ width: size, height: size }}
+        contentFit="cover"
+        accessibilityIgnoresInvertColors
+      />
     </View>
   );
 }
