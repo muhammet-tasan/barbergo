@@ -33,6 +33,9 @@ export type Booking = {
   address: string;
   appointmentDate: string;
   appointmentTime: string;
+  /** UTC ISO timestamps — preferred for display via timezone helpers */
+  startAt?: string;
+  endAt?: string;
   note?: string;
   servicePriceChf: number;
   serviceFeeChf: number;

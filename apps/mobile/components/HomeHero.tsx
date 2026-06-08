@@ -29,13 +29,23 @@ const HERO_LOGO_ASPECT = brandImageAspect.heroDarkPreview;
 
 type HomeHeroProps = {
   loading: boolean;
+  isAdmin: boolean;
   isBarber: boolean;
   onBook: () => void;
-  onManage: () => void;
+  onAdmin: () => void;
+  onBarberDashboard: () => void;
   onBookings: () => void;
 };
 
-export function HomeHero({ loading, isBarber, onBook, onManage, onBookings }: HomeHeroProps) {
+export function HomeHero({
+  loading,
+  isAdmin,
+  isBarber,
+  onBook,
+  onAdmin,
+  onBarberDashboard,
+  onBookings,
+}: HomeHeroProps) {
   const { height } = useWindowDimensions();
   const heroLift = Math.round(height * HOME.heroLiftRatio);
 
@@ -83,8 +93,10 @@ export function HomeHero({ loading, isBarber, onBook, onManage, onBookings }: Ho
           <View style={styles.loadingWrap}>
             <ActivityIndicator color={colors.accent} />
           </View>
+        ) : isAdmin ? (
+          <AppButton label="Admin-Bereich" onPress={onAdmin} />
         ) : isBarber ? (
-          <AppButton label="Buchungen verwalten" onPress={onManage} />
+          <AppButton label="Barber-Bereich" onPress={onBarberDashboard} />
         ) : (
           <>
             <AppButton label="Termin buchen" onPress={onBook} />

@@ -1,6 +1,6 @@
 import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Redirect, useRouter } from 'expo-router';
+import { type Href, Redirect, useRouter } from 'expo-router';
 import { useState } from 'react';
 
 import { AppButton } from '@/components/AppButton';
@@ -12,6 +12,7 @@ import { AUTOFILL } from '@/constants/form-autofill';
 import { useAuth } from '@/contexts/auth-context';
 import { getPostLoginPath } from '@/services/auth-roles';
 import { getCurrentSession } from '@/services/auth';
+import { fetchUserProfile } from '@/services/profiles';
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -34,7 +35,7 @@ export default function LoginScreen() {
   }
 
   if (isAuthenticated) {
-    return <Redirect href={postLoginPath} />;
+    return <Redirect href={postLoginPath as Href} />;
   }
 
   const handleSubmit = async () => {
@@ -62,7 +63,10 @@ export default function LoginScreen() {
       }
 
       const session = await getCurrentSession();
-      router.replace(getPostLoginPath(session));
+      if (session) {
+        const profile = await fetchUserProfile(session.user.id);
+        router.replace(getPostLoginPath(profile) as Href);
+      }
     } finally {
       setSubmitting(false);
     }

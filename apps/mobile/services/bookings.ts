@@ -3,6 +3,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { calculateBookingTotal } from '@/constants/pricing';
 import type { Booking, BookingStatus, Service } from '@/types/domain';
 import { parseSwissDateToIso } from '@/utils/date';
+import { dedupeBookingsById } from '@/utils/dedupe-bookings';
+import { getBookingDisplayDateTime } from '@/utils/booking-display';
 
 import { generateAccessToken, generateUuid, isMockCatalogId, isValidUuid } from '@/utils/uuid';
 import { canCancelBooking, cancelBookingBlockedReason } from '@/utils/booking-cancel';
@@ -17,7 +19,7 @@ import { getSupabaseClient, SupabaseTables } from './supabase';
 import { mapBooking, sortBookings, type BookingRow } from './supabase-mappers';
 
 const BOOKING_SELECT =
-  'id, provider_id, service_id, status, customer_name, phone, address, appointment_date, appointment_time, note, service_price_chf, service_fee_chf, total_chf, customer_id, created_at, updated_at';
+  'id, provider_id, service_id, status, customer_name, phone, address, appointment_date, appointment_time, start_at, end_at, note, service_price_chf, service_fee_chf, total_chf, customer_id, created_at, updated_at';
 
 export type DataSource = 'supabase' | 'mock';
 
@@ -76,12 +78,18 @@ async function ensureGuestBookingsHydrated(): Promise<void> {
   guestBookingsHydrated = true;
 }
 
+function shouldCacheAsGuest(booking: Booking): boolean {
+  return !booking.customerId;
+}
+
 function cacheGuestBooking(booking: Booking): void {
+  if (!shouldCacheAsGuest(booking)) return;
   guestBookingCache.set(booking.id, booking);
   void persistGuestBookings();
 }
 
 async function syncBookingToLocalCache(booking: Booking): Promise<void> {
+  if (!shouldCacheAsGuest(booking)) return;
   const hasToken = Boolean(booking.accessToken) || Boolean(await getBookingAccessToken(booking.id));
   if (guestBookingCache.has(booking.id) || hasToken) {
     cacheGuestBooking(booking);
@@ -110,7 +118,7 @@ export async function listLocalGuestBookings(): Promise<Booking[]> {
     })
   );
 
-  return sortBookings(refreshed);
+  return sortBookings(dedupeBookingsById(refreshed));
 }
 
 function generateMockId(): string {
@@ -174,7 +182,10 @@ export async function listBookings(): Promise<BookingsLoadResult> {
     }
 
     const rows = (data ?? []) as BookingRow[];
-    return { bookings: sortBookings(rows.map(mapBooking)), source: 'supabase' };
+    return {
+      bookings: sortBookings(dedupeBookingsById(rows.map(mapBooking))),
+      source: 'supabase',
+    };
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Buchungen konnten nicht geladen werden.';
     console.warn('[barbergo] listBookings fallback:', message);
@@ -206,9 +217,11 @@ export async function getBookingById(id: string): Promise<BookingLoadResult> {
 
     if (data) {
       const booking = mapBooking(data as BookingRow);
-      const token = await getBookingAccessToken(id);
-      if (token || getCachedGuestBooking(id)) {
-        cacheGuestBooking(booking);
+      if (shouldCacheAsGuest(booking)) {
+        const token = await getBookingAccessToken(id);
+        if (token || getCachedGuestBooking(id)) {
+          cacheGuestBooking(booking);
+        }
       }
       return { booking, source: 'supabase' };
     }
@@ -282,11 +295,99 @@ export async function listCustomerBookings(): Promise<BookingsLoadResult> {
     }
 
     const rows = (data ?? []) as BookingRow[];
-    return { bookings: sortBookings(rows.map(mapBooking)), source: 'supabase' };
+    return {
+      bookings: sortBookings(dedupeBookingsById(rows.map(mapBooking))),
+      source: 'supabase',
+    };
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Termine konnten nicht geladen werden.';
     return { bookings: [], source: 'supabase', error: message };
   }
+}
+
+export type CreateSlotBookingInput = {
+  providerId: string;
+  service: Service;
+  startAt: string;
+  customerName: string;
+  phone: string;
+  address: string;
+  note?: string;
+  customerId?: string;
+};
+
+export async function createSlotBooking(
+  input: CreateSlotBookingInput
+): Promise<BookingMutationResult> {
+  const { bookSlot } = await import('./slots');
+  const slotResult = await bookSlot({
+    providerId: input.providerId,
+    service: input.service,
+    startAt: input.startAt,
+    customerName: input.customerName,
+    phone: input.phone,
+    address: input.address,
+    note: input.note,
+    customerId: input.customerId,
+  });
+
+  if (slotResult.error) {
+    return { source: slotResult.source, error: slotResult.error };
+  }
+
+  if (!slotResult.bookingId) {
+    return { source: slotResult.source, error: 'Buchung konnte nicht erstellt werden.' };
+  }
+
+  if (slotResult.source === 'mock') {
+    const display = getBookingDisplayDateTime({
+      id: slotResult.bookingId,
+      providerId: input.providerId,
+      serviceId: input.service.id,
+      status: 'confirmed',
+      customerName: input.customerName,
+      phone: input.phone,
+      address: input.address,
+      appointmentDate: '',
+      appointmentTime: '',
+      startAt: input.startAt,
+      servicePriceChf: input.service.priceChf,
+      serviceFeeChf: 1,
+      totalChf: input.service.priceChf + 1,
+      customerId: input.customerId,
+    });
+    const booking = buildBookingFromInput(slotResult.bookingId, {
+      providerId: input.providerId,
+      service: input.service,
+      customerName: input.customerName,
+      phone: input.phone,
+      address: input.address,
+      appointmentDate: display.dateSwiss,
+      appointmentTime: display.time,
+      note: input.note,
+      customerId: input.customerId,
+    });
+    booking.status = 'confirmed';
+    booking.startAt = input.startAt;
+    if (!input.customerId) {
+      cacheGuestBooking(booking);
+    }
+    mockBookings.unshift(booking);
+    return { booking, source: 'mock' };
+  }
+
+  const loaded = await getBookingById(slotResult.bookingId);
+  if (!loaded.booking) {
+    return { source: 'supabase', error: 'Buchung wurde erstellt, konnte aber nicht geladen werden.' };
+  }
+
+  const isGuest = !input.customerId;
+  if (isGuest && slotResult.accessToken) {
+    await saveBookingAccessToken(slotResult.bookingId, slotResult.accessToken);
+    cacheGuestBooking({ ...loaded.booking, accessToken: slotResult.accessToken });
+  }
+
+  return { booking: loaded.booking, source: 'supabase' };
 }
 
 export type CreateBookingInput = {

@@ -1,25 +1,21 @@
-import { isSwissDate } from '@/utils/date';
+const PHONE_RE = /^(\+41|0)[\d\s]{8,14}$/;
 
 function isNonEmpty(value: string): boolean {
   return value.trim().length > 0;
 }
 
-export type BookingFormFields = {
+export type SlotBookingFormFields = {
   customerName: string;
   phone: string;
   address: string;
-  appointmentDate: string;
-  appointmentTime: string;
   note?: string;
+  selectedSlotStartAt?: string;
 };
 
-export type BookingFormErrors = Partial<Record<keyof BookingFormFields, string>>;
+export type SlotBookingFormErrors = Partial<Record<keyof SlotBookingFormFields, string>>;
 
-const TIME_RE = /^([01]\d|2[0-3]):[0-5]\d$/;
-const PHONE_RE = /^(\+41|0)[\d\s]{8,14}$/;
-
-export function validateBookingForm(fields: BookingFormFields): BookingFormErrors {
-  const errors: BookingFormErrors = {};
+export function validateSlotBookingForm(fields: SlotBookingFormFields): SlotBookingFormErrors {
+  const errors: SlotBookingFormErrors = {};
 
   if (!isNonEmpty(fields.customerName)) {
     errors.customerName = 'Name ist erforderlich';
@@ -36,26 +32,29 @@ export function validateBookingForm(fields: BookingFormFields): BookingFormError
     errors.address = 'Adresse ist erforderlich';
   }
 
-  if (!isNonEmpty(fields.appointmentDate)) {
-    errors.appointmentDate = 'Datum ist erforderlich';
-  } else if (!isSwissDate(fields.appointmentDate)) {
-    errors.appointmentDate = 'Bitte TT.MM.JJJJ verwenden (z. B. 20.05.2026)';
-  }
-
-  if (!isNonEmpty(fields.appointmentTime)) {
-    errors.appointmentTime = 'Uhrzeit ist erforderlich';
-  } else if (!TIME_RE.test(fields.appointmentTime.trim())) {
-    errors.appointmentTime = 'Bitte 24h-Format verwenden (z. B. 14:30)';
+  if (!fields.selectedSlotStartAt) {
+    errors.selectedSlotStartAt = 'Bitte Datum und Uhrzeit wählen';
   }
 
   return errors;
 }
 
-export function hasFormErrors(errors: BookingFormErrors): boolean {
+export function hasFormErrors(errors: SlotBookingFormErrors): boolean {
   return Object.keys(errors).length > 0;
 }
 
-/** True when all required booking fields are filled (no validation messages). */
+/** @deprecated Legacy free-text booking — use validateSlotBookingForm */
+export type BookingFormFields = SlotBookingFormFields & {
+  appointmentDate: string;
+  appointmentTime: string;
+};
+
+export type BookingFormErrors = SlotBookingFormErrors;
+
+export function validateBookingForm(fields: BookingFormFields): BookingFormErrors {
+  return validateSlotBookingForm(fields);
+}
+
 export function isBookingFormComplete(fields: BookingFormFields): boolean {
-  return !hasFormErrors(validateBookingForm(fields));
+  return !hasFormErrors(validateSlotBookingForm(fields));
 }

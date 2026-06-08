@@ -1,6 +1,6 @@
 import { ActivityIndicator, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Redirect, useFocusEffect, useRouter } from 'expo-router';
+import { type Href, Redirect, useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
 
 import { AppButton } from '@/components/AppButton';
@@ -23,7 +23,7 @@ import { showUserMessage } from '@/utils/show-message';
 
 export default function GuestBookingsScreen() {
   const router = useRouter();
-  const { loading: authLoading, isAuthenticated, session } = useAuth();
+  const { loading: authLoading, isAuthenticated, profile } = useAuth();
   const { services } = useServices();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
@@ -50,7 +50,7 @@ export default function GuestBookingsScreen() {
   }
 
   if (isAuthenticated) {
-    return <Redirect href={getPostLoginPath(session)} />;
+    return <Redirect href={getPostLoginPath(profile) as Href} />;
   }
 
   const handleCancel = async (booking: Booking) => {

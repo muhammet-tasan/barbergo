@@ -1,4 +1,4 @@
-import { ActivityIndicator, Alert, ScrollView, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Redirect, useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
@@ -19,19 +19,8 @@ import {
   listLocalGuestBookings,
 } from '@/services/bookings';
 import type { Booking } from '@/types/domain';
-import { formatSwissDate } from '@/utils/date';
-
-function mergeCustomerBookings(account: Booking[], device: Booking[]): {
-  bookings: Booking[];
-  hasPreLoginDeviceBookings: boolean;
-} {
-  const accountIds = new Set(account.map((b) => b.id));
-  const deviceOnly = device.filter((b) => !accountIds.has(b.id));
-  return {
-    bookings: [...account, ...deviceOnly],
-    hasPreLoginDeviceBookings: deviceOnly.length > 0,
-  };
-}
+import { getBookingDisplayDateTime } from '@/utils/booking-display';
+import { mergeCustomerBookings } from '@/utils/dedupe-bookings';
 
 export default function CustomerBookingsScreen() {
   const router = useRouter();
@@ -84,7 +73,7 @@ export default function CustomerBookingsScreen() {
 
     Alert.alert(
       'Termin stornieren',
-      `Möchtest du den Termin am ${formatSwissDate(booking.appointmentDate)} wirklich stornieren?`,
+      `Möchtest du den Termin am ${getBookingDisplayDateTime(booking).dateSwiss} wirklich stornieren?`,
       [
         { text: 'Abbrechen', style: 'cancel' },
         {
@@ -131,10 +120,13 @@ export default function CustomerBookingsScreen() {
         <ScrollView className="flex-1 px-4 pt-4" contentContainerClassName="pb-8">
           <DataSourceBanner usingFallback={usingFallback} error={error} />
 
-          <Text className="text-brand-muted mb-4 leading-5">
+          <Text className="text-brand-muted mb-2 leading-5">
             Deine Termine auf diesem Konto — auf allen Geräten verfügbar, sobald du angemeldet
             bist.
           </Text>
+          <Pressable onPress={() => router.push('/customer/profile')} className="mb-4">
+            <Text className="text-brand-gold text-sm">Mein Profil bearbeiten</Text>
+          </Pressable>
 
           {hasPreLoginDeviceBookings ? (
             <Text className="text-brand-muted text-xs mb-4 leading-5">

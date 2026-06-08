@@ -30,6 +30,8 @@ export type BookingRow = {
   address: string;
   appointment_date: string;
   appointment_time: string;
+  start_at?: string | null;
+  end_at?: string | null;
   note: string | null;
   service_price_chf: number | string;
   service_fee_chf: number | string;
@@ -90,6 +92,8 @@ export function mapBooking(row: BookingRow): Booking {
     address: row.address,
     appointmentDate: row.appointment_date,
     appointmentTime: row.appointment_time,
+    startAt: row.start_at ?? undefined,
+    endAt: row.end_at ?? undefined,
     note: row.note ?? undefined,
     servicePriceChf: toNumber(row.service_price_chf),
     serviceFeeChf: toNumber(row.service_fee_chf),
@@ -101,12 +105,13 @@ export function mapBooking(row: BookingRow): Booking {
   };
 }
 
+function bookingSortKey(booking: Booking): number {
+  if (booking.startAt) return new Date(booking.startAt).getTime();
+  return new Date(`${booking.appointmentDate}T${booking.appointmentTime}`).getTime();
+}
+
 export function sortBookings(bookings: Booking[]): Booking[] {
-  return [...bookings].sort(
-    (a, b) =>
-      new Date(`${b.appointmentDate}T${b.appointmentTime}`).getTime() -
-      new Date(`${a.appointmentDate}T${a.appointmentTime}`).getTime()
-  );
+  return [...bookings].sort((a, b) => bookingSortKey(b) - bookingSortKey(a));
 }
 
 export function sortServices(services: Service[]): Service[] {

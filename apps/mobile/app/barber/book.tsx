@@ -8,7 +8,7 @@ import {
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { AppButton } from '@/components/AppButton';
 import { AppCard } from '@/components/AppCard';
@@ -17,18 +17,24 @@ import { AppForm } from '@/components/AppForm';
 import { AppInput } from '@/components/AppInput';
 import { SectionHeader } from '@/components/SectionHeader';
 import { ScreenHeader } from '@/components/ScreenHeader';
+import { SlotPicker } from '@/components/SlotPicker';
 import { colors } from '@/constants/theme';
 import { AUTOFILL } from '@/constants/form-autofill';
 import { useProvider } from '@/hooks/use-provider';
 import { useServices } from '@/hooks/use-services';
 import { useAuth } from '@/contexts/auth-context';
-import { createBooking, getServiceById } from '@/services/bookings';
+import { createSlotBooking, getServiceById } from '@/services/bookings';
+import {
+  buildSelectableDates,
+  fetchAvailableSlots,
+  type TimeSlot,
+} from '@/services/slots';
 import { resolveCatalogDisplayError } from '@/utils/catalog-error-display';
 import { isMockCatalogId, isValidUuid } from '@/utils/uuid';
 import {
   hasFormErrors,
-  validateBookingForm,
-  type BookingFormErrors,
+  validateSlotBookingForm,
+  type SlotBookingFormErrors,
 } from '@/utils/validation';
 
 export default function BookingFormScreen() {
@@ -56,24 +62,36 @@ export default function BookingFormScreen() {
     [serviceId, services]
   );
 
+  const selectableDates = useMemo(() => buildSelectableDates(14), []);
+  const [selectedDate, setSelectedDate] = useState<string | null>(selectableDates[0] ?? null);
+  const [slots, setSlots] = useState<TimeSlot[]>([]);
+  const [slotsLoading, setSlotsLoading] = useState(false);
+  const [slotsError, setSlotsError] = useState<string | undefined>();
+  const [selectedSlot, setSelectedSlot] = useState<TimeSlot | null>(null);
+
   const [customerName, setCustomerName] = useState('');
   const [phone, setPhone] = useState('');
   const [address, setAddress] = useState('');
-  const [appointmentDate, setAppointmentDate] = useState('');
-  const [appointmentTime, setAppointmentTime] = useState('');
   const [note, setNote] = useState('');
-  const [errors, setErrors] = useState<BookingFormErrors>({});
+  const [errors, setErrors] = useState<SlotBookingFormErrors>({});
   const [submitting, setSubmitting] = useState(false);
   const [submitBanner, setSubmitBanner] = useState<string | null>(null);
 
-  const formFields = {
-    customerName,
-    phone,
-    address,
-    appointmentDate,
-    appointmentTime,
-    note,
-  };
+  const loadSlots = useCallback(async () => {
+    if (!service || !provider || !selectedDate) return;
+    setSlotsLoading(true);
+    setSlotsError(undefined);
+    const result = await fetchAvailableSlots(provider.id, service, selectedDate);
+    setSlots(result.slots);
+    setSlotsError(result.error);
+    setSelectedSlot(null);
+    setSlotsLoading(false);
+  }, [provider, service, selectedDate]);
+
+  useEffect(() => {
+    void loadSlots();
+  }, [loadSlots]);
+
   const loading = providerLoading || servicesLoading;
 
   if (loading) {
@@ -119,24 +137,29 @@ export default function BookingFormScreen() {
       return;
     }
 
-    const formErrors = validateBookingForm(formFields);
+    const formErrors = validateSlotBookingForm({
+      customerName,
+      phone,
+      address,
+      note,
+      selectedSlotStartAt: selectedSlot?.startAt,
+    });
     setErrors(formErrors);
-    if (hasFormErrors(formErrors)) {
-      setSubmitBanner('Bitte prüfe die markierten Felder.');
+    if (hasFormErrors(formErrors) || !selectedSlot) {
+      setSubmitBanner('Bitte prüfe die markierten Felder und wähle einen Termin.');
       scrollRef.current?.scrollTo({ y: 0, animated: true });
       return;
     }
 
     setSubmitting(true);
     try {
-      const result = await createBooking({
+      const result = await createSlotBooking({
         providerId: provider.id,
         service,
+        startAt: selectedSlot.startAt,
         customerName,
         phone,
         address,
-        appointmentDate,
-        appointmentTime,
         note,
         customerId: isCustomer ? session?.user.id : undefined,
       });
@@ -145,6 +168,9 @@ export default function BookingFormScreen() {
         setSubmitBanner(
           result.error ?? 'Die Buchung konnte nicht gespeichert werden. Bitte versuche es erneut.'
         );
+        if (result.error?.includes('nicht mehr verfügbar')) {
+          await loadSlots();
+        }
         scrollRef.current?.scrollTo({ y: 0, animated: true });
         return;
       }
@@ -199,7 +225,24 @@ export default function BookingFormScreen() {
             priceChf={service.priceChf}
           />
 
-          <SectionHeader title="Deine Daten" followsCard />
+          <SectionHeader title="Termin wählen" followsCard />
+          <AppCard className="mb-4">
+            <SlotPicker
+              dates={selectableDates}
+              selectedDate={selectedDate}
+              onSelectDate={setSelectedDate}
+              slots={slots}
+              selectedSlot={selectedSlot}
+              onSelectSlot={setSelectedSlot}
+              loading={slotsLoading}
+              error={slotsError}
+            />
+            {errors.selectedSlotStartAt ? (
+              <Text className="text-error text-sm mt-2">{errors.selectedSlotStartAt}</Text>
+            ) : null}
+          </AppCard>
+
+          <SectionHeader title="Deine Daten" />
           <AppCard className="mb-4">
             <AppForm onSubmit={handleSubmit}>
               <AppInput
@@ -216,7 +259,7 @@ export default function BookingFormScreen() {
                 returnKeyType="next"
               />
               <AppInput
-                label="Telefon (WhatsApp)"
+                label="Telefon"
                 value={phone}
                 onChangeText={(v) => {
                   setPhone(v);
@@ -242,37 +285,11 @@ export default function BookingFormScreen() {
                 returnKeyType="next"
               />
               <AppInput
-                label="Datum"
-                value={appointmentDate}
-                onChangeText={(v) => {
-                  setAppointmentDate(v);
-                  if (errors.appointmentDate) setErrors((e) => ({ ...e, appointmentDate: undefined }));
-                }}
-                error={errors.appointmentDate}
-                autofill={AUTOFILL.off}
-                placeholder="20.05.2026"
-                keyboardType="numbers-and-punctuation"
-                returnKeyType="next"
-              />
-              <AppInput
-                label="Uhrzeit"
-                value={appointmentTime}
-                onChangeText={(v) => {
-                  setAppointmentTime(v);
-                  if (errors.appointmentTime) setErrors((e) => ({ ...e, appointmentTime: undefined }));
-                }}
-                error={errors.appointmentTime}
-                autofill={AUTOFILL.off}
-                placeholder="14:30"
-                keyboardType="numbers-and-punctuation"
-                returnKeyType="next"
-              />
-              <AppInput
                 label="Notiz (optional)"
                 value={note}
                 onChangeText={setNote}
                 autofill={AUTOFILL.off}
-                placeholder="Bitte klingeln, usw."
+                placeholder="Besondere Wünsche, Zugangshinweise …"
                 multiline
                 returnKeyType="go"
                 onSubmitEditing={handleSubmit}
@@ -286,10 +303,10 @@ export default function BookingFormScreen() {
           style={{ bottom: 0, paddingBottom: Math.max(insets.bottom, 12) }}
         >
           <AppButton
-            label="Buchung bestätigen"
+            label="Termin bestätigen"
             onPress={handleSubmit}
             loading={submitting}
-            disabled={submitting || catalogBlocked}
+            disabled={submitting || catalogBlocked || !selectedSlot}
           />
         </View>
       </KeyboardAvoidingView>

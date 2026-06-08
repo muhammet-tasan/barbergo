@@ -8,7 +8,7 @@ import { formatChf } from '@/constants/pricing';
 import { colors } from '@/constants/theme';
 import { canCancelBooking } from '@/utils/booking-cancel';
 import type { Booking } from '@/types/domain';
-import { formatSwissDate } from '@/utils/date';
+import { getBookingDisplayDateTime } from '@/utils/booking-display';
 
 type BookingListCardProps = {
   booking: Booking;
@@ -25,6 +25,7 @@ export function BookingListCard({
   onCancel,
   cancelling = false,
 }: BookingListCardProps) {
+  const display = getBookingDisplayDateTime(booking);
   const cancelAllowed = canCancelBooking(booking);
   const showCancelSection =
     (booking.status === 'pending' || booking.status === 'confirmed') && onCancel;
@@ -42,7 +43,7 @@ export function BookingListCard({
           <StatusBadge status={booking.status} />
         </View>
         <Text className="text-brand-muted text-sm mt-1.5">
-          {formatSwissDate(booking.appointmentDate)} · {booking.appointmentTime}
+          {display.dateSwiss} · {display.time}
         </Text>
         <Text className="text-brand-gold font-semibold text-base mt-2">{formatChf(booking.totalChf)}</Text>
 

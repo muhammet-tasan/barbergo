@@ -81,11 +81,12 @@ A home-visit appointment request.
 | Field | Type | Notes |
 |-------|------|--------|
 | `id` | UUID | PK, FK → `auth.users` |
-| `role` | `customer` \| `barber` \| `admin` | Drives RLS |
-| `display_name` | string? | |
+| `role` | `customer` \| `barber` \| `admin` | **Authoritative** for RLS and app routing |
+| `display_name` | string? | Greeting / display (not `user_metadata`) |
+| `phone` | string? | Contact phone (not `user_metadata`) |
 | `created_at` | timestamp | |
 
-Auto-created on signup via trigger `handle_new_user`. Barber users: set `user_metadata.role` to `barber`.
+Auto-created on signup via trigger `handle_new_user`. Staff/admin: upsert `public.profiles` (see `docs/admin-account.md`). **Do not rely on `user_metadata` for authorization.**
 
 **Relations**
 

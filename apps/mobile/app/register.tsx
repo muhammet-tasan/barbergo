@@ -1,22 +1,60 @@
-import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, View } from 'react-native';
+import {
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  Text,
+  View,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Redirect, useRouter } from 'expo-router';
+import { type Href, Redirect, useRouter } from 'expo-router';
 import { useState } from 'react';
+import * as Linking from 'expo-linking';
 
 import { AppButton } from '@/components/AppButton';
 import { AppForm } from '@/components/AppForm';
 import { AppInput } from '@/components/AppInput';
 import { ScreenHeader } from '@/components/ScreenHeader';
-import { colors } from '@/constants/theme';
 import { AUTOFILL } from '@/constants/form-autofill';
+import { colors } from '@/constants/theme';
 import { useAuth } from '@/contexts/auth-context';
-import { getCurrentSession } from '@/services/auth';
+import { getCurrentSession, MIN_PASSWORD_LENGTH, type RegistrationRole } from '@/services/auth';
 import { getPostLoginPath } from '@/services/auth-roles';
+import { fetchUserProfile } from '@/services/profiles';
+
+function RoleOption({
+  label,
+  description,
+  selected,
+  onPress,
+}: {
+  label: string;
+  description: string;
+  selected: boolean;
+  onPress: () => void;
+}) {
+  return (
+    <Pressable
+      onPress={onPress}
+      className={`mb-3 rounded-xl border px-4 py-3 ${
+        selected ? 'border-brand-gold bg-brand-gold/10' : 'border-brand-border bg-brand-surface'
+      }`}
+    >
+      <Text className={`font-semibold ${selected ? 'text-brand-gold' : 'text-brand-text'}`}>
+        {label}
+      </Text>
+      <Text className="text-brand-muted text-sm mt-1">{description}</Text>
+    </Pressable>
+  );
+}
 
 export default function RegisterScreen() {
   const router = useRouter();
   const { signUp, loading: authLoading, isAuthenticated, postLoginPath } = useAuth();
+  const [registrationRole, setRegistrationRole] = useState<RegistrationRole>('customer');
   const [displayName, setDisplayName] = useState('');
+  const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [nameError, setNameError] = useState<string | undefined>();
@@ -35,8 +73,20 @@ export default function RegisterScreen() {
   }
 
   if (isAuthenticated) {
-    return <Redirect href={postLoginPath} />;
+    return <Redirect href={postLoginPath as Href} />;
   }
+
+  const notifyAdminBarberSignup = async (name: string, userEmail: string) => {
+    const message = encodeURIComponent(
+      `Neue Barber-Registrierung bei BarberGo:\nName: ${name}\nE-Mail: ${userEmail}\nBitte im Admin-Bereich freigeben.`
+    );
+    const url = `https://wa.me/?text=${message}`;
+    try {
+      await Linking.openURL(url);
+    } catch {
+      // optional — registration still succeeds
+    }
+  };
 
   const handleSubmit = async () => {
     setNameError(undefined);
@@ -54,15 +104,21 @@ export default function RegisterScreen() {
       setEmailError('E-Mail ist erforderlich');
       hasError = true;
     }
-    if (password.length < 6) {
-      setPasswordError('Mindestens 6 Zeichen');
+    if (password.length < MIN_PASSWORD_LENGTH) {
+      setPasswordError(`Mindestens ${MIN_PASSWORD_LENGTH} Zeichen`);
       hasError = true;
     }
     if (hasError) return;
 
     setSubmitting(true);
     try {
-      const result = await signUp({ email, password, displayName: displayName.trim() });
+      const result = await signUp({
+        email,
+        password,
+        displayName: displayName.trim(),
+        phone: phone.trim() || undefined,
+        registrationRole,
+      });
       if (result.error) {
         setFormError(result.error);
         return;
@@ -70,14 +126,20 @@ export default function RegisterScreen() {
 
       if (result.needsEmailConfirmation) {
         setSuccessMessage(
-          'Konto angelegt. Bitte bestätige deine E-Mail und melde dich danach an.'
+          registrationRole === 'barber'
+            ? 'Konto angelegt. Bitte bestätige deine E-Mail. Dein Barber-Profil wartet danach auf Admin-Freigabe.'
+            : 'Konto angelegt. Bitte bestätige deine E-Mail und melde dich danach an.'
         );
         return;
       }
 
       const session = await getCurrentSession();
       if (session) {
-        router.replace(getPostLoginPath(session));
+        const profile = await fetchUserProfile(session.user.id);
+        if (registrationRole === 'barber') {
+          await notifyAdminBarberSignup(displayName.trim(), email.trim());
+        }
+        router.replace(getPostLoginPath(profile) as Href);
         return;
       }
 
@@ -99,9 +161,23 @@ export default function RegisterScreen() {
           contentContainerClassName="pb-8"
           keyboardShouldPersistTaps="handled"
         >
-          <Text className="text-brand-muted mb-6">
-            Erstelle ein Kundenkonto für „Meine Termine“ und Stornierungen.
+          <Text className="text-brand-muted mb-4">
+            Wähle dein Konto — Kunde oder Barber. Admin-Konten werden nicht öffentlich
+            registriert.
           </Text>
+
+          <RoleOption
+            label="Kunde"
+            description="Termine buchen und verwalten"
+            selected={registrationRole === 'customer'}
+            onPress={() => setRegistrationRole('customer')}
+          />
+          <RoleOption
+            label="Barber"
+            description="Nach Admin-Freigabe Zugang zum Barber-Bereich"
+            selected={registrationRole === 'barber'}
+            onPress={() => setRegistrationRole('barber')}
+          />
 
           <AppForm onSubmit={handleSubmit}>
             <AppInput
@@ -111,6 +187,14 @@ export default function RegisterScreen() {
               error={nameError}
               autofill={AUTOFILL.name}
               autoCapitalize="words"
+              returnKeyType="next"
+            />
+            <AppInput
+              label="Telefon (optional)"
+              value={phone}
+              onChangeText={setPhone}
+              autofill={AUTOFILL.tel}
+              keyboardType="phone-pad"
               returnKeyType="next"
             />
             <AppInput

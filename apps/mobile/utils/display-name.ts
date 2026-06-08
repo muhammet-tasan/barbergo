@@ -1,12 +1,16 @@
+import type { UserProfile } from '@/services/profiles';
 import type { Session } from '@supabase/supabase-js';
 
-/** First name or display name for greetings (German UI). */
-export function getDisplayName(session: Session | null): string | undefined {
+/** First name or display name for greetings (German UI). Prefers public.profiles. */
+export function getDisplayName(
+  session: Session | null,
+  profile?: UserProfile | null
+): string | undefined {
   if (!session) return undefined;
 
-  const fromMeta = session.user.user_metadata?.display_name;
-  if (typeof fromMeta === 'string' && fromMeta.trim()) {
-    return fromMeta.trim().split(/\s+/)[0];
+  const fromProfile = profile?.displayName?.trim();
+  if (fromProfile) {
+    return fromProfile.split(/\s+/)[0];
   }
 
   const emailLocal = session.user.email?.split('@')[0]?.trim();

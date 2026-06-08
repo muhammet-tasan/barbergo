@@ -44,6 +44,13 @@
 - [x] MVP RLS migrations (`0002` demo, `0003` auth)
 - [x] Secure baseline documented: `0003` + `EXPO_PUBLIC_ADMIN_AUTH_REQUIRED=true`
 - [x] RLS smoke script (`apps/mobile/scripts/verify-rls-0003.mjs`)
+- [x] App roles from `public.profiles` (not `user_metadata`); admin profile seed `0005`
+- [x] Migration `0006` — slots, `book_slot` RPC, `barber_pending`, admin/barber RLS split
+- [x] Slot booking UI (Datum-Chips + Slot-Grid); WhatsApp sekundär in Kundenflow
+- [x] Role routing: admin `/admin`, barber `/barber/dashboard`, customer `/customer/bookings`
+- [x] Profile pages (customer, barber, admin) + pending barber approval
+- [x] Timezone helpers (`Europe/Zurich` display, UTC storage)
+- [x] Duplicate booking list fix (guest cache + fingerprint dedupe)
 - [ ] Row Level Security policies (production hardening — see `docs/pre-launch-checklist.md`)
 
 - [x] Gastbuchung UX-Fix (validate-on-submit, kein disabled Press-Feedback, lokale Guest-Kopie)
@@ -52,10 +59,12 @@
 
 ### Next recommended tasks
 
-- [ ] Apply migration **`0003_bookings_auth_rls.sql`** on hosted Supabase (if not yet)
-- [ ] Set `EXPO_PUBLIC_ADMIN_AUTH_REQUIRED=true` in local `.env` (copy from `.env.example`)
-- [ ] Manual E2E: guest book → admin login → list + status update
-- [ ] Run `node scripts/verify-rls-0003.mjs` after applying `0003`
+- [ ] Apply migration **`0006_slots_roles_profiles.sql`** on hosted Supabase
+- [ ] Supabase Auth password min length ≥ 8 (`docs/supabase-auth-settings.md`)
+- [ ] Manual E2E: slot book (confirmed) → no duplicate in customer list → `SLOT_TAKEN` on double book
+- [ ] Manual E2E: barber register → pending → admin approve → `/barber/dashboard`
+- [ ] Barber UI: weekly availability + blocked times (schema ready in `0006`)
+- [ ] Run `node scripts/verify-rls-0003.mjs` after applying `0003`–`0006`
 
 ### Not in MVP
 
@@ -73,8 +82,8 @@ Kurzüberblick (priorisiert nach Product Roadmap — siehe Tabellen dort):
 - [ ] Apply migration **`0004_customer_profiles_and_booking_access.sql`** on hosted Supabase
 - [ ] Manual E2E Phase 2: register customer → book → Meine Termine → Storno; guest book → device list
 - [ ] Phase 3: Barber-Profil bearbeiten, Avatar-Upload, Profil in Supabase pflegen
-- [ ] Phase 4: Kalender/Timeslot-Bereich auf Service-Seite (Platzhalter vorhanden)
-- [ ] Phase 4: Kalender/Tagesansicht, Verfügbarkeit, Services in App pflegen
+- [x] Phase 4 (MVP): Slot-Auswahl im Buchungsflow + `book_slot` RPC
+- [ ] Phase 4: Barber-Verfügbarkeit/Blockzeiten in App pflegen (DB-Schema vorhanden)
 - [ ] Phase 5: Bewertungen + Durchschnitt auf Profil
 - [ ] Phase 6 / später: Push, Zahlung (TWINT/Stripe), Multi-Barber, Admin-Web, Chat
 

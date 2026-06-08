@@ -1,46 +1,71 @@
-import type { Session } from '@supabase/supabase-js';
+import type { ProfileRole, UserProfile } from '@/services/profiles';
 
-export type UserRole = 'barber' | 'customer';
+export type UserRole = ProfileRole;
 
-const ROLE_VALUES: UserRole[] = ['barber', 'customer'];
+export const RESERVED_ADMIN_EMAIL = 'admin@barbergo.ch';
 
-function parseRole(value: unknown): UserRole | null {
-  if (typeof value !== 'string') return null;
-  const normalized = value.trim().toLowerCase();
-  return ROLE_VALUES.includes(normalized as UserRole) ? (normalized as UserRole) : null;
+export type PostLoginPath =
+  | '/'
+  | '/admin'
+  | '/barber/dashboard'
+  | '/barber/pending'
+  | '/customer/bookings';
+
+export function getUserRole(profile: UserProfile | null): UserRole | null {
+  return profile?.role ?? null;
 }
 
-/**
- * Role from Supabase user metadata (`user_metadata.role` or `app_metadata.role`).
- * Existing barber accounts without role default to `barber` for backward compatibility.
- */
-export function getUserRole(session: Session | null): UserRole | null {
-  if (!session) return null;
-
-  const fromUser = parseRole(session.user.user_metadata?.role);
-  if (fromUser) return fromUser;
-
-  const fromApp = parseRole(session.user.app_metadata?.role);
-  if (fromApp) return fromApp;
-
-  return 'barber';
+export function isAdminRole(profile: UserProfile | null): boolean {
+  return getUserRole(profile) === 'admin';
 }
 
-export function isBarberRole(session: Session | null): boolean {
-  return getUserRole(session) === 'barber';
+export function isApprovedBarberRole(profile: UserProfile | null): boolean {
+  return (
+    getUserRole(profile) === 'barber' && (profile?.approvalStatus ?? 'approved') === 'approved'
+  );
 }
 
-export function isCustomerRole(session: Session | null): boolean {
-  return getUserRole(session) === 'customer';
+export function isBarberPendingRole(profile: UserProfile | null): boolean {
+  const role = getUserRole(profile);
+  return role === 'barber_pending' || profile?.approvalStatus === 'pending';
 }
 
-export function getPostLoginPath(session: Session | null): '/' | '/admin' | '/customer/bookings' {
-  if (isBarberRole(session)) return '/admin';
-  if (isCustomerRole(session)) return '/customer/bookings';
+export function isCustomerRole(profile: UserProfile | null): boolean {
+  return getUserRole(profile) === 'customer';
+}
+
+/** @deprecated Use isApprovedBarberRole — never treat admin as barber backoffice. */
+export function isBarberRole(profile: UserProfile | null): boolean {
+  return isApprovedBarberRole(profile);
+}
+
+export function isStaffRole(profile: UserProfile | null): boolean {
+  return isAdminRole(profile) || isApprovedBarberRole(profile);
+}
+
+export function getPostLoginPath(profile: UserProfile | null): PostLoginPath {
+  if (isAdminRole(profile)) return '/admin';
+  if (isApprovedBarberRole(profile)) return '/barber/dashboard';
+  if (isBarberPendingRole(profile)) return '/barber/pending';
+  if (isCustomerRole(profile)) return '/customer/bookings';
   return '/';
 }
 
 /** Meine Termine — Konto wenn eingeloggt als Kunde, sonst Geräte-Gastliste. */
-export function getBookingsListPath(session: Session | null): '/customer/bookings' | '/guest/bookings' {
-  return isCustomerRole(session) ? '/customer/bookings' : '/guest/bookings';
+export function getBookingsListPath(
+  profile: UserProfile | null
+): '/customer/bookings' | '/guest/bookings' {
+  return isCustomerRole(profile) ? '/customer/bookings' : '/guest/bookings';
+}
+
+export function canAccessAdminArea(profile: UserProfile | null): boolean {
+  return isAdminRole(profile);
+}
+
+export function canAccessBarberDashboard(profile: UserProfile | null): boolean {
+  return isApprovedBarberRole(profile);
+}
+
+export function canAccessCustomerArea(profile: UserProfile | null): boolean {
+  return isCustomerRole(profile);
 }

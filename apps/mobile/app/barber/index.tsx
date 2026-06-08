@@ -64,7 +64,7 @@ export default function BarberProfileScreen() {
         </View>
 
         <AppCard className="mb-4 border-brand-gold/25">
-          <Text className="text-base italic leading-6 text-brand-text text-center">„{quote}"</Text>
+          <Text className="text-base italic leading-6 text-brand-text text-center">{`„${quote}"`}</Text>
         </AppCard>
 
         <AppCard className="mb-4">
