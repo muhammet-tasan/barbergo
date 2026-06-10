@@ -1,5 +1,6 @@
 import { defaultProvider } from '@/data/mockData';
 import type { Provider } from '@/types/domain';
+import { logger } from '@/utils/logger';
 
 import {
   classifySupabaseError,
@@ -7,6 +8,7 @@ import {
   getEnvConfigStatus,
   type CatalogFailureReason,
 } from './catalog-errors';
+import { allowMockDataFallback } from './data-source-policy';
 import { getSupabaseClient, SupabaseTables } from './supabase';
 import { mapProvider, type ProviderRow } from './supabase-mappers';
 
@@ -32,9 +34,17 @@ export async function fetchActiveProviders(): Promise<ProvidersLoadResult> {
   const client = getSupabaseClient();
 
   if (!client) {
+    if (allowMockDataFallback()) {
+      return {
+        providers: [defaultProvider],
+        source: 'mock',
+        failureReason: 'env_missing',
+        error: formatCatalogErrorMessage('env_missing', { missingEnv: env.missing }),
+      };
+    }
     return {
-      providers: [defaultProvider],
-      source: 'mock',
+      providers: [],
+      source: 'supabase',
       failureReason: 'env_missing',
       error: formatCatalogErrorMessage('env_missing', { missingEnv: env.missing }),
     };
@@ -53,12 +63,9 @@ export async function fetchActiveProviders(): Promise<ProvidersLoadResult> {
 
     const rows = (data ?? []) as ProviderRow[];
     if (rows.length === 0) {
-      if (__DEV__) {
-        console.warn('[barbergo] providers table empty — using demo provider list');
-      }
       return {
-        providers: [defaultProvider],
-        source: 'mock',
+        providers: [],
+        source: 'supabase',
         failureReason: 'providers_empty',
         error: formatCatalogErrorMessage('providers_empty'),
       };
@@ -67,12 +74,18 @@ export async function fetchActiveProviders(): Promise<ProvidersLoadResult> {
     return { providers: rows.map(mapProvider), source: 'supabase' };
   } catch (err) {
     const { reason, detail } = classifySupabaseError(err);
-    if (__DEV__) {
-      console.warn('[barbergo] fetchActiveProviders failed:', detail);
+    logger.warn('providers', 'fetchActiveProviders failed', reason);
+    if (allowMockDataFallback()) {
+      return {
+        providers: [defaultProvider],
+        source: 'mock',
+        failureReason: reason,
+        error: formatCatalogErrorMessage(reason, { table: 'providers', detail }),
+      };
     }
     return {
-      providers: [defaultProvider],
-      source: 'mock',
+      providers: [],
+      source: 'supabase',
       failureReason: reason,
       error: formatCatalogErrorMessage(reason, { table: 'providers', detail }),
     };
@@ -120,9 +133,7 @@ export async function fetchProviderById(providerId: string): Promise<ProviderLoa
     return { provider: mapProvider(row), source: 'supabase' };
   } catch (err) {
     const { reason, detail } = classifySupabaseError(err);
-    if (__DEV__) {
-      console.warn('[barbergo] fetchProviderById failed:', detail);
-    }
+    logger.warn('providers', 'fetchProviderById failed', reason);
     if (providerId === defaultProvider.id) {
       return {
         provider: defaultProvider,
@@ -165,9 +176,7 @@ export async function fetchDefaultProvider(): Promise<ProviderLoadResult> {
 
     const row = data?.[0] as ProviderRow | undefined;
     if (!row) {
-      if (__DEV__) {
-        console.warn('[barbergo] providers table empty or no active row');
-      }
+      logger.warn('providers', 'no active provider row', 'providers_empty');
       return {
         source: 'supabase',
         failureReason: 'providers_empty',
@@ -178,9 +187,7 @@ export async function fetchDefaultProvider(): Promise<ProviderLoadResult> {
     return { provider: mapProvider(row), source: 'supabase' };
   } catch (err) {
     const { reason, detail } = classifySupabaseError(err);
-    if (__DEV__) {
-      console.warn('[barbergo] fetchDefaultProvider failed:', detail);
-    }
+    logger.warn('providers', 'fetchDefaultProvider failed', reason);
     return {
       source: 'supabase',
       failureReason: reason,

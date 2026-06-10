@@ -1,10 +1,4 @@
-import {
-  ActivityIndicator,
-  StyleSheet,
-  Text,
-  useWindowDimensions,
-  View,
-} from 'react-native';
+import { ActivityIndicator, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { Image } from 'expo-image';
 
 import { AppButton } from '@/components/AppButton';
@@ -12,144 +6,156 @@ import { brandCopy } from '@/constants/brand-copy';
 import { brandImageAspect, brandImages } from '@/constants/images';
 import { colors } from '@/constants/theme';
 
-/** Home-only layout — not shared with form/detail screens. */
 const HOME = {
   horizontalPadding: 16,
-  logoToHeadline: 80,
-  headlineToSubtitle: 14,
-  subtitleToBadge: 24,
-  badgeToActions: 56,
+  paddingTop: 4,
+  paddingBottom: 24,
+  /** Zieht Text näher ans Logo (PNG hat unten transparenten Rand) */
+  textPullTowardLogo: -32,
+  /** Abstand zwischen Textblock und Buttons */
+  textToButtonsGap: 64,
+  headlineToSubtitle: 12,
+  subtitleToBadge: 20,
   buttonGap: 14,
-  heroPaddingTop: 12,
-  heroLiftRatio: 0.07,
+  actionsMaxWidth: 400,
+  logoWidthRatio: 1.28,
+  logoMaxWidth: 560,
 } as const;
-
-const heroLogoSource = brandImages.heroDarkPreview;
-const HERO_LOGO_ASPECT = brandImageAspect.heroDarkPreview;
 
 type HomeHeroProps = {
   loading: boolean;
-  isAdmin: boolean;
-  isBarber: boolean;
+  variant: 'guest' | 'customer' | 'barber' | 'barber_pending' | 'admin';
   onBook: () => void;
-  onAdmin: () => void;
-  onBarberDashboard: () => void;
   onBookings: () => void;
+  onProfile: () => void;
+  onAdminPage: () => void;
+  onAllBarbers: () => void;
+  onAllBookings: () => void;
+  onBarberSlots: () => void;
 };
 
 export function HomeHero({
   loading,
-  isAdmin,
-  isBarber,
+  variant,
   onBook,
-  onAdmin,
-  onBarberDashboard,
   onBookings,
+  onProfile,
+  onAdminPage,
+  onAllBarbers,
+  onAllBookings,
+  onBarberSlots,
 }: HomeHeroProps) {
-  const { height } = useWindowDimensions();
-  const heroLift = Math.round(height * HOME.heroLiftRatio);
+  const { width: windowWidth } = useWindowDimensions();
+  const logoWidth = Math.min(windowWidth * HOME.logoWidthRatio, HOME.logoMaxWidth);
+  const showActions = variant !== 'barber_pending';
+  const isPending = variant === 'barber_pending';
 
   return (
-    <View
-      style={[
-        styles.heroContainer,
-        {
-          paddingTop: HOME.heroPaddingTop,
-          paddingBottom: heroLift,
-          marginTop: -Math.round(heroLift * 0.4),
-        },
-      ]}
-    >
-      <View style={styles.brandGroup}>
-        <View style={styles.heroLogoContainer}>
+    <View style={styles.shell}>
+      <View style={styles.contentStack}>
+        <View style={[styles.brandGroup, { width: logoWidth }]}>
           <Image
-            source={heroLogoSource}
+            source={brandImages.logoTransparent}
             contentFit="contain"
             accessibilityLabel="BarberGo"
-            style={styles.heroLogoImage}
+            style={[styles.homeLogo, { width: logoWidth }]}
           />
-        </View>
-      </View>
 
-      <View style={styles.textGroup}>
-        <Text style={styles.headline} selectable={false}>
-          {brandCopy.claim}
-        </Text>
-        <Text style={styles.subtitle} selectable={false}>
-          {brandCopy.subtitle}
-        </Text>
-      </View>
-
-      <View style={styles.badgeGroup}>
-        <View style={styles.badge}>
-          <Text style={styles.badgeText} selectable={false}>
-            {brandCopy.serviceArea}
-          </Text>
-        </View>
-      </View>
-
-      <View style={styles.actionsGroup}>
-        {loading ? (
-          <View style={styles.loadingWrap}>
-            <ActivityIndicator color={colors.accent} />
+          <View style={styles.textGroup}>
+            {isPending ? (
+              <Text style={styles.pendingText} selectable={false}>
+                Dein Barber-Profil wird geprüft.
+              </Text>
+            ) : (
+              <>
+                <Text style={styles.headline} selectable={false}>
+                  {brandCopy.claim}
+                </Text>
+                <Text style={styles.subtitle} selectable={false}>
+                  {brandCopy.subtitle}
+                </Text>
+                <View style={styles.badge}>
+                  <Text style={styles.badgeText} selectable={false}>
+                    {brandCopy.serviceArea}
+                  </Text>
+                </View>
+              </>
+            )}
           </View>
-        ) : isAdmin ? (
-          <AppButton label="Admin-Bereich" onPress={onAdmin} />
-        ) : isBarber ? (
-          <AppButton label="Barber-Bereich" onPress={onBarberDashboard} />
-        ) : (
-          <>
-            <AppButton label="Termin buchen" onPress={onBook} />
-            <AppButton label="Meine Termine" variant="secondary" onPress={onBookings} />
-          </>
-        )}
+        </View>
+
+        {showActions ? (
+          <View style={styles.actionsGroup}>
+            {loading ? (
+              <ActivityIndicator color={colors.accent} />
+            ) : variant === 'admin' ? (
+              <AppButton label="Admin-Seite" onPress={onAdminPage} />
+            ) : variant === 'barber' ? (
+              <>
+                <AppButton label="Alle Buchungen" onPress={onBarberSlots} />
+                <AppButton label="Mein Profil" variant="secondary" onPress={onProfile} />
+              </>
+            ) : (
+              <>
+                <AppButton label="Termin buchen" onPress={onBook} />
+                <AppButton label="Meine Termine" variant="secondary" onPress={onBookings} />
+                {variant === 'customer' ? (
+                  <AppButton label="Mein Profil" variant="tertiary" onPress={onProfile} />
+                ) : null}
+              </>
+            )}
+          </View>
+        ) : null}
       </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  heroContainer: {
+  shell: {
+    flex: 1,
+    width: '100%',
+    paddingHorizontal: HOME.horizontalPadding,
+    paddingTop: HOME.paddingTop,
+    paddingBottom: HOME.paddingBottom,
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+  },
+  contentStack: {
     width: '100%',
     alignItems: 'center',
-    paddingHorizontal: HOME.horizontalPadding,
+    gap: HOME.textToButtonsGap,
   },
   brandGroup: {
-    width: '100%',
     alignItems: 'center',
+    alignSelf: 'center',
   },
-  heroLogoContainer: {
-    width: '100%',
-  },
-  heroLogoImage: {
-    width: '100%',
-    aspectRatio: HERO_LOGO_ASPECT,
+  homeLogo: {
+    aspectRatio: brandImageAspect.logoTransparent,
   },
   textGroup: {
     width: '100%',
+    maxWidth: 360,
     alignItems: 'center',
-    marginTop: HOME.logoToHeadline,
+    alignSelf: 'center',
+    marginTop: HOME.textPullTowardLogo,
   },
   headline: {
-    fontSize: 33,
+    fontSize: 28,
     fontWeight: '700',
-    lineHeight: 40,
+    lineHeight: 36,
     color: colors.text,
     textAlign: 'center',
   },
   subtitle: {
-    fontSize: 17,
-    lineHeight: 26,
+    fontSize: 16,
+    lineHeight: 24,
     color: colors.textMuted,
     textAlign: 'center',
-    maxWidth: 350,
     marginTop: HOME.headlineToSubtitle,
   },
-  badgeGroup: {
-    alignItems: 'center',
-    marginTop: HOME.subtitleToBadge,
-  },
   badge: {
+    marginTop: HOME.subtitleToBadge,
     height: 34,
     borderRadius: 9999,
     borderWidth: 1,
@@ -164,15 +170,19 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     letterSpacing: 0.5,
     color: colors.textMuted,
+    textAlign: 'center',
+  },
+  pendingText: {
+    fontSize: 16,
+    lineHeight: 24,
+    color: colors.textMuted,
+    textAlign: 'center',
   },
   actionsGroup: {
     width: '100%',
-    maxWidth: 400,
-    marginTop: HOME.badgeToActions,
-    gap: HOME.buttonGap,
-  },
-  loadingWrap: {
-    paddingVertical: 16,
+    maxWidth: HOME.actionsMaxWidth,
     alignItems: 'center',
+    alignSelf: 'center',
+    gap: HOME.buttonGap,
   },
 });

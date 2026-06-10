@@ -2,6 +2,7 @@ import { ActivityIndicator, View } from 'react-native';
 import { Redirect, Stack, usePathname } from 'expo-router';
 
 import { useAuth } from '@/contexts/auth-context';
+import { stackScreenOptions } from '@/constants/navigation';
 import { colors } from '@/constants/theme';
 import { isSupabaseConfigured } from '@/services/supabase';
 
@@ -33,5 +34,5 @@ export default function AdminLayout() {
     return <Redirect href="/admin" />;
   }
 
-  return <Stack screenOptions={{ headerShown: false }} />;
+  return <Stack screenOptions={stackScreenOptions} />;
 }

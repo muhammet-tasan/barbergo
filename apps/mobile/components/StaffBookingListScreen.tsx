@@ -6,7 +6,6 @@ import { useCallback, useMemo, useState } from 'react';
 
 import { AdminBookingTabs, type AdminBookingFilter } from '@/components/AdminBookingTabs';
 import { AppCard } from '@/components/AppCard';
-import { DataSourceBanner } from '@/components/DataSourceBanner';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { StatusBadge } from '@/components/StatusBadge';
 import { formatChf } from '@/constants/pricing';
@@ -28,7 +27,7 @@ export function StaffBookingListScreen({
   onBack,
 }: StaffBookingListScreenProps) {
   const router = useRouter();
-  const { bookings, loading, reload, usingFallback, error } = useBookings();
+  const { bookings, loading, reload } = useBookings();
   const { services } = useServices();
   const [refreshing, setRefreshing] = useState(false);
   const [filter, setFilter] = useState<AdminBookingFilter>('pending');
@@ -70,7 +69,6 @@ export function StaffBookingListScreen({
             />
           }
         >
-          <DataSourceBanner usingFallback={usingFallback} error={error} />
           <AdminBookingTabs active={filter} onChange={setFilter} />
 
           {filteredBookings.length === 0 ? (

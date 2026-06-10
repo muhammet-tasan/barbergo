@@ -2,10 +2,11 @@ import { ActivityIndicator, View } from 'react-native';
 import { Redirect, Stack } from 'expo-router';
 
 import { useAuth } from '@/contexts/auth-context';
+import { stackScreenOptions } from '@/constants/navigation';
 import { colors } from '@/constants/theme';
 
 export default function BarberDashboardLayout() {
-  const { session, loading, isBarber } = useAuth();
+  const { session, loading, isBarber, isBarberPending } = useAuth();
 
   if (loading) {
     return (
@@ -15,9 +16,17 @@ export default function BarberDashboardLayout() {
     );
   }
 
-  if (!session || !isBarber) {
+  if (!session) {
     return <Redirect href="/login" />;
   }
 
-  return <Stack screenOptions={{ headerShown: false }} />;
+  if (isBarberPending) {
+    return <Redirect href="/" />;
+  }
+
+  if (!isBarber) {
+    return <Redirect href="/" />;
+  }
+
+  return <Stack screenOptions={stackScreenOptions} />;
 }

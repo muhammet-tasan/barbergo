@@ -10,20 +10,20 @@ import { colors } from '@/constants/theme';
 type HubLink = {
   title: string;
   subtitle: string;
-  href: '/admin/bookings' | '/admin/profiles' | '/admin/pending-barbers' | '/admin/profile';
+  href: '/admin/barbers' | '/admin/profiles' | '/admin/pending-barbers' | '/admin/profile';
   icon: keyof typeof Ionicons.glyphMap;
 };
 
 const LINKS: HubLink[] = [
   {
-    title: 'Alle Buchungen',
-    subtitle: 'Termine verwalten und Status ändern',
-    href: '/admin/bookings',
-    icon: 'calendar-outline',
+    title: 'Alle Barber',
+    subtitle: 'Barber-Profile, Freigabe und Buchungskalender',
+    href: '/admin/barbers',
+    icon: 'cut-outline',
   },
   {
-    title: 'Profile',
-    subtitle: 'Kunden und Barber einsehen',
+    title: 'Alle Kunden',
+    subtitle: 'Registrierte Kundenkonten',
     href: '/admin/profiles',
     icon: 'people-outline',
   },
@@ -46,10 +46,10 @@ export default function AdminHubScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-brand-dark" edges={['top']}>
-      <ScreenHeader title="Admin" onBack={() => router.push('/')} />
+      <ScreenHeader title="Admin" onBack={() => router.back()} />
       <ScrollView className="flex-1 px-4 pt-4" contentContainerClassName="pb-8">
         <Text className="text-brand-muted mb-4 leading-5">
-          Verwaltung für BarberGo — Buchungen, Profile und Freigaben.
+          Verwaltung für BarberGo — Barber, Kunden und Freigaben.
         </Text>
         {LINKS.map((link) => (
           <Pressable key={link.href} onPress={() => router.push(link.href)} className="mb-3">

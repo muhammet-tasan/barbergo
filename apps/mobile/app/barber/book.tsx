@@ -1,6 +1,7 @@
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
+  LayoutChangeEvent,
   Platform,
   ScrollView,
   Text,
@@ -33,6 +34,7 @@ import { resolveCatalogDisplayError } from '@/utils/catalog-error-display';
 import { isMockCatalogId, isValidUuid } from '@/utils/uuid';
 import {
   hasFormErrors,
+  PHONE_FORMAT_HINT,
   validateSlotBookingForm,
   type SlotBookingFormErrors,
 } from '@/utils/validation';
@@ -56,6 +58,7 @@ export default function BookingFormScreen() {
     (provider ? isMockCatalogId(provider.id) : false) ||
     (serviceId ? isMockCatalogId(serviceId) : false);
   const scrollRef = useRef<ScrollView>(null);
+  const sectionOffsets = useRef<Record<string, number>>({});
 
   const service = useMemo(
     () => (serviceId ? getServiceById(serviceId, services) : undefined),
@@ -75,7 +78,27 @@ export default function BookingFormScreen() {
   const [note, setNote] = useState('');
   const [errors, setErrors] = useState<SlotBookingFormErrors>({});
   const [submitting, setSubmitting] = useState(false);
-  const [submitBanner, setSubmitBanner] = useState<string | null>(null);
+  const [bookingError, setBookingError] = useState<string | null>(null);
+
+  const rememberSectionOffset = (key: string) => (event: LayoutChangeEvent) => {
+    sectionOffsets.current[key] = event.nativeEvent.layout.y;
+  };
+
+  const scrollToSection = (key: string) => {
+    const y = sectionOffsets.current[key];
+    if (y == null) return;
+    scrollRef.current?.scrollTo({ y: Math.max(0, y - 24), animated: true });
+  };
+
+  const scrollToFirstFormError = (formErrors: SlotBookingFormErrors) => {
+    if (formErrors.selectedSlotStartAt) {
+      scrollToSection('slot');
+      return;
+    }
+    if (formErrors.customerName || formErrors.phone || formErrors.address) {
+      scrollToSection('data');
+    }
+  };
 
   const loadSlots = useCallback(async () => {
     if (!service || !provider || !selectedDate) return;
@@ -129,10 +152,9 @@ export default function BookingFormScreen() {
 
   const handleSubmit = async () => {
     if (submitting) return;
-    setSubmitBanner(null);
+    setBookingError(null);
 
     if (catalogBlocked) {
-      setSubmitBanner('Buchung derzeit nicht möglich. Bitte versuche es später erneut.');
       scrollRef.current?.scrollTo({ y: 0, animated: true });
       return;
     }
@@ -144,10 +166,12 @@ export default function BookingFormScreen() {
       note,
       selectedSlotStartAt: selectedSlot?.startAt,
     });
+    if (!selectedSlot && !formErrors.selectedSlotStartAt) {
+      formErrors.selectedSlotStartAt = 'Bitte wähle einen Termin.';
+    }
     setErrors(formErrors);
-    if (hasFormErrors(formErrors) || !selectedSlot) {
-      setSubmitBanner('Bitte prüfe die markierten Felder und wähle einen Termin.');
-      scrollRef.current?.scrollTo({ y: 0, animated: true });
+    if (hasFormErrors(formErrors)) {
+      scrollToFirstFormError(formErrors);
       return;
     }
 
@@ -156,7 +180,7 @@ export default function BookingFormScreen() {
       const result = await createSlotBooking({
         providerId: provider.id,
         service,
-        startAt: selectedSlot.startAt,
+        startAt: selectedSlot!.startAt,
         customerName,
         phone,
         address,
@@ -165,13 +189,12 @@ export default function BookingFormScreen() {
       });
 
       if (!result.booking) {
-        setSubmitBanner(
+        setBookingError(
           result.error ?? 'Die Buchung konnte nicht gespeichert werden. Bitte versuche es erneut.'
         );
         if (result.error?.includes('nicht mehr verfügbar')) {
           await loadSlots();
         }
-        scrollRef.current?.scrollTo({ y: 0, animated: true });
         return;
       }
 
@@ -180,8 +203,7 @@ export default function BookingFormScreen() {
         params: { bookingId: result.booking.id, serviceName: service.name },
       });
     } catch {
-      setSubmitBanner('Die Buchung konnte nicht gespeichert werden. Bitte versuche es erneut.');
-      scrollRef.current?.scrollTo({ y: 0, animated: true });
+      setBookingError('Die Buchung konnte nicht gespeichert werden. Bitte versuche es erneut.');
     } finally {
       setSubmitting(false);
     }
@@ -211,12 +233,6 @@ export default function BookingFormScreen() {
             </View>
           ) : null}
 
-          {submitBanner ? (
-            <View className="mb-4 rounded-xl border border-error/60 bg-error/10 px-4 py-3">
-              <Text className="text-error text-sm">{submitBanner}</Text>
-            </View>
-          ) : null}
-
           <SectionHeader title="Deine Auswahl" />
           <BookingFormSummaryCard
             barberName={provider.name}
@@ -226,7 +242,7 @@ export default function BookingFormScreen() {
           />
 
           <SectionHeader title="Termin wählen" followsCard />
-          <AppCard className="mb-4">
+          <AppCard className="mb-4" onLayout={rememberSectionOffset('slot')}>
             <SlotPicker
               dates={selectableDates}
               selectedDate={selectedDate}
@@ -243,7 +259,7 @@ export default function BookingFormScreen() {
           </AppCard>
 
           <SectionHeader title="Deine Daten" />
-          <AppCard className="mb-4">
+          <AppCard className="mb-4" onLayout={rememberSectionOffset('data')}>
             <AppForm onSubmit={handleSubmit}>
               <AppInput
                 label="Dein Name"
@@ -302,6 +318,9 @@ export default function BookingFormScreen() {
           className="absolute left-0 right-0 border-t border-brand-border bg-brand-dark px-4 pt-3"
           style={{ bottom: 0, paddingBottom: Math.max(insets.bottom, 12) }}
         >
+          {bookingError ? (
+            <Text className="text-error text-sm mb-2 text-center">{bookingError}</Text>
+          ) : null}
           <AppButton
             label="Termin bestätigen"
             onPress={handleSubmit}

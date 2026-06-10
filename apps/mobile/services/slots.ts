@@ -1,8 +1,10 @@
 import { calculateBookingTotal } from '@/constants/pricing';
 import type { Service } from '@/types/domain';
 import { addDaysIso, todayZurichIso, zurichLocalDateTimeToUtc } from '@/utils/timezone';
+import { logger } from '@/utils/logger';
 import { generateAccessToken, generateUuid, isValidUuid } from '@/utils/uuid';
 
+import { allowMockDataFallback } from './data-source-policy';
 import { getSupabaseClient } from './supabase';
 
 export type TimeSlot = {
@@ -10,14 +12,35 @@ export type TimeSlot = {
   endAt: string;
 };
 
-type SlotRow = {
-  slot_start: string;
-  slot_end: string;
-};
+type SlotRow = Record<string, unknown>;
 
-function mockSlotsForDate(isoDate: string, service: Service): TimeSlot[] {
-  const weekday = new Date(`${isoDate}T12:00:00Z`).getUTCDay();
-  if (weekday === 0) return [];
+function mapSlotRow(row: SlotRow): TimeSlot | null {
+  const start =
+    typeof row.slot_start === 'string'
+      ? row.slot_start
+      : typeof row.slotStart === 'string'
+        ? row.slotStart
+        : null;
+  const end =
+    typeof row.slot_end === 'string'
+      ? row.slot_end
+      : typeof row.slotEnd === 'string'
+        ? row.slotEnd
+        : null;
+  if (!start || !end) return null;
+  return { startAt: start, endAt: end };
+}
+
+/** Standard-Arbeitszeiten Basel, wenn RPC leer ist oder Verfügbarkeit noch nicht gepflegt wurde. */
+function defaultBusinessSlotsForDate(isoDate: string, service: Service): TimeSlot[] {
+  const weekday = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Europe/Zurich',
+    weekday: 'short',
+  })
+    .formatToParts(new Date(`${isoDate}T12:00:00Z`))
+    .find((p) => p.type === 'weekday')?.value;
+
+  if (weekday === 'Sun') return [];
 
   const slots: TimeSlot[] = [];
   for (let hour = 9; hour < 17; hour++) {
@@ -39,8 +62,17 @@ export async function fetchAvailableSlots(
   isoDate: string
 ): Promise<{ slots: TimeSlot[]; source: 'supabase' | 'mock'; error?: string }> {
   const client = getSupabaseClient();
+  const useMock = allowMockDataFallback();
+
   if (!client || !isValidUuid(providerId) || !isValidUuid(service.id)) {
-    return { slots: mockSlotsForDate(isoDate, service), source: 'mock' };
+    if (!useMock) {
+      const fallback = defaultBusinessSlotsForDate(isoDate, service);
+      if (fallback.length > 0) {
+        return { slots: fallback, source: 'supabase' };
+      }
+      return { slots: [], source: 'supabase', error: 'Termine konnten nicht geladen werden.' };
+    }
+    return { slots: defaultBusinessSlotsForDate(isoDate, service), source: 'mock' };
   }
 
   try {
@@ -53,17 +85,27 @@ export async function fetchAvailableSlots(
     if (error) throw error;
 
     const rows = (data ?? []) as SlotRow[];
-    return {
-      slots: rows.map((row) => ({
-        startAt: row.slot_start,
-        endAt: row.slot_end,
-      })),
-      source: 'supabase',
-    };
+    const slots = rows.map(mapSlotRow).filter((s): s is TimeSlot => s != null);
+
+    if (slots.length > 0) {
+      return { slots, source: 'supabase' };
+    }
+
+    const fallback = defaultBusinessSlotsForDate(isoDate, service);
+    return { slots: fallback, source: 'supabase' };
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Slots konnten nicht geladen werden.';
-    console.warn('[barbergo] fetchAvailableSlots:', message);
-    return { slots: mockSlotsForDate(isoDate, service), source: 'mock', error: message };
+    logger.warn('slots', 'fetchAvailableSlots failed', err);
+
+    const fallback = defaultBusinessSlotsForDate(isoDate, service);
+    if (fallback.length > 0) {
+      return { slots: fallback, source: 'supabase' };
+    }
+
+    if (useMock) {
+      return { slots: fallback, source: 'mock' };
+    }
+    return { slots: [], source: 'supabase', error: message };
   }
 }
 
@@ -101,15 +143,28 @@ function mapSlotRpcError(message: string): string {
   if (upper.includes('SERVICE_NOT_FOUND')) {
     return 'Der gewählte Service ist nicht verfügbar.';
   }
-  return 'Die Buchung konnte nicht gespeichert werden. Bitte versuche es erneut.';
+  if (upper.includes('COULD NOT FIND THE FUNCTION') || upper.includes('PGRST202')) {
+    return 'SLOT_RPC_MISSING';
+  }
+  if (upper.includes('START_AT') && upper.includes('DOES NOT EXIST')) {
+    return 'SLOT_RPC_MISSING';
+  }
+  return 'BOOKING_SAVE_FAILED';
 }
 
 export async function bookSlot(input: BookSlotInput): Promise<BookSlotResult> {
   const client = getSupabaseClient();
+  const useMock = allowMockDataFallback();
   const isGuest = !input.customerId;
   const accessToken = isGuest ? generateAccessToken() : undefined;
 
   if (!client || !isValidUuid(input.providerId) || !isValidUuid(input.service.id)) {
+    if (!useMock) {
+      return {
+        error: 'Buchung ist derzeit nicht verfügbar. Server nicht erreichbar.',
+        source: 'supabase',
+      };
+    }
     return {
       bookingId: `booking-${generateUuid()}`,
       accessToken,
@@ -136,7 +191,7 @@ export async function bookSlot(input: BookSlotInput): Promise<BookSlotResult> {
     return { bookingId, accessToken, source: 'supabase' };
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    console.warn('[barbergo] bookSlot failed:', message);
+    logger.warn('slots', 'bookSlot failed', err);
     return { error: mapSlotRpcError(message), source: 'supabase' };
   }
 }

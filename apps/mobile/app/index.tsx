@@ -1,4 +1,4 @@
-import { ScrollView, Text, View } from 'react-native';
+import { View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { type Href, useRouter } from 'expo-router';
 
@@ -6,40 +6,76 @@ import { HomeHero } from '@/components/HomeHero';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { useAuth } from '@/contexts/auth-context';
 import { getBookingsListPath } from '@/services/auth-roles';
-import { getDisplayName } from '@/utils/display-name';
+
+function resolveHomeVariant(
+  loading: boolean,
+  isAdmin: boolean,
+  isBarber: boolean,
+  isBarberPending: boolean,
+  isCustomer: boolean
+): 'guest' | 'customer' | 'barber' | 'barber_pending' | 'admin' {
+  if (loading) return 'guest';
+  if (isAdmin) return 'admin';
+  if (isBarberPending) return 'barber_pending';
+  if (isBarber) return 'barber';
+  if (isCustomer) return 'customer';
+  return 'guest';
+}
 
 export default function HomeScreen() {
   const router = useRouter();
-  const { loading, isAdmin, isBarber, isCustomer, session, profile } = useAuth();
-  const greetingName = isCustomer ? getDisplayName(session, profile) : undefined;
+  const {
+    loading,
+    isAdmin,
+    isBarber,
+    isBarberPending,
+    isCustomer,
+    profile,
+  } = useAuth();
+
+  const variant = resolveHomeVariant(
+    loading,
+    isAdmin,
+    isBarber,
+    isBarberPending,
+    isCustomer
+  );
 
   return (
     <SafeAreaView className="flex-1 bg-brand-dark" edges={['top']}>
       <ScreenHeader variant="home" />
 
-      {greetingName ? (
-        <View className="px-5 pt-1 items-end">
-          <Text className="text-[11px] text-brand-muted tracking-wide" selectable={false}>
-            Hallo {greetingName}
-          </Text>
-        </View>
-      ) : null}
-
-      <ScrollView
-        className="flex-1 bg-brand-dark"
-        contentContainerClassName="flex-grow justify-center pb-12 pt-1"
-        showsVerticalScrollIndicator={false}
-      >
+      <View className="flex-1 bg-brand-dark">
         <HomeHero
           loading={loading}
-          isAdmin={isAdmin}
-          isBarber={isBarber}
+          variant={variant}
           onBook={() => router.push('/barbers')}
-          onAdmin={() => router.push('/admin')}
-          onBarberDashboard={() => router.push('/barber/dashboard' as Href)}
-          onBookings={() => router.push(getBookingsListPath(profile))}
+          onBookings={() => {
+            if (isCustomer) {
+              router.push('/customer/bookings' as Href);
+              return;
+            }
+            router.push(getBookingsListPath(profile));
+          }}
+          onProfile={() => {
+            if (isAdmin) {
+              router.push('/admin/profile' as Href);
+              return;
+            }
+            if (isCustomer) {
+              router.push('/customer/profile' as Href);
+              return;
+            }
+            if (isBarber) {
+              router.push('/barber/dashboard/profile' as Href);
+            }
+          }}
+          onAdminPage={() => router.push('/admin')}
+          onAllBarbers={() => router.push('/admin/barbers' as Href)}
+          onAllBookings={() => router.push('/admin/barbers' as Href)}
+          onBarberSlots={() => router.push('/barber/dashboard/slots' as Href)}
         />
-      </ScrollView>
+      </View>
     </SafeAreaView>
   );
 }

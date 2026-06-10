@@ -5,24 +5,28 @@ import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
 
 import { AuthProvider } from '@/contexts/auth-context';
+import { stackFadeOptions, stackScreenOptions } from '@/constants/navigation';
 import { colors } from '@/constants/theme';
+import { usePushNotificationRouting } from '@/hooks/use-push-notifications';
+import { useWebAuthCallbackRedirect } from '@/hooks/use-web-auth-callback-redirect';
 
-const defaultScreenOptions = {
-  headerShown: false,
-  contentStyle: { backgroundColor: colors.background },
-  animation: 'slide_from_right' as const,
-  gestureEnabled: true,
-};
+function RootStack() {
+  usePushNotificationRouting();
+  useWebAuthCallbackRedirect();
+
+  return (
+    <Stack screenOptions={stackScreenOptions}>
+      <Stack.Screen name="index" options={stackFadeOptions} />
+      <Stack.Screen name="barber/confirm" options={stackFadeOptions} />
+      <Stack.Screen name="auth/callback" options={stackFadeOptions} />
+    </Stack>
+  );
+}
 
 export default function RootLayout() {
   return (
     <AuthProvider>
-      <Stack screenOptions={defaultScreenOptions}>
-        <Stack.Screen name="index" options={{ animation: 'fade' }} />
-        <Stack.Screen name="barber/confirm" options={{ animation: 'fade' }} />
-        <Stack.Screen name="login" options={{ animation: 'slide_from_right' }} />
-        <Stack.Screen name="register" options={{ animation: 'slide_from_right' }} />
-      </Stack>
+      <RootStack />
       <StatusBar style="light" backgroundColor={colors.background} />
     </AuthProvider>
   );

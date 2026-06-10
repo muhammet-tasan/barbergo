@@ -11,6 +11,7 @@ import { SectionHeader } from '@/components/SectionHeader';
 import { StatusTransitionActions } from '@/components/StatusTransitionActions';
 import { formatChf } from '@/constants/pricing';
 import { colors } from '@/constants/theme';
+import { logger } from '@/utils/logger';
 import { useAuth } from '@/contexts/auth-context';
 import { useBooking } from '@/hooks/use-booking';
 import { useServices } from '@/hooks/use-services';
@@ -84,7 +85,7 @@ export function StaffBookingDetailScreen({ bookingId, listBackPath }: StaffBooki
         return;
       }
       if (result.source === 'mock' && result.error) {
-        console.warn('[barbergo] updateBookingStatus offline:', result.error);
+        logger.warn('bookings', 'updateBookingStatus offline fallback', 'mock');
       }
       setBooking(result.booking);
     } finally {

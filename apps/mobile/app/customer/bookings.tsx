@@ -4,7 +4,6 @@ import { Redirect, useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
 
 import { BookingListCard } from '@/components/BookingListCard';
-import { DataSourceBanner } from '@/components/DataSourceBanner';
 import { EmptyState } from '@/components/EmptyState';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { SectionHeader } from '@/components/SectionHeader';
@@ -29,11 +28,9 @@ export default function CustomerBookingsScreen() {
   const [accountBookings, setAccountBookings] = useState<Booking[]>([]);
   const [deviceBookings, setDeviceBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
-  const [usingFallback, setUsingFallback] = useState(false);
-  const [error, setError] = useState<string | undefined>();
   const [cancellingId, setCancellingId] = useState<string | null>(null);
 
-  const { bookings: allBookings, hasPreLoginDeviceBookings } = useMemo(
+  const { bookings: allBookings } = useMemo(
     () => mergeCustomerBookings(accountBookings, deviceBookings),
     [accountBookings, deviceBookings]
   );
@@ -46,8 +43,6 @@ export default function CustomerBookingsScreen() {
     ]);
     setAccountBookings(customerResult.bookings);
     setDeviceBookings(local.filter((booking) => !booking.customerId));
-    setUsingFallback(customerResult.source === 'mock');
-    setError(customerResult.error);
     setLoading(false);
   }, []);
 
@@ -118,8 +113,6 @@ export default function CustomerBookingsScreen() {
         </View>
       ) : (
         <ScrollView className="flex-1 px-4 pt-4" contentContainerClassName="pb-8">
-          <DataSourceBanner usingFallback={usingFallback} error={error} />
-
           <Text className="text-brand-muted mb-2 leading-5">
             Deine Termine auf diesem Konto — auf allen Geräten verfügbar, sobald du angemeldet
             bist.
@@ -127,13 +120,6 @@ export default function CustomerBookingsScreen() {
           <Pressable onPress={() => router.push('/customer/profile')} className="mb-4">
             <Text className="text-brand-gold text-sm">Mein Profil bearbeiten</Text>
           </Pressable>
-
-          {hasPreLoginDeviceBookings ? (
-            <Text className="text-brand-muted text-xs mb-4 leading-5">
-              Mindestens ein Termin wurde vor der Anmeldung auf diesem Gerät gebucht. Neue
-              Buchungen werden automatisch deinem Konto zugeordnet.
-            </Text>
-          ) : null}
 
           {allBookings.length === 0 ? (
             <EmptyState

@@ -61,7 +61,7 @@ export function SlotPicker({
         <View className="py-6 items-center">
           <ActivityIndicator color={colors.accent} />
         </View>
-      ) : error ? (
+      ) : error && slots.length === 0 ? (
         <Text className="text-warning text-sm mb-2">{error}</Text>
       ) : null}
 

@@ -30,8 +30,8 @@ type BrandLogoProps = {
 };
 
 const logoSources = {
-  hero: brandImages.headerLogo,
-  horizontal: brandImages.headerLogo,
+  hero: brandImages.logoTransparent,
+  horizontal: brandImages.logoTransparent,
   vertical: brandImages.wordmark,
 } as const;
 

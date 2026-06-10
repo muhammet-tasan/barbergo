@@ -10,11 +10,18 @@ import { SectionHeader } from '@/components/SectionHeader';
 import { useAuth } from '@/contexts/auth-context';
 import { updateOwnProfile } from '@/services/profiles';
 
+const APPROVAL_LABELS = {
+  pending: 'In Prüfung',
+  approved: 'Freigegeben',
+  rejected: 'Abgelehnt',
+} as const;
+
 export default function BarberProfileScreen() {
   const router = useRouter();
   const { isBarber, profile, session, refreshProfile } = useAuth();
   const [displayName, setDisplayName] = useState('');
   const [phone, setPhone] = useState('');
+  const [address, setAddress] = useState('');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | undefined>();
   const [success, setSuccess] = useState<string | undefined>();
@@ -22,6 +29,7 @@ export default function BarberProfileScreen() {
   useEffect(() => {
     setDisplayName(profile?.displayName ?? '');
     setPhone(profile?.phone ?? '');
+    setAddress(profile?.address ?? '');
   }, [profile]);
 
   if (!isBarber) return <Redirect href="/login" />;
@@ -35,6 +43,7 @@ export default function BarberProfileScreen() {
       userId: session.user.id,
       displayName,
       phone,
+      address,
     });
     setSaving(false);
     if (result.error) {
@@ -44,6 +53,9 @@ export default function BarberProfileScreen() {
     await refreshProfile();
     setSuccess('Profil gespeichert.');
   };
+
+  const approvalLabel =
+    APPROVAL_LABELS[profile?.approvalStatus ?? 'approved'] ?? profile?.approvalStatus;
 
   return (
     <SafeAreaView className="flex-1 bg-brand-dark" edges={['top']}>
@@ -57,21 +69,23 @@ export default function BarberProfileScreen() {
           <ProfileEditor
             displayName={displayName}
             phone={phone}
+            address={address}
             onChangeDisplayName={setDisplayName}
             onChangePhone={setPhone}
+            onChangeAddress={setAddress}
             onSave={handleSave}
             saving={saving}
             error={error}
             success={success}
             readOnlyFields={[
               { label: 'Rolle', value: 'Barber' },
-              { label: 'Freigabe', value: profile?.approvalStatus ?? 'approved' },
+              { label: 'Freigabe', value: approvalLabel },
+              { label: 'E-Mail', value: session?.user.email ?? '—' },
             ]}
           />
         </AppCard>
         <Text className="text-brand-muted text-xs mt-4 leading-5">
-          Verfügbarkeiten und blockierte Zeiten werden im nächsten Schritt im Barber-Bereich
-          verwaltet.
+          Verfügbarkeiten und blockierte Zeiten werden im Barber-Kalender berücksichtigt.
         </Text>
       </ScrollView>
     </SafeAreaView>

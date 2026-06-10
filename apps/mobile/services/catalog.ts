@@ -1,4 +1,5 @@
 import type { Service } from '@/types/domain';
+import { logger } from '@/utils/logger';
 import { isMockCatalogId } from '@/utils/uuid';
 
 import {
@@ -57,9 +58,7 @@ export async function fetchServices(providerId?: string): Promise<ServicesLoadRe
 
     const rows = (data ?? []) as ServiceRow[];
     if (rows.length === 0) {
-      if (__DEV__) {
-        console.warn('[barbergo] services table empty for provider', providerId ?? '(all)');
-      }
+      logger.warn('catalog', 'services table empty', 'services_empty');
       return {
         services: [],
         source: 'supabase',
@@ -71,9 +70,7 @@ export async function fetchServices(providerId?: string): Promise<ServicesLoadRe
     return { services: sortServices(rows.map(mapService)), source: 'supabase' };
   } catch (err) {
     const { reason, detail } = classifySupabaseError(err);
-    if (__DEV__) {
-      console.warn('[barbergo] fetchServices failed:', detail);
-    }
+    logger.warn('catalog', 'fetchServices failed', reason);
     return {
       services: [],
       source: 'supabase',

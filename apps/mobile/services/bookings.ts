@@ -6,6 +6,7 @@ import { parseSwissDateToIso } from '@/utils/date';
 import { dedupeBookingsById } from '@/utils/dedupe-bookings';
 import { getBookingDisplayDateTime } from '@/utils/booking-display';
 
+import { logger } from '@/utils/logger';
 import { generateAccessToken, generateUuid, isMockCatalogId, isValidUuid } from '@/utils/uuid';
 import { canCancelBooking, cancelBookingBlockedReason } from '@/utils/booking-cancel';
 
@@ -15,6 +16,7 @@ import {
   type CatalogFailureReason,
 } from './catalog-errors';
 import { getBookingAccessToken, saveBookingAccessToken } from './booking-tokens';
+import { allowMockDataFallback } from './data-source-policy';
 import { getSupabaseClient, SupabaseTables } from './supabase';
 import { mapBooking, sortBookings, type BookingRow } from './supabase-mappers';
 
@@ -50,7 +52,7 @@ async function persistGuestBookings(): Promise<void> {
     const payload = JSON.stringify([...guestBookingCache.values()]);
     await AsyncStorage.setItem(GUEST_BOOKINGS_STORAGE_KEY, payload);
   } catch (err) {
-    console.warn('[barbergo] persistGuestBookings failed:', err);
+    logger.warn('bookings', 'persistGuestBookings failed', err);
   }
 }
 
@@ -66,7 +68,7 @@ async function loadGuestBookingsFromStorage(): Promise<void> {
       }
     }
   } catch (err) {
-    console.warn('[barbergo] loadGuestBookingsFromStorage failed:', err);
+    logger.warn('bookings', 'loadGuestBookingsFromStorage failed', err);
   }
 }
 
@@ -86,6 +88,11 @@ function cacheGuestBooking(booking: Booking): void {
   if (!shouldCacheAsGuest(booking)) return;
   guestBookingCache.set(booking.id, booking);
   void persistGuestBookings();
+}
+
+async function removeGuestBooking(id: string): Promise<void> {
+  if (!guestBookingCache.delete(id)) return;
+  await persistGuestBookings();
 }
 
 async function syncBookingToLocalCache(booking: Booking): Promise<void> {
@@ -108,17 +115,26 @@ export async function listLocalGuestBookings(): Promise<Booking[]> {
   const refreshed = await Promise.all(
     local.map(async (booking) => {
       const token = booking.accessToken ?? (await getBookingAccessToken(booking.id));
-      if (!token) return booking;
+      if (!token) {
+        if (allowMockDataFallback() || !isValidUuid(booking.id)) {
+          return booking;
+        }
+        await removeGuestBooking(booking.id);
+        return null;
+      }
       const fresh = await fetchGuestBookingViaRpc(booking.id, token);
       if (fresh) {
         cacheGuestBooking(fresh);
         return fresh;
       }
-      return booking;
+      await removeGuestBooking(booking.id);
+      return null;
     })
   );
 
-  return sortBookings(dedupeBookingsById(refreshed));
+  return sortBookings(
+    dedupeBookingsById(refreshed.filter((booking): booking is Booking => booking != null))
+  );
 }
 
 function generateMockId(): string {
@@ -167,7 +183,10 @@ export function getServiceById(serviceId: string, services: Service[]): Service 
 export async function listBookings(): Promise<BookingsLoadResult> {
   const client = getSupabaseClient();
   if (!client) {
-    return { bookings: sortBookings(mockBookings), source: 'mock' };
+    if (allowMockDataFallback()) {
+      return { bookings: sortBookings(mockBookings), source: 'mock' };
+    }
+    return { bookings: [], source: 'supabase', error: 'Buchungen konnten nicht geladen werden.' };
   }
 
   try {
@@ -188,8 +207,8 @@ export async function listBookings(): Promise<BookingsLoadResult> {
     };
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Buchungen konnten nicht geladen werden.';
-    console.warn('[barbergo] listBookings fallback:', message);
-    return { bookings: sortBookings(mockBookings), source: 'mock', error: message };
+    logger.warn('bookings', 'listBookings failed', err);
+    return { bookings: [], source: 'supabase', error: message };
   }
 }
 
@@ -245,7 +264,7 @@ export async function getBookingById(id: string): Promise<BookingLoadResult> {
     return { booking, source: booking ? 'mock' : 'supabase' };
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Buchung konnte nicht geladen werden.';
-    console.warn('[barbergo] getBookingById fallback:', message);
+    logger.warn('bookings', 'getBookingById fallback', err);
 
     const cached = getCachedGuestBooking(id);
     if (cached) {
@@ -332,6 +351,60 @@ export async function createSlotBooking(
   });
 
   if (slotResult.error) {
+    const slotTaken =
+      slotResult.error.includes('nicht mehr verfügbar') ||
+      slotResult.error.includes('blockiert');
+    const tryLegacy =
+      !slotTaken &&
+      (slotResult.error === 'SLOT_RPC_MISSING' ||
+        slotResult.error === 'BOOKING_SAVE_FAILED');
+    if (tryLegacy) {
+      const display = getBookingDisplayDateTime({
+        id: 'pending',
+        providerId: input.providerId,
+        serviceId: input.service.id,
+        status: 'confirmed',
+        customerName: input.customerName,
+        phone: input.phone,
+        address: input.address,
+        appointmentDate: '',
+        appointmentTime: '',
+        startAt: input.startAt,
+        servicePriceChf: input.service.priceChf,
+        serviceFeeChf: 1,
+        totalChf: input.service.priceChf + 1,
+        customerId: input.customerId,
+      });
+      const legacy = await createBooking({
+        providerId: input.providerId,
+        service: input.service,
+        customerName: input.customerName,
+        phone: input.phone,
+        address: input.address,
+        appointmentDate: display.dateSwiss,
+        appointmentTime: display.time,
+        note: input.note,
+        customerId: input.customerId,
+      });
+      if (legacy.booking) {
+        return legacy;
+      }
+      if (legacy.error) {
+        return { source: legacy.source, error: legacy.error };
+      }
+    }
+    if (slotResult.error === 'SLOT_RPC_MISSING') {
+      return {
+        source: slotResult.source,
+        error: 'Slot-Buchung ist auf dem Server noch nicht eingerichtet. Bitte Migration 0006 anwenden.',
+      };
+    }
+    if (slotResult.error === 'BOOKING_SAVE_FAILED') {
+      return {
+        source: slotResult.source,
+        error: 'Die Buchung konnte nicht gespeichert werden. Bitte versuche es erneut.',
+      };
+    }
     return { source: slotResult.source, error: slotResult.error };
   }
 
@@ -339,7 +412,7 @@ export async function createSlotBooking(
     return { source: slotResult.source, error: 'Buchung konnte nicht erstellt werden.' };
   }
 
-  if (slotResult.source === 'mock') {
+  if (slotResult.source === 'mock' && allowMockDataFallback()) {
     const display = getBookingDisplayDateTime({
       id: slotResult.bookingId,
       providerId: input.providerId,
@@ -376,18 +449,54 @@ export async function createSlotBooking(
     return { booking, source: 'mock' };
   }
 
-  const loaded = await getBookingById(slotResult.bookingId);
-  if (!loaded.booking) {
-    return { source: 'supabase', error: 'Buchung wurde erstellt, konnte aber nicht geladen werden.' };
-  }
-
   const isGuest = !input.customerId;
-  if (isGuest && slotResult.accessToken) {
-    await saveBookingAccessToken(slotResult.bookingId, slotResult.accessToken);
-    cacheGuestBooking({ ...loaded.booking, accessToken: slotResult.accessToken });
+  const display = getBookingDisplayDateTime({
+    id: slotResult.bookingId,
+    providerId: input.providerId,
+    serviceId: input.service.id,
+    status: 'confirmed',
+    customerName: input.customerName,
+    phone: input.phone,
+    address: input.address,
+    appointmentDate: '',
+    appointmentTime: '',
+    startAt: input.startAt,
+    servicePriceChf: input.service.priceChf,
+    serviceFeeChf: 1,
+    totalChf: input.service.priceChf + 1,
+    customerId: input.customerId,
+  });
+  const localBooking = buildBookingFromInput(
+    slotResult.bookingId,
+    {
+      providerId: input.providerId,
+      service: input.service,
+      customerName: input.customerName,
+      phone: input.phone,
+      address: input.address,
+      appointmentDate: display.dateSwiss,
+      appointmentTime: display.time,
+      note: input.note,
+      customerId: input.customerId,
+    },
+    {
+      accessToken: isGuest ? slotResult.accessToken : undefined,
+      customerId: input.customerId,
+    }
+  );
+  localBooking.status = 'confirmed';
+  localBooking.startAt = input.startAt;
+
+  if (isGuest) {
+    if (slotResult.accessToken) {
+      await saveBookingAccessToken(slotResult.bookingId, slotResult.accessToken);
+    }
+    cacheGuestBooking(localBooking);
+    return { booking: localBooking, source: 'supabase' };
   }
 
-  return { booking: loaded.booking, source: 'supabase' };
+  const loaded = await getBookingById(slotResult.bookingId);
+  return { booking: loaded.booking ?? localBooking, source: 'supabase' };
 }
 
 export type CreateBookingInput = {
@@ -440,7 +549,7 @@ export async function createBooking(input: CreateBookingInput): Promise<BookingM
     if (!input.customerId) {
       cacheGuestBooking(booking);
     }
-    console.warn('[barbergo] createBooking: Supabase nicht konfiguriert — Demo-Buchung lokal gespeichert.');
+    logger.warn('bookings', 'createBooking using local demo fallback', 'env_missing');
     return { booking, source: 'mock' };
   }
 
@@ -489,7 +598,7 @@ export async function createBooking(input: CreateBookingInput): Promise<BookingM
       classified.reason === 'rls_denied'
         ? `RLS denied: ${classified.detail}`
         : classified.detail || String(err);
-    console.warn('[barbergo] createBooking failed:', technical);
+    logger.warn('bookings', 'createBooking failed', classified.reason);
     return {
       source: 'supabase',
       error: toUserBookingError(classified.reason, technical),
@@ -627,7 +736,7 @@ export async function updateBookingStatus(
   } catch (err) {
     const message =
       err instanceof Error ? err.message : 'Status konnte nicht aktualisiert werden.';
-    console.warn('[barbergo] updateBookingStatus fallback:', message);
+    logger.warn('bookings', 'updateBookingStatus fallback', err);
 
     const booking = mockBookings.find((b) => b.id === id);
     if (booking) {

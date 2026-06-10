@@ -5,24 +5,29 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 
 import { AuthActionButton } from '@/components/AuthActionButton';
-import { brandImages } from '@/constants/images';
+import { FadeOutText } from '@/components/FadeOutText';
+import { brandImageAspect, brandImages } from '@/constants/images';
 import { colors } from '@/constants/theme';
+import { useAuth } from '@/contexts/auth-context';
+import { getHeaderWelcomeText } from '@/utils/welcome-text';
 
 export type HeaderLogoVariant = 'mark' | 'wordmark' | 'none';
 
 type ScreenHeaderProps = {
-  /** Home: auth only (no header logo). Subpages: back + title. */
+  /** Home: welcome + auth. Subpages: back + title. */
   variant?: 'home' | 'subpage';
   title?: string;
   showBack?: boolean;
   showAuthAction?: boolean;
   logoVariant?: HeaderLogoVariant;
-  /** Reserved for future logo micro-animations — pass animated logo node here. */
   animatedLogoSlot?: ReactNode;
   onBack?: () => void;
 };
 
-const SIDE_SLOT = 'w-[80px]';
+const AUTH_SLOT_WIDTH = 88;
+/** Fixed header bar height (home + subpage). */
+const HEADER_BAR_HEIGHT = 52;
+const WELCOME_LINE_HEIGHT = 20;
 
 export function ScreenHeader({
   variant = 'subpage',
@@ -34,6 +39,7 @@ export function ScreenHeader({
   onBack,
 }: ScreenHeaderProps) {
   const router = useRouter();
+  const { session, profile, loading, isAdmin } = useAuth();
   const isHome = variant === 'home';
 
   const handleBack = () => {
@@ -53,20 +59,35 @@ export function ScreenHeader({
     (logoVariant === 'wordmark' ? (
       <Pressable onPress={goHome} className="active:opacity-80" accessibilityLabel="Zur Startseite">
         <Image
-          source={brandImages.headerLogo}
-          style={{ width: 150, height: 44 }}
+          source={brandImages.wordmark}
+          style={{ width: 160, height: 160 / brandImageAspect.wordmark }}
           contentFit="contain"
         />
       </Pressable>
     ) : null);
 
   if (isHome) {
+    const welcome = loading ? '' : getHeaderWelcomeText(session, profile, { isAdmin });
+
     return (
       <View className="border-b border-brand-border/80 bg-brand-dark">
-        <View className="flex-row items-center px-4 py-2.5 min-h-[52px]">
-          <View className={`${SIDE_SLOT} items-start`} />
-          <View className="flex-1" />
-          <View className={`${SIDE_SLOT} items-end justify-center`}>
+        <View
+          className="flex-row items-center px-4 gap-3"
+          style={{ height: HEADER_BAR_HEIGHT }}
+        >
+          <View
+            className="flex-1 min-w-0 justify-center pr-1"
+            style={{ height: WELCOME_LINE_HEIGHT }}
+          >
+            {loading ? (
+              <View style={{ height: WELCOME_LINE_HEIGHT }} />
+            ) : (
+              <FadeOutText className="text-sm font-medium text-brand-text leading-5">
+                {welcome || ' '}
+              </FadeOutText>
+            )}
+          </View>
+          <View style={{ width: AUTH_SLOT_WIDTH }} className="items-end justify-center shrink-0">
             {showAuthAction ? <AuthActionButton compact /> : null}
           </View>
         </View>
@@ -76,8 +97,8 @@ export function ScreenHeader({
 
   return (
     <View className="border-b border-brand-border/80 bg-brand-dark">
-      <View className="flex-row items-center px-3 py-2.5 min-h-[52px]">
-        <View className={`${SIDE_SLOT} flex-row items-center`}>
+      <View className="flex-row items-center px-3" style={{ height: HEADER_BAR_HEIGHT }}>
+        <View className="w-[80px] flex-row items-center">
           {showBack ? (
             <Pressable
               onPress={handleBack}
@@ -90,7 +111,7 @@ export function ScreenHeader({
           ) : null}
         </View>
 
-        <View className="flex-1 items-center justify-center px-1">
+        <View className="flex-1 items-center justify-center px-1 min-w-0">
           {title ? (
             <Text
               className="text-base font-semibold text-brand-text text-center"
@@ -104,7 +125,7 @@ export function ScreenHeader({
           )}
         </View>
 
-        <View className={`${SIDE_SLOT} items-end justify-center`}>
+        <View style={{ width: AUTH_SLOT_WIDTH }} className="items-end justify-center shrink-0">
           {showAuthAction ? <AuthActionButton compact /> : null}
         </View>
       </View>

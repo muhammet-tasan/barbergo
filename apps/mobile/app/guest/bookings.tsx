@@ -10,7 +10,6 @@ import { ScreenHeader } from '@/components/ScreenHeader';
 import { SectionHeader } from '@/components/SectionHeader';
 import { colors } from '@/constants/theme';
 import { useAuth } from '@/contexts/auth-context';
-import { getPostLoginPath } from '@/services/auth-roles';
 import { useServices } from '@/hooks/use-services';
 import {
   cancelBookingBlockedReason,
@@ -23,7 +22,7 @@ import { showUserMessage } from '@/utils/show-message';
 
 export default function GuestBookingsScreen() {
   const router = useRouter();
-  const { loading: authLoading, isAuthenticated, profile } = useAuth();
+  const { loading: authLoading, isAdmin, isBarber, isCustomer } = useAuth();
   const { services } = useServices();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
@@ -49,8 +48,14 @@ export default function GuestBookingsScreen() {
     );
   }
 
-  if (isAuthenticated) {
-    return <Redirect href={getPostLoginPath(profile) as Href} />;
+  if (isCustomer) {
+    return <Redirect href="/customer/bookings" />;
+  }
+  if (isAdmin) {
+    return <Redirect href="/admin" />;
+  }
+  if (isBarber) {
+    return <Redirect href="/barber/dashboard" />;
   }
 
   const handleCancel = async (booking: Booking) => {

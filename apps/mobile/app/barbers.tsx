@@ -3,14 +3,13 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 
 import { BarberCard } from '@/components/BarberCard';
-import { DataSourceBanner } from '@/components/DataSourceBanner';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { colors } from '@/constants/theme';
 import { useProviders } from '@/hooks/use-providers';
 
 export default function BarberSelectionScreen() {
   const router = useRouter();
-  const { providers, loading, usingFallback, error } = useProviders();
+  const { providers, loading } = useProviders();
 
   const navigateToServices = (providerId: string) => {
     router.push({
@@ -35,14 +34,15 @@ export default function BarberSelectionScreen() {
         </View>
       ) : (
         <ScrollView className="flex-1 px-4 pt-4" contentContainerClassName="pb-8">
-          <DataSourceBanner usingFallback={usingFallback} error={error} />
-
-          <Text className="text-brand-muted mb-4">
+          <Text className="text-brand-muted mb-4 leading-5">
             Wähle einen Barber für deinen Hausbesuch-Termin.
           </Text>
 
           {providers.length === 0 ? (
-            <Text className="text-brand-muted text-center">Keine Barber verfügbar.</Text>
+            <Text className="text-brand-muted leading-5">
+              Aktuell ist kein Barber buchbar. Neue Barber können sich registrieren und werden nach
+              der Freigabe hier angezeigt.
+            </Text>
           ) : (
             providers.map((provider) => (
               <BarberCard

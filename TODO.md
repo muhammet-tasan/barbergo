@@ -51,6 +51,11 @@
 - [x] Profile pages (customer, barber, admin) + pending barber approval
 - [x] Timezone helpers (`Europe/Zurich` display, UTC storage)
 - [x] Duplicate booking list fix (guest cache + fingerprint dedupe)
+- [x] UX: kurzer Telefon-Hinweis, Profil-/Bestätigungs-Button-Abstände, kein „Zur Startseite“-Flow
+- [x] Login leitet immer auf Startseite `/` weiter
+- [x] Migration `0008` — `upsert_own_profile` für Admin-/Profil-Speichern ohne bestehende Zeile
+- [x] Migration `0009` — fehlende Profil-Spalten + Barber-Signup; App-Fallback ohne Schema-Fehler in Listen
+- [x] Buchung: Legacy-Fallback wenn `book_slot` RPC fehlt; Barber-Registrierung → Startseite
 - [ ] Row Level Security policies (production hardening — see `docs/pre-launch-checklist.md`)
 
 - [x] Gastbuchung UX-Fix (validate-on-submit, kein disabled Press-Feedback, lokale Guest-Kopie)
@@ -59,7 +64,9 @@
 
 ### Next recommended tasks
 
-- [ ] Apply migration **`0006_slots_roles_profiles.sql`** on hosted Supabase
+- [x] Barber E-Mail-Bestätigung: umgebungsabhängiger Redirect (`auth-redirect.ts`), `/auth/callback`, kein `mailto`
+- [ ] Apply migrations **`0006`**–**`0013`** on hosted Supabase; Confirm email **ON** + Barber-Mail-Template + Redirect URLs
+
 - [ ] Supabase Auth password min length ≥ 8 (`docs/supabase-auth-settings.md`)
 - [ ] Manual E2E: slot book (confirmed) → no duplicate in customer list → `SLOT_TAKEN` on double book
 - [ ] Manual E2E: barber register → pending → admin approve → `/barber/dashboard`

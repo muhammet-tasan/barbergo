@@ -1,0 +1,11 @@
+{
+  "name": "barbergo",
+  "private": true,
+  "version": "1.0.0",
+  "description": "barbergo monorepo — mobile app in apps/mobile",
+  "scripts": {
+    "start": "npm --prefix apps/mobile run start",
+    "mobile": "npm --prefix apps/mobile run start",
+    "lint": "npm --prefix apps/mobile run lint"
+  }
+}

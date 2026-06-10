@@ -1,40 +1,85 @@
-import { ScrollView } from 'react-native';
+import { ActivityIndicator, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Redirect, useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { Redirect, useFocusEffect, useRouter } from 'expo-router';
+import { useCallback, useEffect, useState } from 'react';
 
 import { AppCard } from '@/components/AppCard';
-import { ProfileEditor } from '@/components/ProfileEditor';
+import { ProfileViewCard, validateProfilePhone } from '@/components/ProfileViewCard';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { SectionHeader } from '@/components/SectionHeader';
+import { colors } from '@/constants/theme';
 import { useAuth } from '@/contexts/auth-context';
 import { updateOwnProfile } from '@/services/profiles';
 
+function readMetaString(
+  session: { user: { user_metadata?: Record<string, unknown> } } | null,
+  key: string
+): string {
+  const value = session?.user.user_metadata?.[key];
+  return typeof value === 'string' ? value.trim() : '';
+}
+
 export default function AdminProfileScreen() {
   const router = useRouter();
-  const { isAdmin, profile, session, refreshProfile } = useAuth();
+  const { isAdmin, profile, session, loading, refreshProfile } = useAuth();
+  const [editing, setEditing] = useState(false);
   const [displayName, setDisplayName] = useState('');
   const [phone, setPhone] = useState('');
+  const [address, setAddress] = useState('');
+  const [phoneError, setPhoneError] = useState<string | undefined>();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | undefined>();
   const [success, setSuccess] = useState<string | undefined>();
 
+  const applyProfileToForm = useCallback(() => {
+    setDisplayName(profile?.displayName?.trim() || readMetaString(session, 'display_name') || '');
+    setPhone(profile?.phone?.trim() || readMetaString(session, 'phone') || '');
+    setAddress(profile?.address?.trim() || '');
+  }, [profile, session]);
+
   useEffect(() => {
-    setDisplayName(profile?.displayName ?? '');
-    setPhone(profile?.phone ?? '');
-  }, [profile]);
+    applyProfileToForm();
+  }, [applyProfileToForm]);
+
+  useFocusEffect(
+    useCallback(() => {
+      void refreshProfile();
+    }, [refreshProfile])
+  );
 
   if (!isAdmin) return <Redirect href="/" />;
 
+  const resetForm = () => {
+    applyProfileToForm();
+    setPhoneError(undefined);
+    setError(undefined);
+  };
+
   const handleSave = async () => {
     if (!session?.user.id) return;
-    setSaving(true);
+    setPhoneError(undefined);
     setError(undefined);
     setSuccess(undefined);
+
+    if (!displayName.trim()) {
+      setError('Name ist erforderlich');
+      return;
+    }
+    if (phone.trim()) {
+      const phoneValidation = validateProfilePhone(phone, false);
+      if (phoneValidation) {
+        setPhoneError(phoneValidation);
+        return;
+      }
+    }
+
+    setSaving(true);
     const result = await updateOwnProfile({
       userId: session.user.id,
       displayName,
       phone,
+      address,
+      roleHint: 'admin',
     });
     setSaving(false);
     if (result.error) {
@@ -42,27 +87,57 @@ export default function AdminProfileScreen() {
       return;
     }
     await refreshProfile();
+    applyProfileToForm();
+    setEditing(false);
     setSuccess('Profil gespeichert.');
   };
 
+  const initialLoading = loading && !session;
+
   return (
     <SafeAreaView className="flex-1 bg-brand-dark" edges={['top']}>
-      <ScreenHeader title="Admin-Profil" onBack={() => router.push('/admin')} />
+      <ScreenHeader title="Admin-Profil" onBack={() => router.back()} />
       <ScrollView className="flex-1 px-4 pt-4" contentContainerClassName="pb-8">
         <SectionHeader title="Kontakt" />
-        <AppCard>
-          <ProfileEditor
-            displayName={displayName}
-            phone={phone}
-            onChangeDisplayName={setDisplayName}
-            onChangePhone={setPhone}
-            onSave={handleSave}
-            saving={saving}
-            error={error}
-            success={success}
-            readOnlyFields={[{ label: 'Rolle', value: 'Admin' }]}
-          />
-        </AppCard>
+        {initialLoading ? (
+          <View className="py-12 items-center">
+            <ActivityIndicator color={colors.accent} />
+          </View>
+        ) : (
+          <AppCard>
+            {!profile ? (
+              <Text className="text-warning text-sm mb-4">
+                Profilzeile in der Datenbank fehlt — Anzeige aus Auth-Daten. Beim Speichern wird die
+                Zeile angelegt (Migration 0008 in Supabase).
+              </Text>
+            ) : null}
+            <ProfileViewCard
+              roleLabel="Admin"
+              email={session?.user.email ?? '—'}
+              displayName={displayName}
+              phone={phone}
+              address={address}
+              editing={editing}
+              saving={saving}
+              error={error}
+              phoneError={phoneError}
+              success={success}
+              phoneRequired={false}
+              onStartEdit={() => {
+                setSuccess(undefined);
+                setEditing(true);
+              }}
+              onCancelEdit={() => {
+                resetForm();
+                setEditing(false);
+              }}
+              onChangeDisplayName={setDisplayName}
+              onChangePhone={setPhone}
+              onChangeAddress={setAddress}
+              onSave={handleSave}
+            />
+          </AppCard>
+        )}
       </ScrollView>
     </SafeAreaView>
   );

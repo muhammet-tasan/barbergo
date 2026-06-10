@@ -36,7 +36,7 @@ export default function BarberProfileScreen() {
           {error ? (
             <Text className="text-error text-center text-sm mb-6">{error}</Text>
           ) : null}
-          <AppButton label="Zur Startseite" onPress={() => router.replace('/')} />
+          <AppButton label="Zurück" variant="secondary" onPress={() => router.back()} />
         </View>
       </SafeAreaView>
     );

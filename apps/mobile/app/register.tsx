@@ -10,8 +10,6 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { type Href, Redirect, useRouter } from 'expo-router';
 import { useState } from 'react';
-import * as Linking from 'expo-linking';
-
 import { AppButton } from '@/components/AppButton';
 import { AppForm } from '@/components/AppForm';
 import { AppInput } from '@/components/AppInput';
@@ -19,9 +17,18 @@ import { ScreenHeader } from '@/components/ScreenHeader';
 import { AUTOFILL } from '@/constants/form-autofill';
 import { colors } from '@/constants/theme';
 import { useAuth } from '@/contexts/auth-context';
-import { getCurrentSession, MIN_PASSWORD_LENGTH, type RegistrationRole } from '@/services/auth';
+import {
+  EMAIL_ALREADY_REGISTERED,
+  getCurrentSession,
+  isRegistrationRoleMismatch,
+  MIN_PASSWORD_LENGTH,
+  resendSignupConfirmation,
+  type RegistrationRole,
+} from '@/services/auth';
 import { getPostLoginPath } from '@/services/auth-roles';
-import { fetchUserProfile } from '@/services/profiles';
+import { notifyNewBarberRegistration } from '@/services/push-notifications';
+import { ensureUserProfileRow } from '@/services/profiles';
+import { PHONE_FORMAT_HINT, validatePhoneNumber } from '@/utils/validation';
 
 function RoleOption({
   label,
@@ -51,18 +58,26 @@ function RoleOption({
 
 export default function RegisterScreen() {
   const router = useRouter();
-  const { signUp, loading: authLoading, isAuthenticated, postLoginPath } = useAuth();
+  const { signUp, signOut, loading: authLoading, isAuthenticated, postLoginPath, refreshProfile } =
+    useAuth();
   const [registrationRole, setRegistrationRole] = useState<RegistrationRole>('customer');
   const [displayName, setDisplayName] = useState('');
   const [phone, setPhone] = useState('');
+  const [address, setAddress] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [nameError, setNameError] = useState<string | undefined>();
+  const [phoneError, setPhoneError] = useState<string | undefined>();
+  const [addressError, setAddressError] = useState<string | undefined>();
   const [emailError, setEmailError] = useState<string | undefined>();
   const [passwordError, setPasswordError] = useState<string | undefined>();
   const [formError, setFormError] = useState<string | undefined>();
   const [successMessage, setSuccessMessage] = useState<string | undefined>();
+  const [awaitingEmailConfirmation, setAwaitingEmailConfirmation] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+
+  const isBarber = registrationRole === 'barber';
 
   if (authLoading) {
     return (
@@ -72,32 +87,56 @@ export default function RegisterScreen() {
     );
   }
 
-  if (isAuthenticated) {
+  if (isAuthenticated && !submitting) {
     return <Redirect href={postLoginPath as Href} />;
   }
 
-  const notifyAdminBarberSignup = async (name: string, userEmail: string) => {
-    const message = encodeURIComponent(
-      `Neue Barber-Registrierung bei BarberGo:\nName: ${name}\nE-Mail: ${userEmail}\nBitte im Admin-Bereich freigeben.`
-    );
-    const url = `https://wa.me/?text=${message}`;
+  const handleResendConfirmation = async () => {
+    if (!email.trim()) {
+      setFormError('Bitte gib deine E-Mail-Adresse ein.');
+      return;
+    }
+
+    setResendLoading(true);
+    setFormError(undefined);
     try {
-      await Linking.openURL(url);
-    } catch {
-      // optional — registration still succeeds
+      const result = await resendSignupConfirmation(email);
+      if (result.error) {
+        setFormError(result.error);
+        return;
+      }
+      setSuccessMessage(
+        'Bestätigungs-E-Mail wurde erneut gesendet. Bitte prüfe dein Postfach (auch Spam).'
+      );
+    } finally {
+      setResendLoading(false);
     }
   };
 
   const handleSubmit = async () => {
     setNameError(undefined);
+    setPhoneError(undefined);
+    setAddressError(undefined);
     setEmailError(undefined);
     setPasswordError(undefined);
     setFormError(undefined);
     setSuccessMessage(undefined);
+    setAwaitingEmailConfirmation(false);
 
     let hasError = false;
     if (!displayName.trim()) {
       setNameError('Name ist erforderlich');
+      hasError = true;
+    }
+    if (isBarber) {
+      const phoneValidation = validatePhoneNumber(phone);
+      if (phoneValidation) {
+        setPhoneError(phoneValidation);
+        hasError = true;
+      }
+    }
+    if (!isBarber && !address.trim()) {
+      setAddressError('Adresse ist erforderlich');
       hasError = true;
     }
     if (!email.trim()) {
@@ -117,6 +156,7 @@ export default function RegisterScreen() {
         password,
         displayName: displayName.trim(),
         phone: phone.trim() || undefined,
+        address: address.trim() || undefined,
         registrationRole,
       });
       if (result.error) {
@@ -125,25 +165,59 @@ export default function RegisterScreen() {
       }
 
       if (result.needsEmailConfirmation) {
+        setAwaitingEmailConfirmation(true);
         setSuccessMessage(
-          registrationRole === 'barber'
-            ? 'Konto angelegt. Bitte bestätige deine E-Mail. Dein Barber-Profil wartet danach auf Admin-Freigabe.'
-            : 'Konto angelegt. Bitte bestätige deine E-Mail und melde dich danach an.'
+          'Konto erstellt. Bitte bestätige die E-Mail in deinem Postfach (auch Spam) — den Link am besten auf dem Handy mit installierter BarberGo-App öffnen. Danach kannst du dich anmelden.'
         );
         return;
       }
 
       const session = await getCurrentSession();
-      if (session) {
-        const profile = await fetchUserProfile(session.user.id);
-        if (registrationRole === 'barber') {
-          await notifyAdminBarberSignup(displayName.trim(), email.trim());
-        }
-        router.replace(getPostLoginPath(profile) as Href);
+      if (!session) {
+        setFormError(
+          'Registrierung konnte nicht abgeschlossen werden. Bitte versuche es erneut oder melde dich an, falls dein Konto bereits existiert.'
+        );
         return;
       }
 
-      setFormError('Bitte melde dich mit deinen Zugangsdaten an.');
+      if (isRegistrationRoleMismatch(session, registrationRole)) {
+        await signOut();
+        setFormError(EMAIL_ALREADY_REGISTERED);
+        return;
+      }
+
+      const profile = await ensureUserProfileRow({
+        userId: session.user.id,
+        registrationRole,
+        displayName: displayName.trim(),
+        phone: phone.trim() || undefined,
+        address: address.trim() || undefined,
+      });
+      if (!profile) {
+        setFormError('Konto erstellt, aber dein Profil konnte nicht geladen werden. Bitte versuche es erneut.');
+        return;
+      }
+
+      await refreshProfile();
+
+      if (isBarber) {
+        await notifyNewBarberRegistration({
+          barberId: session.user.id,
+          displayName: displayName.trim(),
+          phone: phone.trim(),
+          email: email.trim(),
+        });
+      }
+
+      setSuccessMessage('Konto erfolgreich erstellt. Du wirst weitergeleitet …');
+
+      const target = getPostLoginPath(profile, session.user.email, {
+        registrationRole,
+        metadata: session.user.user_metadata,
+      });
+      setTimeout(() => {
+        router.replace(target as Href);
+      }, 600);
     } finally {
       setSubmitting(false);
     }
@@ -161,10 +235,7 @@ export default function RegisterScreen() {
           contentContainerClassName="pb-8"
           keyboardShouldPersistTaps="handled"
         >
-          <Text className="text-brand-muted mb-4">
-            Wähle dein Konto — Kunde oder Barber. Admin-Konten werden nicht öffentlich
-            registriert.
-          </Text>
+          <Text className="text-brand-muted mb-4">Wähle dein Konto — Kunde oder Barber.</Text>
 
           <RoleOption
             label="Kunde"
@@ -174,8 +245,8 @@ export default function RegisterScreen() {
           />
           <RoleOption
             label="Barber"
-            description="Nach Admin-Freigabe Zugang zum Barber-Bereich"
-            selected={registrationRole === 'barber'}
+            description="Nach Freigabe Zugang zum Barber-Bereich"
+            selected={isBarber}
             onPress={() => setRegistrationRole('barber')}
           />
 
@@ -190,13 +261,27 @@ export default function RegisterScreen() {
               returnKeyType="next"
             />
             <AppInput
-              label="Telefon (optional)"
+              label={isBarber ? 'Telefon' : 'Telefon (optional)'}
               value={phone}
               onChangeText={setPhone}
+              error={phoneError}
               autofill={AUTOFILL.tel}
               keyboardType="phone-pad"
+              placeholder={PHONE_FORMAT_HINT}
               returnKeyType="next"
             />
+            {!isBarber ? (
+              <AppInput
+                label="Adresse"
+                value={address}
+                onChangeText={setAddress}
+                error={addressError}
+                autofill={AUTOFILL.streetAddress}
+                placeholder="Musterstrasse 1, 4051 Basel"
+                multiline
+                returnKeyType="next"
+              />
+            ) : null}
             <AppInput
               label="E-Mail"
               value={email}
@@ -230,7 +315,16 @@ export default function RegisterScreen() {
               </View>
             ) : null}
 
-            <AppButton label="Konto erstellen" onPress={handleSubmit} loading={submitting} submit />
+            {awaitingEmailConfirmation ? (
+              <AppButton
+                label="Bestätigungs-E-Mail erneut senden"
+                variant="secondary"
+                onPress={handleResendConfirmation}
+                loading={resendLoading}
+              />
+            ) : (
+              <AppButton label="Konto erstellen" onPress={handleSubmit} loading={submitting} submit />
+            )}
           </AppForm>
 
           <Pressable onPress={() => router.push('/login')} className="mt-6 items-center py-2">

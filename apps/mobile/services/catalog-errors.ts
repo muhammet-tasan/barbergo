@@ -1,5 +1,7 @@
-import { getSupabaseEnvSnapshot } from './supabase-env';
+import { logger } from '@/utils/logger';
 import { isMockCatalogId, isValidUuid } from '@/utils/uuid';
+
+import { getSupabaseEnvSnapshot } from './supabase-env';
 
 /** Why catalog data (provider/services) could not be loaded from Supabase. */
 export type CatalogFailureReason =
@@ -38,13 +40,13 @@ export function classifySupabaseError(err: unknown): {
   return { reason: 'query_failed', detail: message };
 }
 
-/** User-facing catalog error — no dev/test hints. Technical detail → console.warn in services. */
+/** User-facing catalog error — no dev/test hints. Technical detail → logger (dev only). */
 export function formatCatalogErrorMessage(
   reason: CatalogFailureReason,
   context?: { table?: string; detail?: string; missingEnv?: string[] }
 ): string {
   if (context?.detail) {
-    console.warn('[barbergo] catalog error:', reason, context.detail);
+    logger.warn('catalog', 'load failed', reason);
   }
 
   switch (reason) {

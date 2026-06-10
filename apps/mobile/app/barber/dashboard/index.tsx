@@ -1,6 +1,6 @@
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
+import { type Href, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 
 import { AppCard } from '@/components/AppCard';
@@ -17,13 +17,13 @@ export default function BarberDashboardScreen() {
         <Text className="text-brand-muted mb-4 leading-5">
           Dein Barber-Bereich — Buchungen und Profil.
         </Text>
-        <Pressable onPress={() => router.push('/barber/dashboard/bookings')} className="mb-3">
+        <Pressable onPress={() => router.push('/barber/dashboard/slots' as Href)} className="mb-3">
           <AppCard>
             <View className="flex-row items-center">
               <Ionicons name="calendar-outline" size={22} color={colors.accent} />
               <View className="flex-1 ml-3">
-                <Text className="text-brand-text font-semibold">Meine Buchungen</Text>
-                <Text className="text-brand-muted text-sm">Termine verwalten</Text>
+                <Text className="text-brand-text font-semibold">Alle Buchungen</Text>
+                <Text className="text-brand-muted text-sm">Kalender mit Slots</Text>
               </View>
               <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
             </View>
