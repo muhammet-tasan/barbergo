@@ -14,7 +14,9 @@ type ProfileEditorProps = {
   onChangeAddress: (value: string) => void;
   onSave: () => void;
   saving?: boolean;
-  error?: string;
+  displayNameError?: string;
+  phoneError?: string;
+  formError?: string;
   success?: string;
   readOnlyFields?: { label: string; value: string }[];
 };
@@ -28,7 +30,9 @@ export function ProfileEditor({
   onChangeAddress,
   onSave,
   saving = false,
-  error,
+  displayNameError,
+  phoneError,
+  formError,
   success,
   readOnlyFields = [],
 }: ProfileEditorProps) {
@@ -44,6 +48,7 @@ export function ProfileEditor({
         label="Anzeigename"
         value={displayName}
         onChangeText={onChangeDisplayName}
+        error={displayNameError}
         autofill={AUTOFILL.name}
         autoCapitalize="words"
       />
@@ -51,6 +56,7 @@ export function ProfileEditor({
         label="Telefon"
         value={phone}
         onChangeText={onChangePhone}
+        error={phoneError}
         autofill={AUTOFILL.tel}
         keyboardType="phone-pad"
       />
@@ -62,7 +68,11 @@ export function ProfileEditor({
         placeholder="Optional"
         multiline
       />
-      {error ? <Text className="text-error text-sm mb-3">{error}</Text> : null}
+      {formError ? (
+        <View className="mb-4 rounded-lg border border-error/50 bg-error/10 px-3 py-2">
+          <Text className="text-error text-sm">{formError}</Text>
+        </View>
+      ) : null}
       {success ? <Text className="text-success text-sm mb-3">{success}</Text> : null}
       <AppButton label="Speichern" onPress={onSave} loading={saving} submit />
     </AppForm>

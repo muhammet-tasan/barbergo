@@ -1,5 +1,8 @@
 import type { RegistrationRole } from '@/services/auth';
 import type { ProfileRole, UserProfile } from '@/services/profiles';
+import { createLogger } from '@/utils/logger';
+
+const log = createLogger('auth-roles');
 
 export type UserRole = ProfileRole;
 
@@ -38,7 +41,7 @@ export function isApprovedBarberRole(profile: UserProfile | null): boolean {
   if (profile?.approvalStatus === 'rejected' || profile?.approvalStatus === 'pending') {
     return false;
   }
-  return Boolean(profile?.providerId) || profile?.approvalStatus === 'approved';
+  return profile?.approvalStatus === 'approved' && Boolean(profile?.providerId);
 }
 
 export function isBarberPendingRole(
@@ -46,6 +49,9 @@ export function isBarberPendingRole(
   metadata?: Record<string, unknown> | null
 ): boolean {
   if (getUserRole(profile) === 'barber') {
+    if (profile?.approvalStatus === 'approved' && !profile.providerId) {
+      log.warn('barber approved without provider — treat as pending');
+    }
     if (profile?.approvalStatus === 'pending') return true;
     if (profile?.approvalStatus === 'rejected') return false;
     if (profile?.providerId) return false;
@@ -83,6 +89,13 @@ export function getBookingsListPath(
   profile: UserProfile | null
 ): '/customer/bookings' | '/guest/bookings' {
   return isCustomerRole(profile) ? '/customer/bookings' : '/guest/bookings';
+}
+
+export type ProfilePath = '/account';
+
+/** Single profile entry for all authenticated roles. */
+export function getProfilePath(): ProfilePath {
+  return '/account';
 }
 
 export function canAccessAdminArea(

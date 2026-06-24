@@ -5,7 +5,7 @@ import { type Href, useRouter } from 'expo-router';
 import { HomeHero } from '@/components/HomeHero';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { useAuth } from '@/contexts/auth-context';
-import { getBookingsListPath } from '@/services/auth-roles';
+import { getBookingsListPath, getProfilePath } from '@/services/auth-roles';
 
 function resolveHomeVariant(
   loading: boolean,
@@ -57,22 +57,10 @@ export default function HomeScreen() {
             }
             router.push(getBookingsListPath(profile));
           }}
-          onProfile={() => {
-            if (isAdmin) {
-              router.push('/admin/profile' as Href);
-              return;
-            }
-            if (isCustomer) {
-              router.push('/customer/profile' as Href);
-              return;
-            }
-            if (isBarber) {
-              router.push('/barber/dashboard/profile' as Href);
-            }
-          }}
+          onProfile={() => router.push(getProfilePath() as Href)}
           onAdminPage={() => router.push('/admin')}
           onAllBarbers={() => router.push('/admin/barbers' as Href)}
-          onAllBookings={() => router.push('/admin/barbers' as Href)}
+          onAllBookings={() => router.push('/admin/bookings' as Href)}
           onBarberSlots={() => router.push('/barber/dashboard/slots' as Href)}
         />
       </View>

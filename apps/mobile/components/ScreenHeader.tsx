@@ -17,6 +17,7 @@ type ScreenHeaderProps = {
   /** Home: welcome + auth. Subpages: back + title. */
   variant?: 'home' | 'subpage';
   title?: string;
+  subtitle?: string;
   showBack?: boolean;
   showAuthAction?: boolean;
   logoVariant?: HeaderLogoVariant;
@@ -24,7 +25,7 @@ type ScreenHeaderProps = {
   onBack?: () => void;
 };
 
-const AUTH_SLOT_WIDTH = 88;
+const AUTH_SLOT_WIDTH = 120;
 /** Fixed header bar height (home + subpage). */
 const HEADER_BAR_HEIGHT = 52;
 const WELCOME_LINE_HEIGHT = 20;
@@ -32,6 +33,7 @@ const WELCOME_LINE_HEIGHT = 20;
 export function ScreenHeader({
   variant = 'subpage',
   title,
+  subtitle,
   showBack = true,
   showAuthAction = true,
   logoVariant = 'none',
@@ -87,7 +89,10 @@ export function ScreenHeader({
               </FadeOutText>
             )}
           </View>
-          <View style={{ width: AUTH_SLOT_WIDTH }} className="items-end justify-center shrink-0">
+          <View
+            style={{ width: AUTH_SLOT_WIDTH, zIndex: 2 }}
+            className="items-end justify-center shrink-0"
+          >
             {showAuthAction ? <AuthActionButton compact /> : null}
           </View>
         </View>
@@ -113,19 +118,29 @@ export function ScreenHeader({
 
         <View className="flex-1 items-center justify-center px-1 min-w-0">
           {title ? (
-            <Text
-              className="text-base font-semibold text-brand-text text-center"
-              numberOfLines={1}
-              accessibilityRole="header"
-            >
-              {title}
-            </Text>
+            <View className="items-center justify-center max-w-full">
+              <Text
+                className="text-base font-semibold text-brand-text text-center"
+                numberOfLines={1}
+                accessibilityRole="header"
+              >
+                {title}
+              </Text>
+              {subtitle ? (
+                <Text className="text-xs text-brand-muted text-center mt-0.5" numberOfLines={1}>
+                  {subtitle}
+                </Text>
+              ) : null}
+            </View>
           ) : (
             logoNode
           )}
         </View>
 
-        <View style={{ width: AUTH_SLOT_WIDTH }} className="items-end justify-center shrink-0">
+        <View
+          style={{ width: AUTH_SLOT_WIDTH, zIndex: 2 }}
+          className="items-end justify-center shrink-0"
+        >
           {showAuthAction ? <AuthActionButton compact /> : null}
         </View>
       </View>

@@ -105,9 +105,7 @@ export default function RegisterScreen() {
         setFormError(result.error);
         return;
       }
-      setSuccessMessage(
-        'Bestätigungs-E-Mail wurde erneut gesendet. Bitte prüfe dein Postfach (auch Spam).'
-      );
+      setSuccessMessage('Wir haben dir eine Bestätigungs-E-Mail gesendet.');
     } finally {
       setResendLoading(false);
     }
@@ -167,7 +165,7 @@ export default function RegisterScreen() {
       if (result.needsEmailConfirmation) {
         setAwaitingEmailConfirmation(true);
         setSuccessMessage(
-          'Konto erstellt. Bitte bestätige die E-Mail in deinem Postfach (auch Spam) — den Link am besten auf dem Handy mit installierter BarberGo-App öffnen. Danach kannst du dich anmelden.'
+          'Fast geschafft. Bestätige deine E-Mail-Adresse — danach kannst du dich anmelden.'
         );
         return;
       }
@@ -194,7 +192,7 @@ export default function RegisterScreen() {
         address: address.trim() || undefined,
       });
       if (!profile) {
-        setFormError('Konto erstellt, aber dein Profil konnte nicht geladen werden. Bitte versuche es erneut.');
+        setFormError('Dein Profil konnte nicht geladen werden. Bitte melde dich an.');
         return;
       }
 
@@ -209,7 +207,7 @@ export default function RegisterScreen() {
         });
       }
 
-      setSuccessMessage('Konto erfolgreich erstellt. Du wirst weitergeleitet …');
+      setSuccessMessage('Willkommen bei BarberGo.');
 
       const target = getPostLoginPath(profile, session.user.email, {
         registrationRole,

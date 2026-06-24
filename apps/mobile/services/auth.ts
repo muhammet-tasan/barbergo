@@ -165,7 +165,7 @@ function mapSignInError(message: string): string {
     return 'E-Mail oder Passwort ist ungültig.';
   }
   if (lower.includes('email not confirmed')) {
-    return 'Bitte bestätige zuerst deine E-Mail — prüfe dein Postfach (auch Spam).';
+    return 'Bitte bestätige zuerst deine E-Mail-Adresse.';
   }
   return 'E-Mail oder Passwort ist ungültig.';
 }

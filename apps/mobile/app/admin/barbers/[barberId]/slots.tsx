@@ -4,9 +4,10 @@ import { Redirect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 
 import { ProviderSlotCalendar } from '@/components/ProviderSlotCalendar';
+import { ScreenHeader } from '@/components/ScreenHeader';
 import { colors } from '@/constants/theme';
 import { useAuth } from '@/contexts/auth-context';
-import { DEMO_PROVIDER_ID, fetchProfileById } from '@/services/profiles';
+import { fetchProfileById } from '@/services/profiles';
 import { resolveBarberProviderId } from '@/services/schedule';
 
 export default function AdminBarberSlotsScreen() {
@@ -18,7 +19,7 @@ export default function AdminBarberSlotsScreen() {
   }>();
   const [providerId, setProviderId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | undefined>();
+  const [unavailable, setUnavailable] = useState(false);
 
   useEffect(() => {
     if (!barberId) return;
@@ -26,11 +27,11 @@ export default function AdminBarberSlotsScreen() {
       setLoading(true);
       const profile = await fetchProfileById(barberId);
       if (!profile?.providerId) {
-        setProviderId(DEMO_PROVIDER_ID);
-        setError('Diesem Barber ist kein Provider zugewiesen. Demo-Provider wird angezeigt.');
+        setProviderId(null);
+        setUnavailable(true);
       } else {
         setProviderId(resolveBarberProviderId(profile.providerId));
-        setError(undefined);
+        setUnavailable(false);
       }
       setLoading(false);
     })();
@@ -38,7 +39,7 @@ export default function AdminBarberSlotsScreen() {
 
   if (!isAdmin) return <Redirect href="/" />;
 
-  if (loading || !providerId) {
+  if (loading) {
     return (
       <SafeAreaView className="flex-1 bg-brand-dark items-center justify-center" edges={['top']}>
         <ActivityIndicator color={colors.accent} />
@@ -46,17 +47,30 @@ export default function AdminBarberSlotsScreen() {
     );
   }
 
+  if (unavailable || !providerId) {
+    return (
+      <SafeAreaView className="flex-1 bg-brand-dark" edges={['top']}>
+        <ScreenHeader
+          title={barberName ?? 'Barber'}
+          subtitle="Buchungen"
+          onBack={() => router.back()}
+        />
+        <View className="flex-1 items-center justify-center px-6">
+          <Text className="text-brand-muted text-center leading-6">
+            Der Terminkalender ist nach der Freigabe verfügbar.
+          </Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView className="flex-1 bg-brand-dark" edges={['top']}>
-      {error ? (
-        <View className="px-4 pt-2">
-          <Text className="text-warning text-sm">{error}</Text>
-        </View>
-      ) : null}
       <ProviderSlotCalendar
         providerId={providerId}
-        title={`Buchungen · ${barberName ?? 'Barber'}`}
-        onBack={() => router.push('/admin/barbers')}
+        title={barberName ?? 'Barber'}
+        subtitle="Buchungen"
+        onBack={() => router.back()}
         bookingDetailPath="/admin/[id]"
       />
     </SafeAreaView>

@@ -37,12 +37,16 @@ Run **three separate executions** (or paste each file in full):
 
 **Do not run `0003` before `0001`.** `0003` is idempotent and removes any prior demo policies from `0002_*` if they were applied earlier.
 
-Verify RLS locally (optional):
+Verify RLS and slot booking locally (optional):
 
 ```powershell
 cd apps/mobile
-node scripts/verify-rls-0003.mjs
+npm run verify-rls
+npm run verify-guest-insert
+npm run verify-book-slot
 ```
+
+Manual app flows: **[docs/e2e-checklist.md](../docs/e2e-checklist.md)**.
 
 ## Demo-only RLS (insecure — local experiments only)
 

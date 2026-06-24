@@ -64,7 +64,7 @@ export default function AuthCallbackScreen() {
 
           setState('error');
 
-          setDetail('Supabase ist nicht konfiguriert.');
+          setDetail('Der Dienst ist derzeit nicht erreichbar. Bitte versuche es später erneut.');
 
         }
 
@@ -113,17 +113,11 @@ export default function AuthCallbackScreen() {
       const { data, error } = await client.auth.getSession();
 
       if (error) {
-
         if (!cancelled) {
-
           setState('error');
-
-          setDetail(error.message);
-
+          setDetail('Die Bestätigung konnte nicht abgeschlossen werden. Bitte versuche es erneut.');
         }
-
         return;
-
       }
 
 
@@ -247,9 +241,7 @@ export default function AuthCallbackScreen() {
             </Text>
 
             <Text className="text-brand-muted text-center leading-5 mb-8">
-
-              Dein Barber-Konto ist aktiv. Du kannst dich jetzt in der BarberGo-App anmelden.
-
+              Deine E-Mail wurde bestätigt. Du kannst dich jetzt anmelden.
             </Text>
 
             <AppButton label="Zur Anmeldung" onPress={() => router.replace('/login')} />

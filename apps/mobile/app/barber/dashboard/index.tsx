@@ -6,6 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { AppCard } from '@/components/AppCard';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { colors } from '@/constants/theme';
+import { getProfilePath } from '@/services/auth-roles';
 
 export default function BarberDashboardScreen() {
   const router = useRouter();
@@ -29,7 +30,7 @@ export default function BarberDashboardScreen() {
             </View>
           </AppCard>
         </Pressable>
-        <Pressable onPress={() => router.push('/barber/dashboard/profile')} className="mb-3">
+        <Pressable onPress={() => router.push(getProfilePath() as Href)} className="mb-3">
           <AppCard>
             <View className="flex-row items-center">
               <Ionicons name="person-outline" size={22} color={colors.accent} />

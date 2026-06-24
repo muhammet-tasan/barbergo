@@ -1,10 +1,9 @@
 import type { RegistrationRole } from '@/services/auth';
 
 import { getSupabaseClient } from '@/services/supabase';
-import { logger } from '@/utils/logger';
+import { createLogger } from '@/utils/logger';
 
-
-
+const log = createLogger('profiles');
 export const DEMO_PROVIDER_ID = '11111111-1111-1111-1111-111111111111';
 
 
@@ -94,12 +93,12 @@ function parseProfileRole(value: unknown): ProfileRole | null {
 
 
 
-function parseApprovalStatus(value: unknown): ApprovalStatus {
-
-  if (value === 'pending' || value === 'rejected') return value;
-
+function parseApprovalStatus(value: unknown, role?: ProfileRole): ApprovalStatus {
+  if (value === 'pending' || value === 'rejected' || value === 'approved') {
+    return value;
+  }
+  if (role === 'barber') return 'pending';
   return 'approved';
-
 }
 
 
@@ -117,7 +116,7 @@ function mapProfileRow(row: {
   const role = parseProfileRole(rawRole);
   if (!role) return null;
 
-  let approvalStatus = parseApprovalStatus(row.approval_status);
+  let approvalStatus = parseApprovalStatus(row.approval_status, role);
   if (rawRole === 'barber_pending') {
     approvalStatus = 'pending';
   }
@@ -277,7 +276,7 @@ export async function ensureUserProfileRow(input: {
 
   if (insertError && !insertError.message.toLowerCase().includes('duplicate')) {
 
-    logger.warn('profiles', 'ensureUserProfileRow insert failed', insertError);
+    log.warn('ensureUserProfileRow insert failed', insertError);
 
   }
 
@@ -313,7 +312,7 @@ export async function fetchUserProfile(userId: string): Promise<UserProfile | nu
 
   if (error) {
 
-    logger.warn('profiles', 'fetchUserProfile failed', error);
+    log.warn('fetchUserProfile failed', error);
 
     return null;
 
@@ -484,11 +483,7 @@ export async function updateOwnProfile(input: {
 
 
   return {
-
-    error:
-
-      'Profil konnte nicht gespeichert werden. Bitte Migration 0005/0008/0009 in Supabase ausführen.',
-
+    error: 'Profil konnte nicht gespeichert werden. Bitte versuche es erneut.',
   };
 
 }
@@ -633,5 +628,25 @@ export async function setBarberApproval(
 
   return {};
 
+}
+
+
+
+export function mapBarberApprovalError(message: string): string {
+  const lower = message.toLowerCase();
+  if (
+    lower.includes('could not find the function') ||
+    lower.includes('pgrst202') ||
+    lower.includes('approve_barber_profile')
+  ) {
+    return 'Die Freigabe ist derzeit nicht möglich. Bitte versuche es später erneut.';
+  }
+  if (lower.includes('forbidden')) {
+    return 'Du hast keine Berechtigung für diese Aktion.';
+  }
+  if (lower.includes('profile_not_found')) {
+    return 'Barber-Profil nicht gefunden.';
+  }
+  return 'Die Freigabe konnte nicht gespeichert werden. Bitte versuche es erneut.';
 }
 

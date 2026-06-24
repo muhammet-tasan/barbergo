@@ -1,11 +1,13 @@
 import { calculateBookingTotal } from '@/constants/pricing';
 import type { Service } from '@/types/domain';
 import { addDaysIso, todayZurichIso, zurichLocalDateTimeToUtc } from '@/utils/timezone';
-import { logger } from '@/utils/logger';
+import { createLogger } from '@/utils/logger';
 import { generateAccessToken, generateUuid, isValidUuid } from '@/utils/uuid';
 
 import { allowMockDataFallback } from './data-source-policy';
 import { getSupabaseClient } from './supabase';
+
+const log = createLogger('slots');
 
 export type TimeSlot = {
   startAt: string;
@@ -95,7 +97,7 @@ export async function fetchAvailableSlots(
     return { slots: fallback, source: 'supabase' };
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Slots konnten nicht geladen werden.';
-    logger.warn('slots', 'fetchAvailableSlots failed', err);
+    log.warn('fetchAvailableSlots failed', err);
 
     const fallback = defaultBusinessSlotsForDate(isoDate, service);
     if (fallback.length > 0) {
@@ -191,7 +193,7 @@ export async function bookSlot(input: BookSlotInput): Promise<BookSlotResult> {
     return { bookingId, accessToken, source: 'supabase' };
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    logger.warn('slots', 'bookSlot failed', err);
+    log.warn('bookSlot failed', err);
     return { error: mapSlotRpcError(message), source: 'supabase' };
   }
 }

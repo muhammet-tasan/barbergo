@@ -24,8 +24,9 @@ type ProfileViewCardProps = {
   address: string;
   editing: boolean;
   saving: boolean;
-  error?: string;
+  displayNameError?: string;
   phoneError?: string;
+  formError?: string;
   success?: string;
   onStartEdit: () => void;
   onCancelEdit: () => void;
@@ -44,8 +45,9 @@ export function ProfileViewCard({
   address,
   editing,
   saving,
-  error,
+  displayNameError,
   phoneError,
+  formError,
   success,
   onStartEdit,
   onCancelEdit,
@@ -68,7 +70,16 @@ export function ProfileViewCard({
             <Ionicons name="pencil" size={20} color={colors.accent} />
             <Text className="text-brand-gold text-sm font-medium">Bearbeiten</Text>
           </Pressable>
-        ) : null}
+        ) : (
+          <Pressable
+            onPress={onCancelEdit}
+            className="min-h-[40px] min-w-[40px] items-center justify-center active:opacity-70"
+            accessibilityRole="button"
+            accessibilityLabel="Bearbeiten abbrechen"
+          >
+            <Ionicons name="close" size={24} color={colors.accent} />
+          </Pressable>
+        )}
       </View>
 
       <ReadOnlyField label="Rolle" value={roleLabel} />
@@ -80,6 +91,7 @@ export function ProfileViewCard({
             label="Anzeigename"
             value={displayName}
             onChangeText={onChangeDisplayName}
+            error={displayNameError}
             autofill={AUTOFILL.name}
             autoCapitalize="words"
           />
@@ -100,7 +112,11 @@ export function ProfileViewCard({
             placeholder="Optional"
             multiline
           />
-          {error ? <Text className="text-error text-sm mb-3">{error}</Text> : null}
+          {formError ? (
+            <View className="mb-4 rounded-lg border border-error/50 bg-error/10 px-3 py-2">
+              <Text className="text-error text-sm">{formError}</Text>
+            </View>
+          ) : null}
           <ButtonGroup className="gap-6 mt-6" spaced={false}>
             <AppButton label="Speichern" onPress={onSave} loading={saving} />
             <AppButton label="Abbrechen" variant="secondary" onPress={onCancelEdit} />

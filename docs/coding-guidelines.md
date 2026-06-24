@@ -96,6 +96,8 @@ apps/mobile/
 - **Clear primary actions** — one main CTA per screen.
 - **Avoid clutter** — show only what the user needs for the current step.
 - **German copy** for all user-visible text, validation messages, and WhatsApp templates.
+- **Production-ready UI copy only** — no placeholder hints like „später änderbar“, „kommt bald“, or other text for features not shipping yet. Either ship the feature or omit the UI element.
+- **Form validation** — show field errors on the relevant `AppInput` (`error` prop); reserve banners for server/API errors only (see `/register`).
 - **Admin UI** — practical, scannable list + detail; no decorative complexity.
 
 ---

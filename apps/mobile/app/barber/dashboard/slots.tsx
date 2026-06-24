@@ -4,6 +4,7 @@ import { Redirect, useRouter } from 'expo-router';
 import { ProviderSlotCalendar } from '@/components/ProviderSlotCalendar';
 import { useAuth } from '@/contexts/auth-context';
 import { resolveBarberProviderId } from '@/services/schedule';
+import { navigateBack } from '@/utils/navigation';
 
 export default function BarberSlotsScreen() {
   const router = useRouter();
@@ -16,8 +17,8 @@ export default function BarberSlotsScreen() {
     <SafeAreaView className="flex-1 bg-brand-dark" edges={['top']}>
       <ProviderSlotCalendar
         providerId={providerId}
-        title="Alle Buchungen"
-        onBack={() => router.push('/barber/dashboard')}
+        title="Buchungen"
+        onBack={() => navigateBack(router, '/barber/dashboard')}
         bookingDetailPath="/barber/dashboard/[id]"
       />
     </SafeAreaView>

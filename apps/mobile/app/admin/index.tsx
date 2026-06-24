@@ -1,43 +1,38 @@
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
+import { type Href, Link, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 
 import { AppCard } from '@/components/AppCard';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { colors } from '@/constants/theme';
+import { navigateBack } from '@/utils/navigation';
 
 type HubLink = {
   title: string;
   subtitle: string;
-  href: '/admin/barbers' | '/admin/profiles' | '/admin/pending-barbers' | '/admin/profile';
+  href: '/admin/barbers' | '/admin/customers' | '/admin/barber-approvals';
   icon: keyof typeof Ionicons.glyphMap;
 };
 
 const LINKS: HubLink[] = [
   {
-    title: 'Alle Barber',
-    subtitle: 'Barber-Profile, Freigabe und Buchungskalender',
+    title: 'Barber verwalten',
+    subtitle: 'Profile, Buchungskalender und Freigaben',
     href: '/admin/barbers',
     icon: 'cut-outline',
   },
   {
-    title: 'Alle Kunden',
-    subtitle: 'Registrierte Kundenkonten',
-    href: '/admin/profiles',
+    title: 'Kunden verwalten',
+    subtitle: 'Registrierte Kundenkonten ansehen',
+    href: '/admin/customers',
     icon: 'people-outline',
   },
   {
     title: 'Barber-Freigaben',
-    subtitle: 'Neue Barber genehmigen oder ablehnen',
-    href: '/admin/pending-barbers',
+    subtitle: 'Neue Barber prüfen und freigeben',
+    href: '/admin/barber-approvals',
     icon: 'shield-checkmark-outline',
-  },
-  {
-    title: 'Mein Admin-Profil',
-    subtitle: 'Kontaktdaten bearbeiten',
-    href: '/admin/profile',
-    icon: 'person-outline',
   },
 ];
 
@@ -46,24 +41,27 @@ export default function AdminHubScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-brand-dark" edges={['top']}>
-      <ScreenHeader title="Admin" onBack={() => router.back()} />
+      <ScreenHeader
+        title="Admin-Bereich"
+        subtitle="Barber, Kunden und Freigaben verwalten"
+        onBack={() => navigateBack(router, '/')}
+      />
       <ScrollView className="flex-1 px-4 pt-4" contentContainerClassName="pb-8">
-        <Text className="text-brand-muted mb-4 leading-5">
-          Verwaltung für BarberGo — Barber, Kunden und Freigaben.
-        </Text>
         {LINKS.map((link) => (
-          <Pressable key={link.href} onPress={() => router.push(link.href)} className="mb-3">
-            <AppCard>
-              <View className="flex-row items-center">
-                <Ionicons name={link.icon} size={22} color={colors.accent} />
-                <View className="flex-1 ml-3">
-                  <Text className="text-brand-text font-semibold text-base">{link.title}</Text>
-                  <Text className="text-brand-muted text-sm mt-0.5">{link.subtitle}</Text>
+          <Link key={link.href} href={link.href as Href} asChild>
+            <Pressable className="mb-3 active:opacity-80">
+              <AppCard>
+                <View className="flex-row items-center">
+                  <Ionicons name={link.icon} size={22} color={colors.accent} />
+                  <View className="flex-1 ml-3">
+                    <Text className="text-brand-text font-semibold text-base">{link.title}</Text>
+                    <Text className="text-brand-muted text-sm mt-0.5">{link.subtitle}</Text>
+                  </View>
+                  <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
                 </View>
-                <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
-              </View>
-            </AppCard>
-          </Pressable>
+              </AppCard>
+            </Pressable>
+          </Link>
         ))}
       </ScrollView>
     </SafeAreaView>

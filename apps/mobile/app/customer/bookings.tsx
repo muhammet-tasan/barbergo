@@ -20,6 +20,7 @@ import {
 import type { Booking } from '@/types/domain';
 import { getBookingDisplayDateTime } from '@/utils/booking-display';
 import { mergeCustomerBookings } from '@/utils/dedupe-bookings';
+import { getProfilePath } from '@/services/auth-roles';
 
 export default function CustomerBookingsScreen() {
   const router = useRouter();
@@ -117,7 +118,7 @@ export default function CustomerBookingsScreen() {
             Deine Termine auf diesem Konto — auf allen Geräten verfügbar, sobald du angemeldet
             bist.
           </Text>
-          <Pressable onPress={() => router.push('/customer/profile')} className="mb-4">
+          <Pressable onPress={() => router.push(getProfilePath())} className="mb-4">
             <Text className="text-brand-gold text-sm">Mein Profil bearbeiten</Text>
           </Pressable>
 

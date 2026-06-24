@@ -6,7 +6,7 @@ import { parseSwissDateToIso } from '@/utils/date';
 import { dedupeBookingsById } from '@/utils/dedupe-bookings';
 import { getBookingDisplayDateTime } from '@/utils/booking-display';
 
-import { logger } from '@/utils/logger';
+import { createLogger } from '@/utils/logger';
 import { generateAccessToken, generateUuid, isMockCatalogId, isValidUuid } from '@/utils/uuid';
 import { canCancelBooking, cancelBookingBlockedReason } from '@/utils/booking-cancel';
 
@@ -19,6 +19,8 @@ import { getBookingAccessToken, saveBookingAccessToken } from './booking-tokens'
 import { allowMockDataFallback } from './data-source-policy';
 import { getSupabaseClient, SupabaseTables } from './supabase';
 import { mapBooking, sortBookings, type BookingRow } from './supabase-mappers';
+
+const log = createLogger('bookings');
 
 const BOOKING_SELECT =
   'id, provider_id, service_id, status, customer_name, phone, address, appointment_date, appointment_time, start_at, end_at, note, service_price_chf, service_fee_chf, total_chf, customer_id, created_at, updated_at';
@@ -52,7 +54,7 @@ async function persistGuestBookings(): Promise<void> {
     const payload = JSON.stringify([...guestBookingCache.values()]);
     await AsyncStorage.setItem(GUEST_BOOKINGS_STORAGE_KEY, payload);
   } catch (err) {
-    logger.warn('bookings', 'persistGuestBookings failed', err);
+    log.warn('persistGuestBookings failed', err);
   }
 }
 
@@ -68,7 +70,7 @@ async function loadGuestBookingsFromStorage(): Promise<void> {
       }
     }
   } catch (err) {
-    logger.warn('bookings', 'loadGuestBookingsFromStorage failed', err);
+    log.warn('loadGuestBookingsFromStorage failed', err);
   }
 }
 
@@ -207,7 +209,7 @@ export async function listBookings(): Promise<BookingsLoadResult> {
     };
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Buchungen konnten nicht geladen werden.';
-    logger.warn('bookings', 'listBookings failed', err);
+    log.warn('listBookings failed', err);
     return { bookings: [], source: 'supabase', error: message };
   }
 }
@@ -264,7 +266,7 @@ export async function getBookingById(id: string): Promise<BookingLoadResult> {
     return { booking, source: booking ? 'mock' : 'supabase' };
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Buchung konnte nicht geladen werden.';
-    logger.warn('bookings', 'getBookingById fallback', err);
+    log.warn('getBookingById fallback', err);
 
     const cached = getCachedGuestBooking(id);
     if (cached) {
@@ -396,7 +398,7 @@ export async function createSlotBooking(
     if (slotResult.error === 'SLOT_RPC_MISSING') {
       return {
         source: slotResult.source,
-        error: 'Slot-Buchung ist auf dem Server noch nicht eingerichtet. Bitte Migration 0006 anwenden.',
+        error: 'Terminbuchung ist derzeit nicht verfügbar. Bitte versuche es später erneut.',
       };
     }
     if (slotResult.error === 'BOOKING_SAVE_FAILED') {
@@ -549,7 +551,7 @@ export async function createBooking(input: CreateBookingInput): Promise<BookingM
     if (!input.customerId) {
       cacheGuestBooking(booking);
     }
-    logger.warn('bookings', 'createBooking using local demo fallback', 'env_missing');
+    log.warn('createBooking using local demo fallback', 'env_missing');
     return { booking, source: 'mock' };
   }
 
@@ -598,7 +600,7 @@ export async function createBooking(input: CreateBookingInput): Promise<BookingM
       classified.reason === 'rls_denied'
         ? `RLS denied: ${classified.detail}`
         : classified.detail || String(err);
-    logger.warn('bookings', 'createBooking failed', classified.reason);
+    log.warn('createBooking failed', classified.reason);
     return {
       source: 'supabase',
       error: toUserBookingError(classified.reason, technical),
@@ -736,7 +738,7 @@ export async function updateBookingStatus(
   } catch (err) {
     const message =
       err instanceof Error ? err.message : 'Status konnte nicht aktualisiert werden.';
-    logger.warn('bookings', 'updateBookingStatus fallback', err);
+    log.warn('updateBookingStatus fallback', err);
 
     const booking = mockBookings.find((b) => b.id === id);
     if (booking) {

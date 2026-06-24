@@ -8,7 +8,7 @@ export default function AdminBookingsScreen() {
     <StaffBookingListScreen
       title="Alle Buchungen"
       detailPathPrefix="/admin"
-      onBack={() => router.push('/admin')}
+      onBack={() => router.back()}
     />
   );
 }

@@ -68,10 +68,14 @@
 - [ ] Apply migrations **`0006`**–**`0013`** on hosted Supabase; Confirm email **ON** + Barber-Mail-Template + Redirect URLs
 
 - [ ] Supabase Auth password min length ≥ 8 (`docs/supabase-auth-settings.md`)
-- [ ] Manual E2E: slot book (confirmed) → no duplicate in customer list → `SLOT_TAKEN` on double book
+- [ ] Manual E2E: durchgehen mit **[docs/e2e-checklist.md](docs/e2e-checklist.md)** (Gast/Kunde/Admin/Barber + Offline)
 - [ ] Manual E2E: barber register → pending → admin approve → `/barber/dashboard`
 - [ ] Barber UI: weekly availability + blocked times (schema ready in `0006`)
-- [ ] Run `node scripts/verify-rls-0003.mjs` after applying `0003`–`0006`
+- [x] Smoke-Skripte: `verify-rls`, `verify-guest-insert`, **`verify-book-slot`** (`npm run verify-book-slot`)
+- [x] Zentrales Logging (`utils/logger.ts`, `docs/logging.md`, `EXPO_PUBLIC_LOG_LEVEL`)
+- [x] Home: Registrieren + Anmelden für Gäste; keine Debug-Texte in der UI
+- [x] Admin Barber-Freigabe: Genehmigen in „Alle Barber“ + korrekter Status; Navigation `router.back()`
+- [x] Profil-Navigation: einheitliche Route `/account`, Profil-Icon im Header, Admin-Hub ohne Profil-Kachel
 
 ### Not in MVP
 

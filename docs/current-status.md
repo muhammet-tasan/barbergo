@@ -1,6 +1,6 @@
 # barbergo — Current Status
 
-Last updated: 2026-06-05
+Last updated: 2026-06-17
 
 ## Project maturity
 
@@ -23,9 +23,13 @@ Last updated: 2026-06-05
 
 ### Admin flow (`role = admin` only)
 
-- **`/admin`** — Hub: Buchungen, Profile, Barber-Freigaben, Admin-Profil
+- **`/admin`** — Verwaltungs-Hub: Barber, Kunden, Barber-Freigaben (keine Profil-Kachel)
+- Home (Admin): **Admin-Bereich öffnen** → `/admin`; **Mein Profil** → `/account`
+- Header (eingeloggt): Profil-Icon → `/account`; **Abmelden** dezent daneben
 - **`/admin/bookings`** — alle Buchungen, Filter-Tabs, Detail
-- **`/admin/pending-barbers`** — Genehmigen / Ablehnen
+- **`/admin/pending-barbers`** — Genehmigen / Ablehnen (Alias `/admin/barber-approvals`)
+- **`/admin/profiles`** — Kundenkonten (Alias `/admin/customers`)
+- **`/account`** — Kontaktdaten für alle Rollen (Profilfoto-Platzhalter, kein Upload)
 - Bestehender Auth-User **`admin@barbergo.ch`** — Profil in `public.profiles`, keine Duplikat-Anlage in Migrations
 
 ### Barber flow (approved `role = barber` only)
@@ -41,7 +45,11 @@ Last updated: 2026-06-05
 
 ### Developer / diagnostics
 
-- RLS smoke script: `apps/mobile/scripts/verify-rls-0003.mjs`
+- RLS smoke script: `apps/mobile/scripts/verify-rls-0003.mjs` (`npm run verify-rls`)
+- Guest INSERT smoke: `apps/mobile/scripts/verify-guest-insert.mjs` (`npm run verify-guest-insert`)
+- Slot RPC smoke: `apps/mobile/scripts/verify-book-slot.mjs` (`npm run verify-book-slot`)
+- Manuelle E2E-Checkliste: **[e2e-checklist.md](./e2e-checklist.md)**
+- Logging: **[logging.md](./logging.md)** (`EXPO_PUBLIC_LOG_LEVEL`)
 - Auth settings doc: `docs/supabase-auth-settings.md`
 - ntfy scripts (`scripts/notify-*.ps1`)
 
@@ -77,11 +85,10 @@ See [supabase/README.md](../supabase/README.md).
 
 ## Next recommended tasks
 
-1. Apply **`0006`**–**`0012`** on hosted Supabase.
-2. Supabase Auth: Redirect URLs (`barbergo://auth/callback`, `http://localhost:8081/auth/callback`, `exp://**`), Barber-Mail-Template.
-3. Supabase Auth: Passwort-Mindestlänge ≥ 8 (siehe `docs/supabase-auth-settings.md`).
-3. Manual E2E: Slot buchen → kein Doppel in Meine Termine; zweiter Slot gleiche Zeit → `SLOT_TAKEN`.
-4. Barber-Verfügbarkeit / Blockzeiten UI im Barber-Dashboard (Schema in `0006` vorhanden).
-5. Product priorities: [product-roadmap.md](./product-roadmap.md).
+1. Apply **`0006`**–**`0013`** on hosted Supabase (Provider/Seed fehlen sonst bei Smoke-Skripten).
+2. Smoke-Skripte: `npm run verify-rls`, `verify-guest-insert`, **`verify-book-slot`**.
+3. Manuelle E2E: **[e2e-checklist.md](./e2e-checklist.md)** abarbeiten.
+4. Supabase Auth: Redirect URLs, Barber-Mail-Template, Passwort ≥ 8 (`docs/supabase-auth-settings.md`).
+5. Barber-Verfügbarkeit / Blockzeiten UI (Schema in `0006` vorhanden) — **nach** E2E-Grün.
 
 See [TODO.md](../TODO.md).

@@ -48,7 +48,7 @@ const { data: provider, error: providerError } = await client
   .maybeSingle();
 
 if (providerError || !provider) {
-  console.error('No active provider — run 0001 + seed.sql first.', providerError?.message);
+  console.error('No active provider — register a barber in the app and approve as admin, or use seed.sql for demo only.', providerError?.message);
   process.exit(1);
 }
 

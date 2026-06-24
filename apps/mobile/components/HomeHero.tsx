@@ -89,7 +89,10 @@ export function HomeHero({
             {loading ? (
               <ActivityIndicator color={colors.accent} />
             ) : variant === 'admin' ? (
-              <AppButton label="Admin-Seite" onPress={onAdminPage} />
+              <>
+                <AppButton label="Admin-Bereich öffnen" onPress={onAdminPage} />
+                <AppButton label="Mein Profil" variant="secondary" onPress={onProfile} />
+              </>
             ) : variant === 'barber' ? (
               <>
                 <AppButton label="Alle Buchungen" onPress={onBarberSlots} />

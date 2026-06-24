@@ -1,4 +1,4 @@
-import { ActivityIndicator, ScrollView, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Redirect, useRouter, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
@@ -8,7 +8,7 @@ import { AppCard } from '@/components/AppCard';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { colors } from '@/constants/theme';
 import { useAuth } from '@/contexts/auth-context';
-import { listPendingBarbers, setBarberApproval, type UserProfile } from '@/services/profiles';
+import { listPendingBarbers, mapBarberApprovalError, setBarberApproval, type UserProfile } from '@/services/profiles';
 
 export default function AdminPendingBarbersScreen() {
   const router = useRouter();
@@ -34,8 +34,12 @@ export default function AdminPendingBarbersScreen() {
 
   const handleApproval = async (profileId: string, approval: 'approved' | 'rejected') => {
     setActingId(profileId);
-    await setBarberApproval(profileId, approval);
-    await reload();
+    const result = await setBarberApproval(profileId, approval);
+    if (result.error) {
+      Alert.alert('Freigabe fehlgeschlagen', mapBarberApprovalError(result.error));
+    } else {
+      await reload();
+    }
     setActingId(null);
   };
 

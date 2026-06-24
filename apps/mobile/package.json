@@ -10,7 +10,8 @@
     "web": "expo start --web",
     "lint": "expo lint",
     "verify-rls": "node scripts/verify-rls-0003.mjs",
-    "verify-guest-insert": "node scripts/verify-guest-insert.mjs"
+    "verify-guest-insert": "node scripts/verify-guest-insert.mjs",
+    "verify-book-slot": "node scripts/verify-book-slot.mjs"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",
