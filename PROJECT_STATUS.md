@@ -16,7 +16,7 @@
   - Web-Logos als `*-web.png`-Kopien (Originale bleiben) wegen 10-s-Ladezeit auf `test-barbergo.expo.app`.
 - **Nächste Schritte (konkret):**
   1. Migrationen `0006`–`0013` auf dem gehosteten Supabase anwenden, dann `npm run verify-rls`, `verify-guest-insert`, `verify-book-slot` (in `apps/mobile`, braucht `.env`).
-  2. Web-App neu deployen: einmalig `! npx eas-cli login` und `npx eas-cli init` (bestehendes Projekt), dann `/my-barbergo-deploy-web-test` (Ablauf: `docs/deploy-web-test.md`). Logo-Ladezeit im Inkognito-Fenster prüfen.
+  2. Logo-Ladezeit auf https://test-barbergo.expo.app/ im Inkognito-Fenster prüfen (Deployment vom 2026-11-24 ist live, Logo 243 KB). Weitere Deployments: `/my-barbergo-deploy-web-test` (`docs/deploy-web-test.md`).
   3. Manuelle E2E nach `docs/e2e-checklist.md`; Supabase Auth: Redirect-URLs, Barber-Mail-Template, Passwort-Mindestlänge ≥ 8.
   4. Danach Barber-Verfügbarkeit / Blockzeiten UI (M4).
 
@@ -36,8 +36,9 @@
 
 ## Session-Log (neueste zuerst, max. 5 Einträge, Älteres steht in der Git-Historie)
 
-### 2026-11-24 · Skill für Web-Deployment Test
-- `/my-barbergo-deploy-web-test` angelegt, **noch nicht ausgeführt**. Verifiziert (Expo-Doku, `eas deploy --help`): `test-barbergo.expo.app` ist die Preview-Subdomain und zeigt nur das Production-Deployment, daher `--prod` nötig (EAS-Slot, nicht BarberGo-Produktion). Offen: kein Login, keine `projectId`, kein belegter früherer Deploy. Details `docs/deploy-web-test.md`.
+### 2026-11-24 · Web-Deployment Test live
+- `/my-barbergo-deploy-web-test` angelegt und erstmals durchlaufen: Deployment auf `https://test-barbergo.expo.app` erfolgreich und verifiziert. `--prod` nötig (Preview-Subdomain zeigt nur das Production-Deployment, EAS-Slot, nicht BarberGo-Produktion).
+- Projekt per Expo-API ermittelt: `@mmt-tsn/barbergo` (`d3f89ea0-af77-4891-976d-c2aae38e3bdb`, einziges Projekt, Dev-Domain `test-barbergo`), per `eas init --id` verknüpft, `projectId` in `app.json`. `app.config.js` behält jetzt `app.json`-`extra`. Neue Skripte `export:web`, `deploy:web:test`. Details `docs/deploy-web-test.md`.
 
 ### 2026-11-24 · Setup-Angleichung an TASAN Trips
 - Übernommen aus TASAN Trips: `notify.py` + Tests, Skills `my-notification-on`/`my-next-task`, Projektgedächtnis `PROJECT_STATUS.md` mit Session-Log. Details und Abgrenzung: `docs/claude-code-setup.md`. Getestet: `scripts/test-notifications.py` (alle bestanden), Hook-Befehl aus `apps/mobile` simuliert, Skills statisch geprüft (noch nicht in frischer Session ausgeführt).

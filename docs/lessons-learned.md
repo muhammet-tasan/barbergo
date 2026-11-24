@@ -75,3 +75,19 @@ Erkenntnisse aus Fehlern, Entscheidungen und bewährten Lösungen. Wird während
 - **Lösung / Regel:** Nur den im Fehler genannten Hash-Ordner löschen, `npx --yes eas-cli` neu ausführen (danach 27.11.0 OK).
 - **Andere Projekte:** ja, bei jedem `npx`-Tool.
 - **Referenz:** `.claude/skills/my-barbergo-deploy-web-test/SKILL.md`
+
+### `app.config.js` überschrieb `extra` und versteckte die EAS-`projectId` (2026-11-24)
+- **Bereich:** Tooling
+- **Problem:** `eas init --id` schrieb die `projectId` nach `app.json`, endete aber mit `Cannot read properties of undefined (reading 'projectId')`.
+- **Ursache:** Die dynamische `app.config.js` setzte `extra` neu und warf damit `app.json`-`extra` (inkl. `eas.projectId`) weg.
+- **Lösung / Regel:** `...appJson.expo.extra` in `extra` übernehmen. Danach löst `eas project:info` das Projekt auf.
+- **Vermeidung:** Bei dynamischer Config `extra` immer mergen, nie ersetzen.
+- **Andere Projekte:** ja, bei jeder `app.config.js` mit `extra`.
+- **Referenz:** `apps/mobile/app.config.js`
+
+### EAS-Projekt ohne Repo-Spur wiederfinden (2026-11-24)
+- **Bereich:** Tooling
+- **Problem:** Das Deployment vom 2026-08-28 lief ohne versionierte `eas.json`/`projectId`. `eas init --account … --non-interactive` hätte ein neues Projekt angelegt.
+- **Lösung / Regel:** Projekte per Expo-GraphQL (`account.byName(accountName).apps(limit ≤ 50)`, `app.byId(appId).devDomainName`) mit der lokalen Anmeldung auflisten, dann `eas init --id <ID>`. Token nie ausgeben. `projectId` ist nicht geheim und gehört in `app.json`.
+- **Andere Projekte:** ja.
+- **Referenz:** `docs/deploy-web-test.md`

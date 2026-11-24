@@ -11,7 +11,9 @@
     "lint": "expo lint",
     "verify-rls": "node scripts/verify-rls-0003.mjs",
     "verify-guest-insert": "node scripts/verify-guest-insert.mjs",
-    "verify-book-slot": "node scripts/verify-book-slot.mjs"
+    "verify-book-slot": "node scripts/verify-book-slot.mjs",
+    "export:web": "expo export --platform web --clear",
+    "deploy:web:test": "npm run export:web && npx --yes eas-cli deploy --prod"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",

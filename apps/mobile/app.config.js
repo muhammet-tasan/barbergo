@@ -5,6 +5,8 @@ module.exports = () => ({
   expo: {
     ...appJson.expo,
     extra: {
+      // Keep app.json extra (eas.projectId, router) — otherwise EAS cannot find the project.
+      ...appJson.expo.extra,
       EXPO_PUBLIC_SUPABASE_URL: process.env.EXPO_PUBLIC_SUPABASE_URL,
       EXPO_PUBLIC_SUPABASE_ANON_KEY: process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY,
       EXPO_PUBLIC_WHATSAPP_PHONE: process.env.EXPO_PUBLIC_WHATSAPP_PHONE,
