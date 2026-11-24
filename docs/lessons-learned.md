@@ -131,3 +131,11 @@ Erkenntnisse aus Fehlern, Entscheidungen und bewährten Lösungen. Wird während
 - **Ursache:** `logo-transparent.png` (1536×1024) enthält nur 69 % Breite und 49 % Höhe sichtbaren Inhalt.
 - **Lösung / Regel:** Web-Kopie auf den sichtbaren Bereich zuschneiden (`logo-transparent-web.png`, 960×460) und das Seitenverhältnis in `brandImageAspect` anpassen. Danach reicht `width = Inhaltsbreite`, ohne Hacks. Bei neuen Bildern zuerst die Ränder prüfen.
 - **Referenz:** `apps/mobile/constants/images.ts`, `apps/mobile/components/HomeHero.tsx`
+
+### `expo export` scheitert an gesperrtem `dist/`, `eas deploy` nimmt still den alten Build (2026-11-24)
+- **Bereich:** Tooling
+- **Problem:** `npm run export:web` brach mit `EBUSY: resource busy or locked, rmdir dist` ab. Der folgende `eas deploy --dry-run` lief trotzdem und hätte den 3 Stunden alten Build deployt (nur Hinweis „exported 3 hours ago“).
+- **Ursache:** Ein lokaler Test-Server (`python -m http.server` im Ordner `dist`) hielt das Verzeichnis offen.
+- **Lösung / Regel:** In ein neues `--output-dir` exportieren und mit `--export-dir <relativer Pfad>` deployen. Nach jedem Export den Entry-Hash prüfen (`dist/_expo/static/js/web/entry-*.js`) und mit der Live-Seite vergleichen.
+- **Vermeidung:** Test-Server nicht im Ordner `dist` starten, sondern auf ein eigenes Verzeichnis zeigen lassen.
+- **Referenz:** `.claude/skills/my-barbergo-deploy-web-test/SKILL.md`

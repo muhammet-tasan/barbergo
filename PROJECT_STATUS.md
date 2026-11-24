@@ -36,6 +36,9 @@
 
 ## Session-Log (neueste zuerst, max. 5 Einträge, Älteres steht in der Git-Historie)
 
+### 2026-11-24 · Deployment der UI-Änderungen
+- `572c2cf` gepusht und auf `test-barbergo.expo.app` deployt (Bundle `343809…`, im Browser geprüft: Logo 688×330, Buttons 686 px, dunkler Hintergrund). Export lief wegen gesperrtem `dist/` (EBUSY) in ein eigenes Verzeichnis, Deploy mit `--export-dir`.
+
 ### 2026-11-24 · Web-UI: Desktop-Spalte, Header, Hintergrund, Ladeverhalten
 - `AppShell` (max. 720 px, `layout.maxContentWidth`) für Web, `app/+html.tsx` (dunkler Hintergrund, `theme-color`, `100dvh`), `ScreenHeader` stapelt Text unter die Buttons, wenn er nicht daneben passt (gemessen, Home und Unterseiten), Home-Text bei 320 px nicht mehr abgeschnitten.
 - Ladeverhalten: Header-Auth-Buttons und Home-Gast-Buttons ohne Spinner (hängen nur an der Session). Spinner nur noch, wenn ein angemeldeter Nutzer sein Profil lädt. Restursache für „langsam“: Bundle 2,9 MB (742 KB gzip), die Seite ist erst nach Download und Hydration bedienbar.
