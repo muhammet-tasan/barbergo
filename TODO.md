@@ -89,6 +89,7 @@
 
 - [ ] ~~Spring Boot REST API~~ → replaced by Supabase (see `backend/README.md`)
 - [ ] n8n workflows
+- [ ] Web-Test-Deployment: `eas-cli` einloggen + Projekt verknüpfen, dann `/my-barbergo-deploy-web-test` erstmals ausführen (`docs/deploy-web-test.md`)
 - [ ] Coolify deployment
 
 ## Product roadmap

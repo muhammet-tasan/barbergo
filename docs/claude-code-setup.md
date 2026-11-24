@@ -14,7 +14,7 @@ apps/mobile/CLAUDE.md      # Mobile-spezifisch (Expo SDK 54, Befehle), importier
   hooks/                   # notify.py (per-Auftrag ntfy-Pings)
   rules/                   # workflow, mobile-code, supabase-security, pre-launch, docs-ownership
   skills/                  # my-continue, my-status, my-next-task, my-closeout, my-list-commands, my-notification-on (universell)
-                           # my-barbergo-review, my-barbergo-pre-launch (projektspezifisch)
+                           # my-barbergo-review, my-barbergo-pre-launch, my-barbergo-deploy-web-test (projektspezifisch)
 ```
 
 Regeln ohne `paths:`-Frontmatter (`workflow.md`, `docs-ownership.md`) laden immer. Die übrigen greifen, wenn Claude passende Dateien liest. Alle Skills sind `disable-model-invocation: true` (nur manuell, ihre Beschreibung belegt keinen Kontext).

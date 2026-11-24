@@ -67,3 +67,11 @@ Erkenntnisse aus Fehlern, Entscheidungen und bewährten Lösungen. Wird während
 - **Problem:** Ein Befehl mit dem Text des gesperrten State-Ordners im Heredoc wurde blockiert (`Bash(*notify-state/*)` matcht jeden Befehl, der den Text enthält).
 - **Lösung / Regel:** Das ist gewollt (Schutz gegen Selbst-Aktivierung). Dokumentation mit dem Write-Tool schreiben bzw. Skripte als Datei ablegen und nur diese ausführen.
 - **Referenz:** `.claude/settings.json`
+
+### `npx eas-cli` bricht mit `ERR_MODULE_NOT_FOUND` (is-wsl) ab (2026-11-24)
+- **Bereich:** Tooling
+- **Problem:** `npx eas-cli whoami` scheiterte mit `Cannot find package ... wsl-utils ... is-wsl`.
+- **Ursache:** Unvollständig installierter Eintrag im npx-Cache (`%LOCALAPPDATA%\npm-cache\_npx\<hash>`).
+- **Lösung / Regel:** Nur den im Fehler genannten Hash-Ordner löschen, `npx --yes eas-cli` neu ausführen (danach 27.11.0 OK).
+- **Andere Projekte:** ja, bei jedem `npx`-Tool.
+- **Referenz:** `.claude/skills/my-barbergo-deploy-web-test/SKILL.md`

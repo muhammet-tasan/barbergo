@@ -34,6 +34,7 @@ Die Spalte **Rolle** ist die Konvention, über die die universellen `/my-*`-Skil
 | Offene Aufgaben | `TODO.md` | `todo` |
 | **Roadmap, Phasen, Meilensteine** | `docs/product-roadmap.md` | `roadmap` |
 | Go-live | `docs/pre-launch-checklist.md` | |
+| Web-Deployment Testumgebung | `docs/deploy-web-test.md` | |
 | **Projektgedächtnis / Session-Handoff** (Aktiver Fokus, Session-Log) | `PROJECT_STATUS.md` | `handoff` |
 | **Lessons Learned** | `docs/lessons-learned.md` | `lessons` |
 | Dev-Pings, Claude-Setup | `docs/dev-notifications.md` · `docs/claude-code-setup.md` | |
@@ -65,6 +66,7 @@ Alle eigenen Skills beginnen mit `my-`. Universell: `my-<funktion>`. Projektspez
 | `/my-closeout` | Session-Abschluss: Doku, Roadmap, TODO, Lessons, Handoff, Checks, Commit vorbereiten |
 | `/my-list-commands` | Eigene Skills dynamisch auflisten |
 | `/my-barbergo-review` | Qualitäts-/Architektur-/Security-Review (nur berichten) |
+| `/my-barbergo-deploy-web-test` | Web-Export + Deployment auf `https://test-barbergo.expo.app/` (nur Test, nur auf Aufruf) |
 | `/my-barbergo-pre-launch` | Go-live-Prüfung mit GO / GO mit Einschränkungen / NO-GO |
 
 ## Benachrichtigungen (ntfy, Hooks)

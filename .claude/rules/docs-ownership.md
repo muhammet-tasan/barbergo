@@ -16,6 +16,7 @@ Jede Information hat **genau ein** Zuhause (Single Source of Truth). Bestehende 
 | Operative Aufgaben (Checkboxen) | `TODO.md` |
 | Produktvision, Phasen, **Meilensteine**, Backlog, Roadmap-Vorschläge | `docs/product-roadmap.md` |
 | Go-live-Härtung | `docs/pre-launch-checklist.md` |
+| Web-Deployment (Test-URL, EAS Hosting) | `docs/deploy-web-test.md` |
 | **Übergabe an den nächsten Chat**, Session-Log | `PROJECT_STATUS.md` |
 | **Fehlerursachen, Fallstricke, bewährte Lösungen** | `docs/lessons-learned.md` |
 | Dev-Benachrichtigungen (`/my-notification-on`) | `docs/dev-notifications.md` |
