@@ -1,6 +1,6 @@
 # barbergo — Current Status
 
-Last updated: 2026-11-23 (Claude Code setup; no product changes)
+Last updated: 2026-11-24 (Web test deployment and web layout)
 
 ## Project maturity
 
@@ -51,6 +51,7 @@ Last updated: 2026-11-23 (Claude Code setup; no product changes)
 - Manuelle E2E-Checkliste: **[e2e-checklist.md](./e2e-checklist.md)**
 - Logging: **[logging.md](./logging.md)** (`EXPO_PUBLIC_LOG_LEVEL`)
 - Auth settings doc: `docs/supabase-auth-settings.md`
+- Web test environment: https://test-barbergo.expo.app/ (EAS Hosting, project `@mmt-tsn/barbergo`), deployed with `/my-barbergo-deploy-web-test` — [deploy-web-test.md](./deploy-web-test.md). Web layout: centered column max. 720 px (`AppShell`), dark background (`app/+html.tsx`), responsive `ScreenHeader`. Known: web bundle 2.9 MB (742 KB gzip); 2 lint warnings; `FadeOutText` unused.
 - Claude Code setup: `CLAUDE.md`, `.claude/` (rules, skills, hooks) — [claude-code-setup.md](./claude-code-setup.md)
 - Dev pings: per-task `/my-notification-on` (hooks, ntfy, default off) — [dev-notifications.md](./dev-notifications.md)
 - Session continuity: [PROJECT_STATUS.md](../PROJECT_STATUS.md), [lessons-learned.md](./lessons-learned.md)

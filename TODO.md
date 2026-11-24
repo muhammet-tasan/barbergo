@@ -62,6 +62,14 @@
 - [x] Navigation: Stack-Animationen, konsistenter Dark-Background, Header Home/Subpage
 - [x] UX-Runde: Home, BarberCard, Services+Icons, Buchungsformular-Sections, Admin-Gruppen
 
+### Web (Testumgebung)
+
+- [x] Web-Layout: zentrierte Spalte (max. 720 px), dunkler Hintergrund, Header mit Zeilenumbruch bei Platzmangel, scrollbare Startseite mit voller Breite (2026-11-24)
+- [x] Logo lädt beim ersten Aufruf (Hydration-Fix), zugeschnittene Web-Logos
+- [ ] Übrige Screens (login, register, barber/book, account, admin, barber-dashboard) auf Handy und Desktop mit dem neuen Header sichten
+- [ ] Optional: ungenutzte `FadeOutText`-Komponente und Lint-Warnungen (`Href` in `app/guest/bookings.tsx`) aufräumen
+- [ ] Optional: Expo-Patch-Versionen aktualisieren (`npx expo install --check`)
+
 ### Developer tooling
 
 - [x] Cursor config migrated to Claude Code (`CLAUDE.md`, `.claude/rules`, `.claude/skills`)
