@@ -1,4 +1,4 @@
-import { View } from 'react-native';
+import { ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { type Href, useRouter } from 'expo-router';
 
@@ -46,7 +46,12 @@ export default function HomeScreen() {
     <SafeAreaView className="flex-1 bg-brand-dark" edges={['top']}>
       <ScreenHeader variant="home" />
 
-      <View className="flex-1 bg-brand-dark">
+      <ScrollView
+        className="flex-1 bg-brand-dark"
+        contentContainerStyle={{ flexGrow: 1 }}
+        showsVerticalScrollIndicator={false}
+        bounces={false}
+      >
         <HomeHero
           // Spinner only while the profile of a signed-in user loads (role decides the buttons).
           // Guests / session still being restored get the buttons immediately.
@@ -66,7 +71,7 @@ export default function HomeScreen() {
           onAllBookings={() => router.push('/admin/bookings' as Href)}
           onBarberSlots={() => router.push('/barber/dashboard/slots' as Href)}
         />
-      </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }

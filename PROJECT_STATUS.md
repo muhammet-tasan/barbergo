@@ -39,7 +39,8 @@
 ### 2026-11-24 · Web-UI: Desktop-Spalte, Header, Hintergrund, Ladeverhalten
 - `AppShell` (max. 720 px, `layout.maxContentWidth`) für Web, `app/+html.tsx` (dunkler Hintergrund, `theme-color`, `100dvh`), `ScreenHeader` stapelt Text unter die Buttons, wenn er nicht daneben passt (gemessen, Home und Unterseiten), Home-Text bei 320 px nicht mehr abgeschnitten.
 - Ladeverhalten: Header-Auth-Buttons und Home-Gast-Buttons ohne Spinner (hängen nur an der Session). Spinner nur noch, wenn ein angemeldeter Nutzer sein Profil lädt. Restursache für „langsam“: Bundle 2,9 MB (742 KB gzip), die Seite ist erst nach Download und Hydration bedienbar.
-- Lokal gegen den statischen Export in 320/375 px und Desktop geprüft. **Nicht deployt.**
+- Lokal gegen den statischen Export in 320/375 px und Desktop geprüft. **Nicht deployt** (live ist weiterhin der Stand vom Logo-Fix).
+- Nachbesserung nach Test auf dem Handy: Header einheitlich (Bar-Zeile 52 px, Buttons auf Höhe des Zurück-Pfeils, Titel echt mittig, Text darunter mit mehr Abstand), Startseite scrollbar (`ScrollView`, Logo wird seitlich beschnitten statt zu scrollen), nativer Root-Hintergrund dunkel (`AppShell` auch auf iOS/Android, sonst weiss unter der SafeArea/beim Überscrollen).
 
 ### 2026-11-24 · Logo-Bug auf der Web-App behoben (echte Ursache)
 - Das Logo fehlte beim ersten Laden, weil `useWindowDimensions()` beim statischen Export 0 liefert (`width: 0px` im HTML, React korrigiert das beim Hydrieren nicht). Fix: `hooks/use-window-width.ts`, genutzt in `HomeHero`. Lokal gegen `dist/` und live auf `test-barbergo.expo.app` im Browser bestätigt (Logo 560×373). Die PNG-Verkleinerung bleibt sinnvoll, war aber nicht die Ursache. Skill prüft jetzt die gerenderte Grösse. Details `docs/lessons-learned.md`.

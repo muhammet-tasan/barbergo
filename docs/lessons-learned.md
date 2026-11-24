@@ -111,3 +111,16 @@ Erkenntnisse aus Fehlern, Entscheidungen und bewährten Lösungen. Wird während
 ### Test gegen den statischen Export mit sauberen URLs (2026-11-24)
 - **Bereich:** Tooling
 - **Hinweis:** `python -m http.server` kennt keine sauberen URLs (`/barbers` statt `barbers.html`), der Router meldet dann „Unmatched Route“. Für Tests ein kleines Skript mit `.html`-Auflösung nutzen. Laufende Test-Server sperren ihr Verzeichnis (`EBUSY` beim nächsten Export): pro Export ein neues `--output-dir` verwenden.
+
+### `alignSelf: 'flex-end'` in einer Zeile verschiebt Elemente nach unten (2026-11-24)
+- **Bereich:** UI
+- **Problem:** Im gestapelten Header standen die Auth-Buttons tiefer als der Zurück-Pfeil.
+- **Ursache:** `alignSelf: 'flex-end'` wirkt in einer `flexDirection: 'row'`-Zeile auf der Querachse (vertikal), nicht horizontal.
+- **Lösung / Regel:** Horizontale Ausrichtung über den Eltern-Container (`alignItems`/`justifyContent`), nie über `alignSelf` des Kindes.
+- **Referenz:** `apps/mobile/components/ScreenHeader.tsx`
+
+### Weisse Fläche unten auf dem Handy: nativer Root-Hintergrund (2026-11-24)
+- **Bereich:** UI
+- **Problem:** Unter dem Inhalt erschien eine weisse Fläche (SafeArea mit `edges={['top']}`, Überscrollen).
+- **Lösung / Regel:** Den Root mit dem dunklen Hintergrund füllen (`AppShell` auch nativ) und im Web html/body/#root dunkel setzen (`app/+html.tsx`). Ein dunkler Screen-Hintergrund allein reicht nicht.
+- **Referenz:** `apps/mobile/components/AppShell.tsx`, `apps/mobile/app/+html.tsx`

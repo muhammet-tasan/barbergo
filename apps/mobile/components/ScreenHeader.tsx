@@ -24,12 +24,15 @@ type ScreenHeaderProps = {
   onBack?: () => void;
 };
 
-/** Minimum bar height (home + subpage); grows when the text moves to its own line. */
-const HEADER_BAR_HEIGHT = 52;
-/** Width reserved for the back button (subpage). */
-const BACK_SLOT_WIDTH = 48;
-/** Gap between text and auth buttons that must stay free before the text is moved down. */
-const TEXT_AUTH_GAP = 12;
+/** Height of the bar row (back button + auth buttons) — identical for every header. */
+const BAR_HEIGHT = 52;
+/** Width reserved for the back button. */
+const BACK_SLOT_WIDTH = 44;
+/** Space that must stay free between text and buttons, otherwise the text moves below. */
+const TEXT_GAP = 12;
+/** Extra space above/below the text when it sits on its own line. */
+const STACKED_TEXT_PADDING_TOP = 2;
+const STACKED_TEXT_PADDING_BOTTOM = 14;
 
 const HIDDEN_MEASURE_STYLE = {
   position: 'absolute',
@@ -47,6 +50,13 @@ function useWidth() {
   return [width, onLayout] as const;
 }
 
+/**
+ * One header layout for all screens:
+ *   bar row   [back]  [title]  [auth]   (fixed height, everything vertically centered)
+ * The text (welcome text on home, title on subpages) stays in the bar row when it fits next to the
+ * buttons (subpage titles are centered on the screen). Otherwise it moves to its own line below
+ * the bar row, full width, and the buttons stay on the bar row.
+ */
 export function ScreenHeader({
   variant = 'subpage',
   title,
@@ -92,79 +102,45 @@ export function ScreenHeader({
     ) : null);
 
   const authNode = showAuthAction ? (
-    <View onLayout={onAuthLayout} style={{ alignSelf: 'flex-end' }}>
+    <View onLayout={onAuthLayout}>
       <AuthActionButton compact />
     </View>
   ) : null;
 
-  if (isHome) {
-    const welcome = loading ? '' : getHeaderWelcomeText(session, profile, { isAdmin });
-    const measured = rowWidth > 0 && textWidth > 0;
-    // Text and auth buttons would overlap -> the text moves below the buttons, full width.
-    const stacked = measured && textWidth + authWidth + TEXT_AUTH_GAP > rowWidth;
+  const backNode =
+    !isHome && showBack ? (
+      <Pressable
+        onPress={handleBack}
+        className="items-center justify-center active:opacity-70"
+        style={{ width: BACK_SLOT_WIDTH, height: BAR_HEIGHT }}
+        accessibilityRole="button"
+        accessibilityLabel="Zurück"
+      >
+        <Ionicons name="chevron-back" size={26} color={colors.accent} />
+      </Pressable>
+    ) : null;
 
-    return (
-      <View className="border-b border-brand-border/80 bg-brand-dark">
-        <View className="px-4 py-1.5" style={{ minHeight: HEADER_BAR_HEIGHT, justifyContent: 'center' }}>
-          <View onLayout={onRowLayout} style={{ position: 'relative' }}>
-            {stacked ? (
-              <View style={{ gap: 4 }}>
-                <View style={{ alignItems: 'flex-end' }}>{authNode}</View>
-                <Text className="text-sm font-medium text-brand-text leading-5" selectable={false}>
-                  {welcome}
-                </Text>
-              </View>
-            ) : (
-              <View className="flex-row items-center" style={{ gap: TEXT_AUTH_GAP }}>
-                <Text
-                  className="flex-1 min-w-0 text-sm font-medium text-brand-text leading-5"
-                  selectable={false}
-                >
-                  {welcome || ' '}
-                </Text>
-                {authNode}
-              </View>
-            )}
+  const welcome = isHome && !loading ? getHeaderWelcomeText(session, profile, { isAdmin }) : '';
+  const hasText = isHome ? Boolean(welcome) : Boolean(title);
+  const measured = rowWidth > 0 && textWidth > 0;
 
-            {/* Invisible copy to measure the natural (single-line) width of the welcome text. */}
-            <Text
-              pointerEvents="none"
-              accessibilityElementsHidden
-              importantForAccessibility="no-hide-descendants"
-              numberOfLines={1}
-              onLayout={onTextLayout}
-              style={HIDDEN_MEASURE_STYLE}
-              className="text-sm font-medium leading-5"
-              selectable={false}
-            >
-              {welcome}
-            </Text>
-          </View>
-        </View>
-      </View>
-    );
-  }
+  // Home: text left of the buttons. Subpage: text centered, needs the same room on both sides.
+  const backWidth = backNode ? BACK_SLOT_WIDTH : 0;
+  const sideWidth = Math.max(backWidth, showAuthAction ? authWidth : 0);
+  const stacked = isHome
+    ? measured && hasText && textWidth + authWidth + TEXT_GAP > rowWidth
+    : measured && hasText && textWidth > rowWidth - 2 * sideWidth - 8;
 
-  // Subpage: [back] [title] [auth]; a title that does not fit between the sides moves down.
-  const backWidth = showBack ? BACK_SLOT_WIDTH : 0;
-  const rightWidth = showAuthAction ? authWidth : 0;
-  // rowWidth includes the container's horizontal padding (px-3 = 24).
-  const availableForTitle = rowWidth - 24 - backWidth - rightWidth - 8;
-  const titleMeasured = Boolean(title) && rowWidth > 0 && textWidth > 0;
-  const stacked = titleMeasured && textWidth > availableForTitle;
-
-  const backNode = showBack ? (
-    <Pressable
-      onPress={handleBack}
-      className="min-h-[48px] min-w-[40px] items-center justify-center active:opacity-70"
-      accessibilityRole="button"
-      accessibilityLabel="Zurück"
+  const textBlock = isHome ? (
+    <Text
+      className="text-sm font-medium text-brand-text leading-5"
+      style={stacked ? undefined : { flexShrink: 1 }}
+      selectable={false}
+      numberOfLines={stacked ? 3 : 1}
     >
-      <Ionicons name="chevron-back" size={26} color={colors.accent} />
-    </Pressable>
-  ) : null;
-
-  const titleBlock = title ? (
+      {welcome}
+    </Text>
+  ) : title ? (
     <View className="items-center justify-center max-w-full">
       <Text
         className="text-base font-semibold text-brand-text text-center"
@@ -187,43 +163,81 @@ export function ScreenHeader({
   );
 
   return (
-    <View className="border-b border-brand-border/80 bg-brand-dark">
-      <View
-        className="px-3"
-        style={{ minHeight: HEADER_BAR_HEIGHT, justifyContent: 'center' }}
-        onLayout={onRowLayout}
-      >
-        {stacked ? (
-          <>
-            <View className="flex-row items-center justify-between" style={{ minHeight: HEADER_BAR_HEIGHT }}>
-              <View style={{ width: backWidth }} className="flex-row items-center">
-                {backNode}
-              </View>
-              {authNode}
-            </View>
-            <View className="items-center justify-center pb-2 px-1">{titleBlock}</View>
-          </>
-        ) : (
-          <View className="flex-row items-center" style={{ minHeight: HEADER_BAR_HEIGHT }}>
-            <View style={{ width: backWidth }} className="flex-row items-center">
-              {backNode}
-            </View>
-            <View className="flex-1 items-center justify-center px-1 min-w-0">{titleBlock}</View>
-            <View className="items-end justify-center shrink-0">{authNode}</View>
-          </View>
-        )}
+    <View className="border-b border-brand-border/80 bg-brand-dark px-4">
+      <View onLayout={onRowLayout}>
+        {/* Bar row: always the same height, back and auth buttons vertically centered. */}
+        <View
+          style={{
+            height: BAR_HEIGHT,
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}
+        >
+          <View style={{ width: isHome ? 0 : Math.max(backWidth, 0) }}>{backNode}</View>
 
-        {title ? (
-          <View pointerEvents="none" style={HIDDEN_MEASURE_STYLE} onLayout={onTextLayout}>
+          {isHome && !stacked ? (
+            <Text
+              className="flex-1 text-sm font-medium text-brand-text leading-5"
+              style={{ marginRight: TEXT_GAP }}
+              selectable={false}
+              numberOfLines={1}
+            >
+              {welcome || ' '}
+            </Text>
+          ) : null}
+
+          {authNode}
+
+          {/* Subpage title: centered on the bar, independent of the side widths. */}
+          {!isHome && !stacked ? (
+            <View
+              pointerEvents="box-none"
+              style={{
+                position: 'absolute',
+                left: sideWidth + 4,
+                right: sideWidth + 4,
+                top: 0,
+                bottom: 0,
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              {textBlock}
+            </View>
+          ) : null}
+        </View>
+
+        {/* Text that did not fit next to the buttons: own line, full width. */}
+        {stacked ? (
+          <View
+            style={{
+              paddingTop: STACKED_TEXT_PADDING_TOP,
+              paddingBottom: STACKED_TEXT_PADDING_BOTTOM,
+              alignItems: isHome ? 'flex-start' : 'center',
+            }}
+          >
+            {textBlock}
+          </View>
+        ) : null}
+
+        {/* Invisible copy to measure the natural single-line width of the text. */}
+        {hasText ? (
+          <View
+            pointerEvents="none"
+            accessibilityElementsHidden
+            importantForAccessibility="no-hide-descendants"
+            style={HIDDEN_MEASURE_STYLE}
+            onLayout={onTextLayout}
+          >
             <Text
               numberOfLines={1}
-              className="text-base font-semibold"
-              accessibilityElementsHidden
-              importantForAccessibility="no-hide-descendants"
+              className={isHome ? 'text-sm font-medium leading-5' : 'text-base font-semibold'}
+              selectable={false}
             >
-              {title}
+              {isHome ? welcome : title}
             </Text>
-            {subtitle ? (
+            {!isHome && subtitle ? (
               <Text numberOfLines={1} className="text-xs mt-0.5">
                 {subtitle}
               </Text>

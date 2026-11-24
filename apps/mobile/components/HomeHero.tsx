@@ -125,8 +125,10 @@ export function HomeHero({
 
 const styles = StyleSheet.create({
   shell: {
-    flex: 1,
+    flexGrow: 1,
     width: '100%',
+    // The logo image is wider than the screen on purpose (transparent margins): clip, never scroll sideways.
+    overflow: 'hidden',
     paddingHorizontal: HOME.horizontalPadding,
     paddingTop: HOME.paddingTop,
     paddingBottom: HOME.paddingBottom,

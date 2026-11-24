@@ -8,13 +8,14 @@ import { useWindowWidth } from '@/hooks/use-window-width';
 /**
  * Web: centers the whole app in a column with a maximum width so desktop views (headers, lists,
  * forms) never stretch edge to edge. The dark background always fills the full viewport.
- * Native: renders children unchanged.
+ * Native: only provides the dark root background.
  */
 export function AppShell({ children }: { children: ReactNode }) {
   const windowWidth = useWindowWidth();
 
   if (Platform.OS !== 'web') {
-    return <>{children}</>;
+    // Native root background: shows below the safe areas and while overscrolling, never white.
+    return <View style={{ flex: 1, backgroundColor: colors.background }}>{children}</View>;
   }
 
   const showEdges = windowWidth > layout.maxContentWidth;
