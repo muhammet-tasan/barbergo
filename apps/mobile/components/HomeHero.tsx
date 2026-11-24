@@ -57,6 +57,8 @@ export function HomeHero({
           <Image
             source={brandImages.logoTransparent}
             contentFit="contain"
+            transition={200}
+            priority="high"
             accessibilityLabel="BarberGo"
             style={[styles.homeLogo, { width: logoWidth }]}
           />

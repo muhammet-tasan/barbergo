@@ -64,6 +64,8 @@ export function ScreenHeader({
           source={brandImages.wordmark}
           style={{ width: 160, height: 160 / brandImageAspect.wordmark }}
           contentFit="contain"
+          transition={200}
+          priority="high"
         />
       </Pressable>
     ) : null);
