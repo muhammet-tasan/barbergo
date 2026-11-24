@@ -23,7 +23,7 @@ Autonom mit sinnvollen Defaults, Rückfrage nur bei sicherheitskritischem, destr
 
 ## Dokumentenlandkarte (jede Information hat ein Zuhause)
 
-Die Spalte **Rolle** ist die Konvention, über die die universellen `/my-*`-Skills Dokumente finden. Fehlt ein Eintrag, gelten `docs/ROADMAP.md`, `docs/current-status.md`, `TODO.md`, `docs/lessons-learned.md`, `docs/session-handoff.md`. Fehlt die Datei, wird sie gemeldet, nicht stillschweigend angelegt.
+Die Spalte **Rolle** ist die Konvention, über die die universellen `/my-*`-Skills Dokumente finden. Fehlt ein Eintrag, gelten `docs/ROADMAP.md`, `docs/current-status.md`, `TODO.md`, `docs/lessons-learned.md`, `PROJECT_STATUS.md`. Fehlt die Datei, wird sie gemeldet, nicht stillschweigend angelegt.
 
 | Thema | Datei | Rolle |
 |---|---|---|
@@ -34,7 +34,7 @@ Die Spalte **Rolle** ist die Konvention, über die die universellen `/my-*`-Skil
 | Offene Aufgaben | `TODO.md` | `todo` |
 | **Roadmap, Phasen, Meilensteine** | `docs/product-roadmap.md` | `roadmap` |
 | Go-live | `docs/pre-launch-checklist.md` | |
-| **Session-Handoff** | `docs/session-handoff.md` | `handoff` |
+| **Projektgedächtnis / Session-Handoff** (Aktiver Fokus, Session-Log) | `PROJECT_STATUS.md` | `handoff` |
 | **Lessons Learned** | `docs/lessons-learned.md` | `lessons` |
 | Dev-Pings, Claude-Setup | `docs/dev-notifications.md` · `docs/claude-code-setup.md` | |
 | **Checks** (Verifikation) | `npx tsc --noEmit` · `npm run lint` (in `apps/mobile`) | `checks` |
@@ -60,6 +60,8 @@ Alle eigenen Skills beginnen mit `my-`. Universell: `my-<funktion>`. Projektspez
 |---|---|
 | `/my-continue` | Wiedereinstieg: Git + Handoff + Status prüfen, eine nächste Aufgabe empfehlen |
 | `/my-status` | Kompakter Projektstatus (nur lesen) |
+| `/my-next-task` | Genau eine wirkungsvollste nächste Aufgabe bestimmen (nur lesen) |
+| `/my-notification-on` | Option pro Auftrag: ntfy-Pings nur für diesen Auftrag, kombinierbar mit `/goal` |
 | `/my-closeout` | Session-Abschluss: Doku, Roadmap, TODO, Lessons, Handoff, Checks, Commit vorbereiten |
 | `/my-list-commands` | Eigene Skills dynamisch auflisten |
 | `/my-barbergo-review` | Qualitäts-/Architektur-/Security-Review (nur berichten) |
@@ -67,10 +69,10 @@ Alle eigenen Skills beginnen mit `my-`. Universell: `my-<funktion>`. Projektspez
 
 ## Benachrichtigungen (ntfy, Hooks)
 
-- Tippe `notify:on` in einen Prompt: Pings **an** (nur diese Session). `notify:off`: **aus**. Standard: aus. Das eingebaute `/goal` schaltet ebenfalls ein (Hook).
-- Ping bei **Task fertig** („Auftrag beendet“) und wenn **Claude auf dich wartet** (Freigabe/Entscheidung). Sonst nichts.
-- Automatisch über Hooks (`.claude/settings.json`). **Skripte `scripts/notify-*.ps1` nie selbst aufrufen** (doppelte Pings). Details: `docs/dev-notifications.md`.
+- Standard: **aus**, in jedem Auftrag und jeder Session. `/my-notification-on` irgendwo im Prompt schaltet Pings **nur für diesen Auftrag** an, z. B. `/goal /my-notification-on <Bedingung>`. `/goal` allein schaltet nichts ein. Reset automatisch nach Abschluss bzw. beim nächsten Prompt, es gibt keinen Off-Befehl.
+- Ping bei **Auftrag fertig** („Auftrag beendet“, bei `/goal` erst wenn das Ziel erreicht ist) und wenn **Claude auf dich wartet** (Freigabe/Entscheidung). Sonst nichts.
+- Läuft über Hooks (`.claude/hooks/notify.py`, `.claude/settings.json`). **Nie selbst Pings senden, `scripts/notify-*.ps1` nie aufrufen, `.claude/notify-state/` nie anfassen.** Details: `docs/dev-notifications.md`, Test: `python3 scripts/test-notifications.py`.
 
 ## Aktueller Stand
 
-@docs/session-handoff.md
+@PROJECT_STATUS.md

@@ -39,4 +39,4 @@ Dazu: was zu testen ist und eine **vorgeschlagene Commit-Message** (Conventional
 
 ## Benachrichtigungen
 
-Läuft automatisch über Hooks (`notify:on` / `notify:off`, siehe `docs/dev-notifications.md`). **Niemals selbst** `scripts/notify-*.ps1` aufrufen. Das würde doppelte Pings erzeugen. Ausnahme: der User verlangt ausdrücklich einen manuellen Ping.
+Standard aus. Der User schaltet pro Auftrag mit `/my-notification-on` ein (siehe `docs/dev-notifications.md`), die Hooks erledigen Versand und Reset. **Niemals selbst** Pings senden, `scripts/notify-*.ps1` aufrufen oder `.claude/notify-state/` verändern (doppelte Pings, Selbst-Aktivierung). Ausnahme: der User verlangt ausdrücklich einen manuellen Ping.

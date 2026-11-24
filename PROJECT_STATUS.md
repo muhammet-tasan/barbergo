@@ -1,0 +1,48 @@
+# BarberGo: Project Status (Projektgedächtnis)
+
+> Wird von `CLAUDE.md` in jeden neuen Chat geladen. **Einziger Ort für den Wiedereinstiegspunkt.** Aktualisiert durch `/my-closeout` (und bei grösseren Schritten laufend). Vor Gebrauch gegen `git status` / `git log` prüfen: bei Widerspruch gilt Git, dann diese Datei korrigieren.
+> Überschriften und Feldnamen nicht umbenennen, die Skills `/my-status`, `/my-continue`, `/my-next-task`, `/my-closeout` lesen sie.
+> Ist-Zustand der App → `docs/current-status.md` · Aufgaben → `TODO.md` · Meilensteine → `docs/product-roadmap.md` · Erkenntnisse → `docs/lessons-learned.md`.
+
+**Last Updated:** 2026-11-24
+
+## ▶ Aktiver Fokus
+
+- **Phase:** M1 (Supabase-Migrationen `0006`–`0013` anwenden und prüfen), `BLOCKED` bis `.env`/Zugang vorhanden. Parallel Tooling/Workflow-Pflege.
+- **Resume-Punkt:** Claude-Code-Setup ist auf das TASAN-Trips-Modell angeglichen (Per-Task-Notifications, `PROJECT_STATUS.md`, `my-next-task`). Nächster inhaltlicher Schritt: Migrationen anwenden und per Smoke-Skripten prüfen.
+- **Letzte Entscheidungen:**
+  - Handoff lebt jetzt in `PROJECT_STATUS.md` (statt `docs/session-handoff.md`). Ein Ort, kein Parallel-Dokument.
+  - ntfy: Standard **aus**, `/my-notification-on` gilt nur für den jeweiligen Auftrag, Auto-Reset, kein Off-Befehl. Umsetzung `.claude/hooks/notify.py` (Python, getestet mit `scripts/test-notifications.py`).
+  - Web-Logos als `*-web.png`-Kopien (Originale bleiben) wegen 10-s-Ladezeit auf `test-barbergo.expo.app`.
+- **Nächste Schritte (konkret):**
+  1. Migrationen `0006`–`0013` auf dem gehosteten Supabase anwenden, dann `npm run verify-rls`, `verify-guest-insert`, `verify-book-slot` (in `apps/mobile`, braucht `.env`).
+  2. Web-App neu deployen (`npx expo export --platform web`, `eas deploy`), Logo-Ladezeit im Inkognito-Fenster prüfen.
+  3. Manuelle E2E nach `docs/e2e-checklist.md`; Supabase Auth: Redirect-URLs, Barber-Mail-Template, Passwort-Mindestlänge ≥ 8.
+  4. Danach Barber-Verfügbarkeit / Blockzeiten UI (M4).
+
+## Offene Probleme / Blocker
+
+- Migrationen `0006`–`0013` nicht angewendet (benötigt `.env`). Meilenstein M1.
+- Kein Unit-Test-Framework. QS = `tsc`, `lint`, Smoke-Skripte, manuelle E2E.
+- `docs/pre-launch-checklist.md` beschreibt teils den Vor-`0003`-Zustand (beim nächsten `/my-barbergo-pre-launch` korrigieren).
+- Expo-Patch-Versionen veraltet (`expo`, `expo-constants`, `expo-font`, `expo-router`), `npx expo install --check` steht aus.
+
+## Gotchas
+
+- Hook-Pfade nutzen `$CLAUDE_PROJECT_DIR`, der Notify-State-Pfad ist am Skriptort verankert (Sessions laufen oft in `apps/mobile`). Nicht auf relative Pfade zurückbauen.
+- `.env` ist per Permission-Deny gesperrt. Env-Prüfungen nur über `.env.example`.
+- Skills und Hook-Konfiguration wirken in einer laufenden Session erst nach Neustart bzw. `/hooks`-Reload.
+- Notify-Hook braucht `python3` im PATH.
+
+## Session-Log (neueste zuerst, max. 5 Einträge, Älteres steht in der Git-Historie)
+
+### 2026-11-24 · Setup-Angleichung an TASAN Trips
+- Übernommen aus TASAN Trips: `notify.py` + Tests, Skills `my-notification-on`/`my-next-task`, Projektgedächtnis `PROJECT_STATUS.md` mit Session-Log. Details und Abgrenzung: `docs/claude-code-setup.md`. Getestet: `scripts/test-notifications.py` (alle bestanden), Hook-Befehl aus `apps/mobile` simuliert, Skills statisch geprüft (noch nicht in frischer Session ausgeführt).
+- Entfallen: `notify:on/off`, PowerShell-Hooks `notify-toggle.ps1`/`notify-ping.ps1`, `docs/session-handoff.md`.
+- Angepasst: BarberGo-Dokumentenlandkarte (Rolle `handoff` → `PROJECT_STATUS.md`) und deutschsprachige Skills bleiben; keine videospezifischen Inhalte übernommen.
+
+### 2026-11-24 · Web-Logo-Performance
+- Ursache für spätes Logo auf der deployten Web-App: 2,2-MB-PNG (~10 s). Fix: `logo-transparent-web.png` (243 KB), `barbergo-wordmark-transparent-web.png` (50 KB), `transition`/`priority` bei `expo-image`. Commit `b5ae123`, Deployment steht aus.
+
+### 2026-11-24 · Skill-Konsolidierung
+- Skills auf `my-*` reduziert, Roadmap-Meilensteine M1–M7 (`docs/product-roadmap.md`), Doku-Landkarte mit Spalte *Rolle*. Commit `340829b`.

@@ -52,8 +52,8 @@ Last updated: 2026-11-23 (Claude Code setup; no product changes)
 - Logging: **[logging.md](./logging.md)** (`EXPO_PUBLIC_LOG_LEVEL`)
 - Auth settings doc: `docs/supabase-auth-settings.md`
 - Claude Code setup: `CLAUDE.md`, `.claude/` (rules, skills, hooks) — [claude-code-setup.md](./claude-code-setup.md)
-- Dev pings: `notify:on` / `notify:off` hooks (ntfy) — [dev-notifications.md](./dev-notifications.md)
-- Session continuity: [session-handoff.md](./session-handoff.md), [lessons-learned.md](./lessons-learned.md)
+- Dev pings: per-task `/my-notification-on` (hooks, ntfy, default off) — [dev-notifications.md](./dev-notifications.md)
+- Session continuity: [PROJECT_STATUS.md](../PROJECT_STATUS.md), [lessons-learned.md](./lessons-learned.md)
 
 ## Architecture decisions
 

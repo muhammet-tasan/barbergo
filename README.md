@@ -10,7 +10,7 @@ A customer books a mobile barber at home; the barber manages appointments via an
 |-------|--------|
 | Mobile | React Native, Expo, TypeScript, Expo Router, NativeWind |
 | Backend | **Supabase** (Postgres, Auth, API) |
-| Dev alerts | ntfy.sh + PowerShell (`scripts/`) |
+| Dev alerts | ntfy.sh + Claude Code hooks (`.claude/hooks/notify.py`) |
 
 Details: [docs/architecture.md](docs/architecture.md) · Data model: [docs/data-model.md](docs/data-model.md)
 
@@ -53,7 +53,7 @@ Details: [supabase/README.md](supabase/README.md) · Status: [docs/current-statu
 
 ## Developer notifications (ntfy)
 
-Claude Code pings your phone via hooks: type `notify:on` in a prompt (or `/goal`) to enable, `notify:off` to disable (per session, default off). Subscribe in the [ntfy app](https://ntfy.sh) to topic: `barbergo-muhammet`. Details: [docs/dev-notifications.md](docs/dev-notifications.md).
+Claude Code pings your phone via hooks. Default is off; add `/my-notification-on` to a prompt (e.g. `/goal /my-notification-on <condition>`) to enable it for that task only. It resets automatically. Subscribe in the [ntfy app](https://ntfy.sh) to topic: `barbergo-muhammet`. Details: [docs/dev-notifications.md](docs/dev-notifications.md).
 
 ## Project rules (Claude Code)
 

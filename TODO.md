@@ -65,9 +65,10 @@
 ### Developer tooling
 
 - [x] Cursor config migrated to Claude Code (`CLAUDE.md`, `.claude/rules`, `.claude/skills`)
-- [x] Notify system ported from TASAN Media Trips (`notify:on` / `notify:off`, hooks, tested)
+- [x] Notify system ported from TASAN Media Trips (per-task `/my-notification-on`, `notify.py`, 47 tests)
+- [x] `PROJECT_STATUS.md` as project memory (replaces `docs/session-handoff.md`), `/my-next-task`, `/my-notification-on`
 - [x] Session handoff, lessons learned, decision log docs
-- [ ] Review and commit the Claude Code setup (not committed yet)
+- [x] Claude Code setup committed
 
 ### Next recommended tasks
 

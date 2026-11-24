@@ -42,9 +42,9 @@ Prefer **iterative progress** and **small working increments** over perfect upfr
 
 ## Session bootstrap
 
-`CLAUDE.md` loads [session-handoff.md](./session-handoff.md) automatically. Run `/my-continue` to verify it against git and get the next task. At the start of a new chat / session, before making changes, read in this order:
+`CLAUDE.md` loads [PROJECT_STATUS.md](../PROJECT_STATUS.md) automatically. Run `/my-continue` to verify it against git and get the next task. At the start of a new chat / session, before making changes, read in this order:
 
-1. [session-handoff.md](./session-handoff.md)
+1. [PROJECT_STATUS.md](../PROJECT_STATUS.md)
 2. [TODO.md](../TODO.md)
 3. [current-status.md](./current-status.md)
 4. This file ([project-rules.md](./project-rules.md))
@@ -68,7 +68,7 @@ Also run `git status` once before larger edits to understand the working tree (u
 | Open tasks | [TODO.md](../TODO.md) |
 | Product vision, phases | [product-roadmap.md](./product-roadmap.md) |
 | Go-live hardening | [pre-launch-checklist.md](./pre-launch-checklist.md) |
-| Hand-off to the next chat | [session-handoff.md](./session-handoff.md) |
+| Hand-off to the next chat | [PROJECT_STATUS.md](../PROJECT_STATUS.md) |
 | Lessons learned | [lessons-learned.md](./lessons-learned.md) |
 | Dev notifications | [dev-notifications.md](./dev-notifications.md) |
 | Claude Code setup, Cursor migration | [claude-code-setup.md](./claude-code-setup.md) |
@@ -117,7 +117,7 @@ If a check fails or is skipped, note it in [current-status.md](./current-status.
 
 Dev alerts to the phone (ntfy topic `barbergo-muhammet`) are sent **automatically by Claude Code hooks** — agents must **not** call `scripts/notify-*.ps1` themselves (duplicate pings).
 
-- `notify:on` / `notify:off` in a prompt (or `/goal`) toggles pings for the current session; default is **off**.
+- Default is **off**. `/my-notification-on` in a prompt enables pings for that task only (e.g. `/goal /my-notification-on <condition>`); it resets automatically, there is no off command.
 - Ping when a task ends (`Stop`) and when Claude waits for the user (`Notification`: permission / decision).
 - Still stop and ask for: security-sensitive or destructive actions, credentials, unclear major architecture.
 

@@ -1,7 +1,7 @@
 # Sends a custom notification message to the BarberGo ntfy topic.
 # Usage: powershell -File scripts/notify-custom.ps1 "Your message here"
 #
-# Optional (used by the Claude Code hooks in .claude/hooks/notify-ping.ps1):
+# Optional (manual test pings by the user only; the Claude Code hooks use .claude/hooks/notify.py):
 #   -Title       short ASCII title shown above the message (default: none)
 #   -TimeoutSec  HTTP timeout in seconds (default: 100 = PowerShell default)
 #   -Quiet       no console output; never fails (always exit 0)

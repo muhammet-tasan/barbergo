@@ -54,3 +54,16 @@ Erkenntnisse aus Fehlern, Entscheidungen und bewährten Lösungen. Wird während
 - **Ursache:** Das Arbeitsverzeichnis einer Claude-Session kann `apps/mobile` statt Repo-Root sein. Relative Hook-Pfade würden dann ins Leere laufen.
 - **Regel:** Hook-Befehle in `.claude/settings.json` immer mit `$CLAUDE_PROJECT_DIR`.
 - **Referenz:** `.claude/settings.json`, `docs/dev-notifications.md`
+
+### Hook-State-Pfad am Skriptort verankern, nicht am cwd (2026-11-24)
+- **Bereich:** Tooling
+- **Problem:** `notify.py` aus TASAN Trips nutzt `.claude/notify-state` relativ zum Arbeitsverzeichnis. In BarberGo läuft eine Session oft in `apps/mobile`, der State läge dann am falschen Ort.
+- **Lösung / Regel:** Default-Pfad aus `__file__` ableiten (`<repo>/.claude/notify-state`). Getestet aus `apps/mobile` heraus.
+- **Andere Projekte:** ja, bei jedem Projekt mit Unterordner-Sessions (Monorepo).
+- **Referenz:** `.claude/hooks/notify.py`
+
+### Eigene Deny-Regeln greifen auch auf eigene Bash-Befehle (2026-11-24)
+- **Bereich:** Tooling
+- **Problem:** Ein Befehl mit dem Text des gesperrten State-Ordners im Heredoc wurde blockiert (`Bash(*notify-state/*)` matcht jeden Befehl, der den Text enthält).
+- **Lösung / Regel:** Das ist gewollt (Schutz gegen Selbst-Aktivierung). Dokumentation mit dem Write-Tool schreiben bzw. Skripte als Datei ablegen und nur diese ausführen.
+- **Referenz:** `.claude/settings.json`

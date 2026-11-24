@@ -11,9 +11,9 @@ apps/mobile/CLAUDE.md      # Mobile-spezifisch (Expo SDK 54, Befehle), importier
 .claude/
   settings.json            # Permissions + Notify-Hooks (geteilt, committed)
   settings.local.json      # persönliche Overrides (gitignored)
-  hooks/                   # notify-toggle.ps1, notify-ping.ps1
+  hooks/                   # notify.py (per-Auftrag ntfy-Pings)
   rules/                   # workflow, mobile-code, supabase-security, pre-launch, docs-ownership
-  skills/                  # my-continue, my-status, my-closeout, my-list-commands (universell)
+  skills/                  # my-continue, my-status, my-next-task, my-closeout, my-list-commands, my-notification-on (universell)
                            # my-barbergo-review, my-barbergo-pre-launch (projektspezifisch)
 ```
 
@@ -30,7 +30,7 @@ Kleinbuchstaben, Bindestriche. Ordner `.claude/skills/<name>/SKILL.md`, Frontmat
 
 ## Konvention: Wo finden universelle Skills die Dokumente?
 
-In `CLAUDE.md` → „Dokumentenlandkarte“ trägt die Spalte **Rolle** die Schlüssel `status`, `todo`, `roadmap`, `handoff`, `lessons`, `checks`. Die Skills lesen nur diese Tabelle. Ohne Eintrag gelten die Defaults `docs/ROADMAP.md`, `docs/current-status.md`, `TODO.md`, `docs/lessons-learned.md`, `docs/session-handoff.md`. Fehlende Dateien werden gemeldet, nicht stillschweigend angelegt. Keine weitere Konfigurationsdatei.
+In `CLAUDE.md` → „Dokumentenlandkarte“ trägt die Spalte **Rolle** die Schlüssel `status`, `todo`, `roadmap`, `handoff`, `lessons`, `checks`. Die Skills lesen nur diese Tabelle. Ohne Eintrag gelten die Defaults `docs/ROADMAP.md`, `docs/current-status.md`, `TODO.md`, `docs/lessons-learned.md`, `PROJECT_STATUS.md`. Fehlende Dateien werden gemeldet, nicht stillschweigend angelegt. Keine weitere Konfigurationsdatei.
 
 BarberGo-Besonderheit: Rolle `roadmap` = `docs/product-roadmap.md` (nicht `ROADMAP.md`), weil das Dokument bereits existiert und den Zweck erfüllt.
 
@@ -54,19 +54,20 @@ Versioniert (`git clone`/`pull` genügt): `CLAUDE.md`, `.claude/settings.json`, 
 | `.cursor/rules/barbergo-project.mdc` (`alwaysApply`) | `CLAUDE.md` (Kern) + `.claude/rules/workflow.md`, `mobile-code.md`, `supabase-security.md`, `docs-ownership.md` |
 | `.cursor/rules/pre-launch.mdc` | Skill `my-barbergo-pre-launch` + Regel `.claude/rules/pre-launch.md` |
 | `AGENTS.md` | `CLAUDE.md`; `AGENTS.md` bleibt als dünner Verweis |
-| `scripts/notify-*.ps1` nach der Arbeit | Hooks + `notify:on/off` (`docs/dev-notifications.md`) |
+| `scripts/notify-*.ps1` nach der Arbeit | Hooks + `/my-notification-on` pro Auftrag (`docs/dev-notifications.md`) |
 
 ## Skill-Konsolidierung (TASAN Media Trips → BarberGo)
 
 | Vorher | Jetzt |
 |---|---|
-| `continue-project`, `next-task` | `my-continue` (inkl. genau einer Empfehlung) |
+| `continue-project` | `my-continue` (inkl. genau einer Empfehlung) |
+| `next-task` | `my-next-task` (wieder eigener Skill, ausführlicher als die Empfehlung in `my-continue`) |
 | `project-status` | `my-status` |
 | `session-handoff` (TASAN: `daily-project-closeout`) | `my-closeout` |
 | `list-commands` | `my-list-commands` (dynamisch statt statische Liste) |
 | `doc-sync`, `lessons-learned` | entfallen als Skills: Zuordnung in `.claude/rules/docs-ownership.md`, Lessons-Format in `docs/lessons-learned.md`, Pflicht-Regel in `CLAUDE.md` |
 | `barbergo-review`, `pre-launch` | `my-barbergo-review`, `my-barbergo-pre-launch` |
-| `goal` | entfällt: Claude Code hat ein eingebautes `/goal`. Das Einschalten der Pings übernimmt der Hook `notify-toggle.ps1` (erkennt Prompts mit `/goal`) |
+| `goal` | entfällt: Claude Code hat ein eingebautes `/goal`. Pings schaltet man pro Auftrag mit `/goal /my-notification-on <Bedingung>` ein (Hook `notify.py`, `/goal` allein schaltet nichts ein) |
 
 Quelle der Vorlage: Repo `muhammet-tasan/tasan-media-trips` (`.claude/skills/my-*`, nutzt dort bereits das `my-`-Präfix).
 
@@ -79,3 +80,21 @@ Quelle der Vorlage: Repo `muhammet-tasan/tasan-media-trips` (`.claude/skills/my-
 ## Pflege
 
 Änderungen an Konventionen: Regel in `.claude/rules/` bzw. `CLAUDE.md` anpassen. Erkenntnisse: `docs/lessons-learned.md`.
+
+## Übernahme aus TASAN Trips (2026-11-24)
+
+Quelle: Repo `tasan-media-trips` (`.claude/hooks/notify.py`, `scripts/test-notifications.py`, Skills `my-*`, `PROJECT_STATUS.md`-Konzept).
+
+| Standard | Status in BarberGo |
+|---|---|
+| Präfix `my-` für alle eigenen Skills | schon vorhanden, bleibt |
+| Skills, Hooks, Settings portabel im Repo (`$CLAUDE_PROJECT_DIR`, nichts Globales) | schon vorhanden, bleibt |
+| Notify-Hook `notify.py`, Standard aus, `/my-notification-on` pro Auftrag, Auto-Reset, Goal-Urteil, Mock-Tests | **übernommen**, ersetzt `notify:on/off` und die PowerShell-Hooks |
+| Skills `my-notification-on`, `my-next-task` | **übernommen** (Deutsch, an BarberGo-Dokumentenlandkarte angepasst) |
+| `PROJECT_STATUS.md` als Projektgedächtnis (Aktiver Fokus, Session-Log) | **übernommen**, ersetzt `docs/session-handoff.md`, Rolle `handoff` zeigt darauf |
+| Closeout, Continue, Status arbeiten mit demselben Gedächtnis und prüfen gegen Git | **übernommen**, in `my-closeout`/`my-continue`/`my-status` eingearbeitet |
+| Lessons Learned und Entscheidungen laufend dokumentieren | schon vorhanden (`docs/lessons-learned.md`, `docs/architecture.md`, Regel in `CLAUDE.md`), unverändert |
+
+**Projektspezifisch angepasst (nicht 1:1):** Topic `barbergo-muhammet`, Titel „BarberGo“, Env-Präfix `BARBERGO_*`; State-Pfad am Skriptort statt relativ zum cwd; `settings.json` behält BarberGo-Permissions und sperrt zusätzlich `Write` auf den State-Ordner; Skill-Namen bleiben `my-continue`/`my-status`/`my-closeout` (statt `*-project`/`daily-*`); bestehende Dokumentenlandkarte mit Spalte *Rolle* bleibt Single Source, `PROJECT_STATUS.md` nimmt nur die Handoff-Rolle ein (Lessons, Roadmap, TODO, Status bleiben in eigenen Dateien); Session-Log auf 5 Einträge begrenzt.
+
+**Nicht übernommen (videospezifisch):** Video-Registry, `Active Video`-Block pro Video, Remotion/CapCut-Regeln, B-Roll-/Produktionsstandards, Footage-Analyse.

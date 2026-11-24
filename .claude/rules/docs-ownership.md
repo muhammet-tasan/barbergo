@@ -16,9 +16,9 @@ Jede Information hat **genau ein** Zuhause (Single Source of Truth). Bestehende 
 | Operative Aufgaben (Checkboxen) | `TODO.md` |
 | Produktvision, Phasen, **Meilensteine**, Backlog, Roadmap-Vorschläge | `docs/product-roadmap.md` |
 | Go-live-Härtung | `docs/pre-launch-checklist.md` |
-| **Übergabe an den nächsten Chat** | `docs/session-handoff.md` |
+| **Übergabe an den nächsten Chat**, Session-Log | `PROJECT_STATUS.md` |
 | **Fehlerursachen, Fallstricke, bewährte Lösungen** | `docs/lessons-learned.md` |
-| Dev-Benachrichtigungen (`notify:on/off`) | `docs/dev-notifications.md` |
+| Dev-Benachrichtigungen (`/my-notification-on`) | `docs/dev-notifications.md` |
 | Claude-Setup, Skill-Konvention, Übernahme in andere Projekte | `docs/claude-code-setup.md` |
 
 ## Regeln

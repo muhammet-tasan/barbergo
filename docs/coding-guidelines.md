@@ -222,7 +222,7 @@ See also [project-rules.md](./project-rules.md) for workflow and notifications.
   - major architecture changes
   - unclear external service setup
 
-When blocked or finished, notifications are sent automatically by Claude Code hooks when `notify:on` is active ([dev-notifications.md](./dev-notifications.md)). Do not call `scripts/notify-*.ps1` manually.
+When blocked or finished, notifications are sent automatically by Claude Code hooks when `/my-notification-on` was given for the task ([dev-notifications.md](./dev-notifications.md)). Do not call `scripts/notify-*.ps1` manually.
 
 ---
 
