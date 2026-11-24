@@ -53,21 +53,14 @@ Details: [supabase/README.md](supabase/README.md) · Status: [docs/current-statu
 
 ## Developer notifications (ntfy)
 
-When Cursor finishes a task, notify your phone:
+Claude Code pings your phone via hooks: type `notify:on` in a prompt (or `/goal`) to enable, `notify:off` to disable (per session, default off). Subscribe in the [ntfy app](https://ntfy.sh) to topic: `barbergo-muhammet`. Details: [docs/dev-notifications.md](docs/dev-notifications.md).
 
-```powershell
-powershell -ExecutionPolicy Bypass -File scripts/notify-done.ps1
-powershell -ExecutionPolicy Bypass -File scripts/notify-custom.ps1 "Your message"
-```
+## Project rules (Claude Code)
 
-Subscribe in the [ntfy Android app](https://ntfy.sh) to topic: `barbergo-muhammet`
-
-## Project rules (Cursor)
-
-- [docs/project-rules.md](docs/project-rules.md) — workflow, notifications, documentation duties
+- [CLAUDE.md](CLAUDE.md) — entry point, document map, skills
+- [docs/project-rules.md](docs/project-rules.md) — workflow, documentation duties
 - [docs/coding-guidelines.md](docs/coding-guidelines.md) — engineering standards (Expo, Supabase, UI, errors, git)
-
-Applied automatically via `.cursor/rules/barbergo-project.mdc`.
+- [docs/claude-code-setup.md](docs/claude-code-setup.md) — `.claude/` setup, Cursor migration
 
 ## Roadmap (not MVP)
 

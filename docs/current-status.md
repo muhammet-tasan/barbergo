@@ -1,6 +1,6 @@
 # barbergo — Current Status
 
-Last updated: 2026-06-17
+Last updated: 2026-11-23 (Claude Code setup; no product changes)
 
 ## Project maturity
 
@@ -51,7 +51,9 @@ Last updated: 2026-06-17
 - Manuelle E2E-Checkliste: **[e2e-checklist.md](./e2e-checklist.md)**
 - Logging: **[logging.md](./logging.md)** (`EXPO_PUBLIC_LOG_LEVEL`)
 - Auth settings doc: `docs/supabase-auth-settings.md`
-- ntfy scripts (`scripts/notify-*.ps1`)
+- Claude Code setup: `CLAUDE.md`, `.claude/` (rules, skills, hooks) — [claude-code-setup.md](./claude-code-setup.md)
+- Dev pings: `notify:on` / `notify:off` hooks (ntfy) — [dev-notifications.md](./dev-notifications.md)
+- Session continuity: [session-handoff.md](./session-handoff.md), [lessons-learned.md](./lessons-learned.md)
 
 ## Architecture decisions
 

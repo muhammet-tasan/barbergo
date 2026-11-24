@@ -54,9 +54,9 @@ See the original ntfy section in [README.md](../README.md). End-user push (FCM /
 2. **Later:** EAS Build for store-ready APK; Supabase production project with RLS.
 3. **Optional:** Coolify on VPS for n8n + any self-hosted services.
 
-## Cursor integration
+## Claude Code integration
 
-Project rules apply via `.cursor/rules/barbergo-project.mdc`. Run `scripts/notify-*.ps1` after major tasks (see [project-rules.md](./project-rules.md)).
+Project rules apply via `CLAUDE.md` and `.claude/rules/`. Dev pings are sent by hooks (see [dev-notifications.md](./dev-notifications.md) and [claude-code-setup.md](./claude-code-setup.md)).
 
 ## Topic for developer ntfy
 

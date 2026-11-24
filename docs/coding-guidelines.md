@@ -211,7 +211,7 @@ Use conventional prefixes: `feat`, `fix`, `docs`, `refactor`, `chore`.
 
 ## AI workflow rules
 
-See also [project-rules.md](./project-rules.md) for notification commands.
+See also [project-rules.md](./project-rules.md) for workflow and notifications.
 
 - Work **semi-autonomously** — do not ask unnecessary questions.
 - Make **reasonable assumptions** and continue.
@@ -222,19 +222,7 @@ See also [project-rules.md](./project-rules.md) for notification commands.
   - major architecture changes
   - unclear external service setup
 
-When blocked, notify:
-
-```powershell
-powershell -ExecutionPolicy Bypass -File scripts/notify-custom.ps1 "Cursor needs your attention"
-```
-
-After completing a major task:
-
-```powershell
-powershell -ExecutionPolicy Bypass -File scripts/notify-done.ps1
-```
-
-Or use `notify-custom.ps1` with a specific task description.
+When blocked or finished, notifications are sent automatically by Claude Code hooks when `notify:on` is active ([dev-notifications.md](./dev-notifications.md)). Do not call `scripts/notify-*.ps1` manually.
 
 ---
 
@@ -273,4 +261,5 @@ Deferring these is intentional — document them in roadmap docs, do not build t
 - [ ] Supabase access only in `services/`
 - [ ] Mock fallback still works when env vars are missing
 - [ ] `TODO.md` and `docs/current-status.md` updated for major milestones
-- [ ] ntfy sent when required by project rules
+- [ ] `npm run lint` passes (`apps/mobile`)
+- [ ] `/barbergo-review` run for larger changes

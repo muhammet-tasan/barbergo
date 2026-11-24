@@ -1,0 +1,4 @@
+# Claude Code: per-session state and personal overrides (never commit)
+.claude/notify-state/
+.claude/settings.local.json
+.claude/scheduled_tasks.lock

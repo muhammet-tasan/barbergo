@@ -42,15 +42,38 @@ Prefer **iterative progress** and **small working increments** over perfect upfr
 
 ## Session bootstrap
 
-At the start of a new chat / session, before making changes, read in this order:
+`CLAUDE.md` loads [session-handoff.md](./session-handoff.md) automatically. Run `/continue-project` to verify it against git and get the next task. At the start of a new chat / session, before making changes, read in this order:
 
-1. [README.md](../README.md)
+1. [session-handoff.md](./session-handoff.md)
 2. [TODO.md](../TODO.md)
 3. [current-status.md](./current-status.md)
 4. This file ([project-rules.md](./project-rules.md))
 5. [coding-guidelines.md](./coding-guidelines.md)
+6. [lessons-learned.md](./lessons-learned.md) when touching RLS, auth, bookings or timezones
 
-Also run `git status` once before larger edits to understand the working tree (untracked files, uncommitted changes, current branch).
+Also run `git status` once before larger edits to understand the working tree (untracked files, uncommitted changes, current branch). At the end of a session run `/session-handoff`.
+
+---
+
+## Document map (single owner per topic)
+
+| Topic | Owner |
+|-------|-------|
+| Overview, setup, run | [README.md](../README.md) |
+| Architecture + **decision log** | [architecture.md](./architecture.md) |
+| Entities / tables | [data-model.md](./data-model.md) |
+| Agent workflow rules | this file |
+| Code / UI / Supabase standards | [coding-guidelines.md](./coding-guidelines.md) |
+| **Current state**, known issues, Supabase setup status | [current-status.md](./current-status.md) |
+| Open tasks | [TODO.md](../TODO.md) |
+| Product vision, phases | [product-roadmap.md](./product-roadmap.md) |
+| Go-live hardening | [pre-launch-checklist.md](./pre-launch-checklist.md) |
+| Hand-off to the next chat | [session-handoff.md](./session-handoff.md) |
+| Lessons learned | [lessons-learned.md](./lessons-learned.md) |
+| Dev notifications | [dev-notifications.md](./dev-notifications.md) |
+| Claude Code setup, Cursor migration | [claude-code-setup.md](./claude-code-setup.md) |
+
+Update the owning file; link instead of duplicating. Skill `/doc-sync` maps change types to files.
 
 ---
 
@@ -73,7 +96,7 @@ Ask for confirmation (ntfy + chat) before:
 - breaking API / public function / prop changes
 - destructive operations (delete files, drop tables, force-push)
 - deleting important code paths
-- changing established project conventions (this file, [coding-guidelines.md](./coding-guidelines.md), [AGENTS.md](../AGENTS.md), `.cursor/rules/`)
+- changing established project conventions (this file, [coding-guidelines.md](./coding-guidelines.md), [CLAUDE.md](../CLAUDE.md), `.claude/rules/`)
 
 ---
 
@@ -90,47 +113,15 @@ If a check fails or is skipped, note it in [current-status.md](./current-status.
 
 ---
 
-## Notifications (ntfy)
+## Notifications (ntfy, Claude Code hooks)
 
-Run from **repository root**. Topic: `barbergo-muhammet` (see [README.md](../README.md)).
+Dev alerts to the phone (ntfy topic `barbergo-muhammet`) are sent **automatically by Claude Code hooks** — agents must **not** call `scripts/notify-*.ps1` themselves (duplicate pings).
 
-### User interaction required — send **before** stopping
+- `notify:on` / `notify:off` in a prompt (or `/goal`) toggles pings for the current session; default is **off**.
+- Ping when a task ends (`Stop`) and when Claude waits for the user (`Notification`: permission / decision).
+- Still stop and ask for: security-sensitive or destructive actions, credentials, unclear major architecture.
 
-Whenever you need user interaction, approval, clarification, terminal permission, dependency approval, or hit a blocking issue:
-
-```powershell
-powershell -ExecutionPolicy Bypass -File scripts/notify-custom.ps1 "User interaction required"
-```
-
-Contextual examples:
-
-- `User interaction required`
-- `Terminal approval required`
-- `Dependency installation approval required`
-- `Architecture decision required`
-- `Build failed`
-- `Manual testing required`
-- `Cursor needs your attention`
-
-Also notify before stopping when security-sensitive or destructive actions need approval, credentials are required, or important architecture choices are unclear.
-
-**Do not** stop for the user without sending the interaction notification first.
-
-### Major task completed
-
-```powershell
-powershell -ExecutionPolicy Bypass -File scripts/notify-custom.ps1 "Task description"
-```
-
-Examples: `Supabase integration completed`, `Booking flow completed`, `Docs updated`.
-
-Default when no specific label is needed:
-
-```powershell
-powershell -ExecutionPolicy Bypass -File scripts/notify-done.ps1
-```
-
-Send notifications after: feature completion, setup completion, successful builds, important fixes, larger refactors, and before pausing for user input.
+Full description: [dev-notifications.md](./dev-notifications.md).
 
 ---
 
@@ -181,7 +172,7 @@ Before stopping, update:
 - **`TODO.md`** — mark completed tasks, add next recommended tasks
 - **`docs/current-status.md`** — must include: current working state, completed features, known issues, next steps, important technical decisions
 
-Keep summaries **concise**. **Avoid duplicate documentation** — update the existing section instead of adding a parallel one. Then: ntfy notification, what to test, **suggested commit message** (do **not** commit unless the user asks).
+Keep summaries **concise**. **Avoid duplicate documentation** — update the existing section instead of adding a parallel one; skip doc updates for trivial changes (`/doc-sync`). Then: what to test and a **suggested commit message** (do **not** commit unless the user asks). Notifications are sent by hooks, not by the agent.
 
 ### When changing engineering standards
 
@@ -201,9 +192,10 @@ Keep summaries **concise**. **Avoid duplicate documentation** — update the exi
 
 ---
 
-## Cursor / agent integration
+## Claude Code / agent integration
 
-- This file is applied via **`.cursor/rules/barbergo-project.mdc`** and **[AGENTS.md](../AGENTS.md)** (`alwaysApply: true`).
+- This file is the detailed source behind **[CLAUDE.md](../CLAUDE.md)** and **`.claude/rules/`** (see [claude-code-setup.md](./claude-code-setup.md)). `AGENTS.md` only points there.
+- Reusable workflows are skills: `/continue-project`, `/session-handoff`, `/doc-sync`, `/barbergo-review`, `/lessons-learned`, `/pre-launch`, `/goal`.
 - Read **this file** + **[coding-guidelines.md](./coding-guidelines.md)** for all tasks in this repo.
 - Prefer smaller implementation steps; wire Supabase through `services/` only ([coding-guidelines.md](./coding-guidelines.md#supabase-guidelines)).
 
@@ -215,6 +207,8 @@ Keep summaries **concise**. **Avoid duplicate documentation** — update the exi
 |------|------------|
 | New screen or UI | [coding-guidelines.md](./coding-guidelines.md) (UI, Expo, components) |
 | Supabase / data | [coding-guidelines.md](./coding-guidelines.md) (Supabase, domain model) + [data-model.md](./data-model.md) |
-| Agent workflow / notify | This file |
+| Agent workflow | This file |
+| Dev notifications | [dev-notifications.md](./dev-notifications.md) |
+| Where does X belong? | *Document map* above |
 | Stack overview | [architecture.md](./architecture.md) |
 | What's done / next | [current-status.md](./current-status.md), [TODO.md](../TODO.md) |

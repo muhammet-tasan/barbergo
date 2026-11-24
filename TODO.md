@@ -62,6 +62,13 @@
 - [x] Navigation: Stack-Animationen, konsistenter Dark-Background, Header Home/Subpage
 - [x] UX-Runde: Home, BarberCard, Services+Icons, Buchungsformular-Sections, Admin-Gruppen
 
+### Developer tooling
+
+- [x] Cursor config migrated to Claude Code (`CLAUDE.md`, `.claude/rules`, `.claude/skills`)
+- [x] Notify system ported from TASAN Media Trips (`notify:on` / `notify:off`, hooks, tested)
+- [x] Session handoff, lessons learned, decision log docs
+- [ ] Review and commit the Claude Code setup (not committed yet)
+
 ### Next recommended tasks
 
 - [x] Barber E-Mail-Bestätigung: umgebungsabhängiger Redirect (`auth-redirect.ts`), `/auth/callback`, kein `mailto`

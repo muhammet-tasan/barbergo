@@ -88,6 +88,15 @@ Documented only — **do not implement yet.**
 - Never ship **service role** keys in the mobile app — only `EXPO_PUBLIC_SUPABASE_ANON_KEY`.
 - Store secrets in `.env` (gitignored); use `.env.example` as a template.
 
+## Decision log
+
+Newest first. Short entries: what, why, what was deferred. Current-state tables live in [current-status.md](./current-status.md).
+
+| Date | Decision | Why / deferred |
+|------|----------|----------------|
+| 2026-11-23 | Agent tooling moved from Cursor to Claude Code (`CLAUDE.md`, `.claude/`); dev pings via hooks (PowerShell, ported from TASAN Media Trips) | One source of truth, no duplicate pings; see [claude-code-setup.md](./claude-code-setup.md) |
+| earlier | Supabase instead of Spring Boot; `book_slot` / `get_available_slots` RPC for atomic slots; roles in `profiles.role`; RLS baseline `0003`+ | See [current-status.md](./current-status.md) → Architecture decisions |
+
 ## Related docs
 
 - [branding.md](./branding.md) — colors, assets, UI rules
