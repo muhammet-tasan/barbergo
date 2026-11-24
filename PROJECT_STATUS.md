@@ -40,6 +40,7 @@
 - `AppShell` (max. 720 px, `layout.maxContentWidth`) für Web, `app/+html.tsx` (dunkler Hintergrund, `theme-color`, `100dvh`), `ScreenHeader` stapelt Text unter die Buttons, wenn er nicht daneben passt (gemessen, Home und Unterseiten), Home-Text bei 320 px nicht mehr abgeschnitten.
 - Ladeverhalten: Header-Auth-Buttons und Home-Gast-Buttons ohne Spinner (hängen nur an der Session). Spinner nur noch, wenn ein angemeldeter Nutzer sein Profil lädt. Restursache für „langsam“: Bundle 2,9 MB (742 KB gzip), die Seite ist erst nach Download und Hydration bedienbar.
 - Lokal gegen den statischen Export in 320/375 px und Desktop geprüft. **Nicht deployt** (live ist weiterhin der Stand vom Logo-Fix).
+- Zweite Nachbesserung: Titel links direkt neben dem Zurück-Pfeil (statt zentriert), nach unten gerutschter Text zentriert; Startseite nutzt die volle Breite (Logo, Titel, Buttons), Logo-Web-Kopie auf den sichtbaren Bereich zugeschnitten (960×460, 333 KB, Original bleibt), „Meine Termine": Leerzustand ohne Button (Gast und Kunde). Klick auf „Termin buchen" und „Meine Termine" im lokalen Export geprüft.
 - Nachbesserung nach Test auf dem Handy: Header einheitlich (Bar-Zeile 52 px, Buttons auf Höhe des Zurück-Pfeils, Titel echt mittig, Text darunter mit mehr Abstand), Startseite scrollbar (`ScrollView`, Logo wird seitlich beschnitten statt zu scrollen), nativer Root-Hintergrund dunkel (`AppShell` auch auf iOS/Android, sonst weiss unter der SafeArea/beim Überscrollen).
 
 ### 2026-11-24 · Logo-Bug auf der Web-App behoben (echte Ursache)

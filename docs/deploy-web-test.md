@@ -42,7 +42,7 @@ npx eas-cli deploy --prod --non-interactive # Ziel: https://test-barbergo.expo.a
 # manuell in einem Schritt (mit Rückfragen): npm run deploy:web:test
 ```
 
-Danach: HTTP 200, Entry-Bundle-Hash im ausgelieferten HTML, Logo-Asset ~243 KB. Bei Abweichung von der URL sofort stoppen.
+Danach: HTTP 200, Entry-Bundle-Hash im ausgelieferten HTML, Logo-Asset ~333 KB. Bei Abweichung von der URL sofort stoppen.
 
 ## Sicherheitsregeln
 

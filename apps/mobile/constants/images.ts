@@ -1,7 +1,7 @@
 /** Known aspect ratios (width / height) for layout without resolveAssetSource (web-safe). */
 export const brandImageAspect = {
-  /** logo-transparent(-web).png — 1536×1024 (Original), Web-Kopie 1120×747, gleiches Seitenverhältnis (Home + Header) */
-  logoTransparent: 1536 / 1024,
+  /** logo-transparent-web.png — auf den sichtbaren Bereich zugeschnitten, 960×460 (Original logo-transparent.png 1536×1024 mit grossen transparenten Rändern) */
+  logoTransparent: 960 / 460,
   /** barbergo-wordmark-transparent(-web).png (Original 1536×1024; Layout-Verhältnis bleibt 1080/400) */
   wordmark: 1080 / 400,
   /** barbergodark-preview.png — 853×337 */

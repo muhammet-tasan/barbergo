@@ -123,11 +123,7 @@ export default function CustomerBookingsScreen() {
           </Pressable>
 
           {allBookings.length === 0 ? (
-            <EmptyState
-              title="Noch keine Termine"
-              actionLabel="Termin buchen"
-              onAction={() => router.push('/barbers')}
-            />
+            <EmptyState title="Noch keine Termine" />
           ) : (
             <>
               <SectionHeader title="Anstehende Termine" />

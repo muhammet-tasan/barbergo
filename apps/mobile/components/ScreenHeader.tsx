@@ -124,26 +124,26 @@ export function ScreenHeader({
   const hasText = isHome ? Boolean(welcome) : Boolean(title);
   const measured = rowWidth > 0 && textWidth > 0;
 
-  // Home: text left of the buttons. Subpage: text centered, needs the same room on both sides.
+  // The text sits directly next to the back button (subpage) / at the left edge (home) and must
+  // fit between that and the auth buttons; otherwise it moves below the bar row.
   const backWidth = backNode ? BACK_SLOT_WIDTH : 0;
-  const sideWidth = Math.max(backWidth, showAuthAction ? authWidth : 0);
-  const stacked = isHome
-    ? measured && hasText && textWidth + authWidth + TEXT_GAP > rowWidth
-    : measured && hasText && textWidth > rowWidth - 2 * sideWidth - 8;
+  const stacked =
+    measured && hasText && backWidth + textWidth + TEXT_GAP + authWidth > rowWidth;
 
   const textBlock = isHome ? (
     <Text
       className="text-sm font-medium text-brand-text leading-5"
-      style={stacked ? undefined : { flexShrink: 1 }}
+      style={{ textAlign: stacked ? 'center' : 'left' }}
       selectable={false}
       numberOfLines={stacked ? 3 : 1}
     >
       {welcome}
     </Text>
   ) : title ? (
-    <View className="items-center justify-center max-w-full">
+    <View className="max-w-full" style={{ alignItems: stacked ? 'center' : 'flex-start' }}>
       <Text
-        className="text-base font-semibold text-brand-text text-center"
+        className="text-base font-semibold text-brand-text"
+        style={{ textAlign: stacked ? 'center' : 'left' }}
         numberOfLines={stacked ? 3 : 1}
         accessibilityRole="header"
       >
@@ -151,7 +151,8 @@ export function ScreenHeader({
       </Text>
       {subtitle ? (
         <Text
-          className="text-xs text-brand-muted text-center mt-0.5"
+          className="text-xs text-brand-muted mt-0.5"
+          style={{ textAlign: stacked ? 'center' : 'left' }}
           numberOfLines={stacked ? 3 : 1}
         >
           {subtitle}
@@ -174,38 +175,18 @@ export function ScreenHeader({
             justifyContent: 'space-between',
           }}
         >
-          <View style={{ width: isHome ? 0 : Math.max(backWidth, 0) }}>{backNode}</View>
+          <View style={{ width: backWidth }}>{backNode}</View>
 
-          {isHome && !stacked ? (
-            <Text
-              className="flex-1 text-sm font-medium text-brand-text leading-5"
-              style={{ marginRight: TEXT_GAP }}
-              selectable={false}
-              numberOfLines={1}
-            >
-              {welcome || ' '}
-            </Text>
-          ) : null}
-
-          {authNode}
-
-          {/* Subpage title: centered on the bar, independent of the side widths. */}
-          {!isHome && !stacked ? (
-            <View
-              pointerEvents="box-none"
-              style={{
-                position: 'absolute',
-                left: sideWidth + 4,
-                right: sideWidth + 4,
-                top: 0,
-                bottom: 0,
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
+          {/* Text in the bar row: left aligned, directly next to the back button. */}
+          {!stacked ? (
+            <View style={{ flex: 1, minWidth: 0, marginRight: TEXT_GAP }}>
               {textBlock}
             </View>
-          ) : null}
+          ) : (
+            <View style={{ flex: 1 }} />
+          )}
+
+          {authNode}
         </View>
 
         {/* Text that did not fit next to the buttons: own line, full width. */}
@@ -214,7 +195,7 @@ export function ScreenHeader({
             style={{
               paddingTop: STACKED_TEXT_PADDING_TOP,
               paddingBottom: STACKED_TEXT_PADDING_BOTTOM,
-              alignItems: isHome ? 'flex-start' : 'center',
+              alignItems: 'center',
             }}
           >
             {textBlock}

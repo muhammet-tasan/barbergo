@@ -98,11 +98,7 @@ export default function GuestBookingsScreen() {
           />
 
           {bookings.length === 0 ? (
-            <EmptyState
-              title="Noch keine Termine"
-              actionLabel="Termin buchen"
-              onAction={() => router.push('/barbers')}
-            />
+            <EmptyState title="Noch keine Termine" />
           ) : (
             <>
               <SectionHeader title="Anstehende Termine" spaced />

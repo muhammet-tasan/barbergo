@@ -124,3 +124,10 @@ Erkenntnisse aus Fehlern, Entscheidungen und bewährten Lösungen. Wird während
 - **Problem:** Unter dem Inhalt erschien eine weisse Fläche (SafeArea mit `edges={['top']}`, Überscrollen).
 - **Lösung / Regel:** Den Root mit dem dunklen Hintergrund füllen (`AppShell` auch nativ) und im Web html/body/#root dunkel setzen (`app/+html.tsx`). Ein dunkler Screen-Hintergrund allein reicht nicht.
 - **Referenz:** `apps/mobile/components/AppShell.tsx`, `apps/mobile/app/+html.tsx`
+
+### Logo-PNG mit riesigen transparenten Rändern (2026-11-24)
+- **Bereich:** UI
+- **Problem:** Das Logo wirkte nie „voll breit“; Layout-Hacks (Breite 1,28×, negativer Abstand) kompensierten die Ränder.
+- **Ursache:** `logo-transparent.png` (1536×1024) enthält nur 69 % Breite und 49 % Höhe sichtbaren Inhalt.
+- **Lösung / Regel:** Web-Kopie auf den sichtbaren Bereich zuschneiden (`logo-transparent-web.png`, 960×460) und das Seitenverhältnis in `brandImageAspect` anpassen. Danach reicht `width = Inhaltsbreite`, ohne Hacks. Bei neuen Bildern zuerst die Ränder prüfen.
+- **Referenz:** `apps/mobile/constants/images.ts`, `apps/mobile/components/HomeHero.tsx`

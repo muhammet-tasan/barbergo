@@ -4,6 +4,7 @@ import { Image } from 'expo-image';
 import { AppButton } from '@/components/AppButton';
 import { brandCopy } from '@/constants/brand-copy';
 import { brandImageAspect, brandImages } from '@/constants/images';
+import { layout } from '@/constants/layout';
 import { colors } from '@/constants/theme';
 import { useWindowWidth } from '@/hooks/use-window-width';
 
@@ -11,16 +12,13 @@ const HOME = {
   horizontalPadding: 16,
   paddingTop: 4,
   paddingBottom: 24,
-  /** Zieht Text näher ans Logo (PNG hat unten transparenten Rand) */
-  textPullTowardLogo: -32,
+  /** Abstand zwischen Logo und Text */
+  logoToText: 20,
   /** Abstand zwischen Textblock und Buttons */
-  textToButtonsGap: 64,
+  textToButtonsGap: 40,
   headlineToSubtitle: 12,
   subtitleToBadge: 20,
   buttonGap: 14,
-  actionsMaxWidth: 400,
-  logoWidthRatio: 1.28,
-  logoMaxWidth: 560,
 } as const;
 
 type HomeHeroProps = {
@@ -47,7 +45,8 @@ export function HomeHero({
   onBarberSlots,
 }: HomeHeroProps) {
   const windowWidth = useWindowWidth();
-  const logoWidth = Math.min(windowWidth * HOME.logoWidthRatio, HOME.logoMaxWidth);
+  // Logo, texts and buttons use the full content width (screen, max. app column, minus padding).
+  const logoWidth = Math.min(windowWidth, layout.maxContentWidth) - HOME.horizontalPadding * 2;
   const showActions = variant !== 'barber_pending';
   const isPending = variant === 'barber_pending';
 
@@ -64,13 +63,7 @@ export function HomeHero({
             style={[styles.homeLogo, { width: logoWidth }]}
           />
 
-          <View
-            style={[
-              styles.textGroup,
-              // Narrow phones (320 px): logoWidth is wider than the screen, keep the text inside it.
-              { width: Math.min(360, windowWidth - HOME.horizontalPadding * 2) },
-            ]}
-          >
+          <View style={styles.textGroup}>
             {isPending ? (
               <Text style={styles.pendingText} selectable={false}>
                 Dein Barber-Profil wird geprüft.
@@ -149,10 +142,8 @@ const styles = StyleSheet.create({
   },
   textGroup: {
     width: '100%',
-    maxWidth: 360,
     alignItems: 'center',
-    alignSelf: 'center',
-    marginTop: HOME.textPullTowardLogo,
+    marginTop: HOME.logoToText,
   },
   headline: {
     fontSize: 28,
@@ -194,9 +185,7 @@ const styles = StyleSheet.create({
   },
   actionsGroup: {
     width: '100%',
-    maxWidth: HOME.actionsMaxWidth,
-    alignItems: 'center',
-    alignSelf: 'center',
+    alignItems: 'stretch',
     gap: HOME.buttonGap,
   },
 });
