@@ -1,10 +1,11 @@
-import { ActivityIndicator, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import { Image } from 'expo-image';
 
 import { AppButton } from '@/components/AppButton';
 import { brandCopy } from '@/constants/brand-copy';
 import { brandImageAspect, brandImages } from '@/constants/images';
 import { colors } from '@/constants/theme';
+import { useWindowWidth } from '@/hooks/use-window-width';
 
 const HOME = {
   horizontalPadding: 16,
@@ -45,7 +46,7 @@ export function HomeHero({
   onAllBookings,
   onBarberSlots,
 }: HomeHeroProps) {
-  const { width: windowWidth } = useWindowDimensions();
+  const windowWidth = useWindowWidth();
   const logoWidth = Math.min(windowWidth * HOME.logoWidthRatio, HOME.logoMaxWidth);
   const showActions = variant !== 'barber_pending';
   const isPending = variant === 'barber_pending';

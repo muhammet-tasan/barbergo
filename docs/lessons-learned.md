@@ -91,3 +91,12 @@ Erkenntnisse aus Fehlern, Entscheidungen und bewährten Lösungen. Wird während
 - **Lösung / Regel:** Projekte per Expo-GraphQL (`account.byName(accountName).apps(limit ≤ 50)`, `app.byId(appId).devDomainName`) mit der lokalen Anmeldung auflisten, dann `eas init --id <ID>`. Token nie ausgeben. `projectId` ist nicht geheim und gehört in `app.json`.
 - **Andere Projekte:** ja.
 - **Referenz:** `docs/deploy-web-test.md`
+
+### Logo auf der Web-App unsichtbar: `useWindowDimensions` = 0 im statischen Export (2026-11-24)
+- **Bereich:** Expo/RN, Web
+- **Problem:** Auf `test-barbergo.expo.app` fehlte das Home-Logo beim ersten Laden und erschien erst nach Navigation (Termine, zurück). Lokal (`expo start`) trat es nicht auf. Die Verkleinerung der PNGs (2,2 MB → 243 KB) war nur eine Nebenbaustelle und nicht die Ursache.
+- **Ursache:** `HomeHero` berechnete die Logo-Breite aus `useWindowDimensions()`. Beim statischen Pre-Rendering ist der Wert 0, `width: 0px` landet im HTML, und React korrigiert abweichende Inline-Styles beim Hydrieren nicht. Das Bild (`naturalWidth` 1120) hatte deshalb 0×0 px, bis ein Re-Render die Breite neu setzte.
+- **Lösung / Regel:** Hook `hooks/use-window-width.ts`: erster Render mit festem Fallback (Server und Client identisch), echte Breite im Effect. Layout-Werte aus Fenstermassen nie direkt aus `useWindowDimensions()`/`Dimensions` im ersten Render ableiten, wenn die Route statisch exportiert wird.
+- **Vermeidung:** Web-Fixes gegen den **statischen Export** testen (`npm run export:web`, `dist/` lokal servieren), nicht nur gegen `expo start`. Nach dem Deploy im Browser die gerenderte Grösse prüfen (`clientWidth > 0`), nicht nur HTTP 200 der Datei.
+- **Andere Projekte:** ja, jedes Expo-Web-Projekt mit `web.output: "static"`.
+- **Referenz:** `apps/mobile/hooks/use-window-width.ts`, `apps/mobile/components/HomeHero.tsx`

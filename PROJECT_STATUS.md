@@ -36,6 +36,9 @@
 
 ## Session-Log (neueste zuerst, max. 5 Einträge, Älteres steht in der Git-Historie)
 
+### 2026-11-24 · Logo-Bug auf der Web-App behoben (echte Ursache)
+- Das Logo fehlte beim ersten Laden, weil `useWindowDimensions()` beim statischen Export 0 liefert (`width: 0px` im HTML, React korrigiert das beim Hydrieren nicht). Fix: `hooks/use-window-width.ts`, genutzt in `HomeHero`. Lokal gegen `dist/` und live auf `test-barbergo.expo.app` im Browser bestätigt (Logo 560×373). Die PNG-Verkleinerung bleibt sinnvoll, war aber nicht die Ursache. Skill prüft jetzt die gerenderte Grösse. Details `docs/lessons-learned.md`.
+
 ### 2026-11-24 · Web-Deployment Test live
 - `/my-barbergo-deploy-web-test` angelegt und erstmals durchlaufen: Deployment auf `https://test-barbergo.expo.app` erfolgreich und verifiziert. `--prod` nötig (Preview-Subdomain zeigt nur das Production-Deployment, EAS-Slot, nicht BarberGo-Produktion).
 - Projekt per Expo-API ermittelt: `@mmt-tsn/barbergo` (`d3f89ea0-af77-4891-976d-c2aae38e3bdb`, einziges Projekt, Dev-Domain `test-barbergo`), per `eas init --id` verknüpft, `projectId` in `app.json`. `app.config.js` behält jetzt `app.json`-`extra`. Neue Skripte `export:web`, `deploy:web:test`. Details `docs/deploy-web-test.md`.
@@ -46,7 +49,7 @@
 - Angepasst: BarberGo-Dokumentenlandkarte (Rolle `handoff` → `PROJECT_STATUS.md`) und deutschsprachige Skills bleiben; keine videospezifischen Inhalte übernommen.
 
 ### 2026-11-24 · Web-Logo-Performance
-- Ursache für spätes Logo auf der deployten Web-App: 2,2-MB-PNG (~10 s). Fix: `logo-transparent-web.png` (243 KB), `barbergo-wordmark-transparent-web.png` (50 KB), `transition`/`priority` bei `expo-image`. Commit `b5ae123`, Deployment steht aus.
+- Vermutete (nicht alleinige) Ursache für spätes Logo: 2,2-MB-PNG (~10 s). Teilfix: `logo-transparent-web.png` (243 KB), `barbergo-wordmark-transparent-web.png` (50 KB), `transition`/`priority` bei `expo-image`. Commit `b5ae123`, Deployment steht aus.
 
 ### 2026-11-24 · Skill-Konsolidierung
 - Skills auf `my-*` reduziert, Roadmap-Meilensteine M1–M7 (`docs/product-roadmap.md`), Doku-Landkarte mit Spalte *Rolle*. Commit `340829b`.
