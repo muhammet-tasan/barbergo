@@ -1,6 +1,21 @@
 # Lessons Learned
 
-Erkenntnisse aus Fehlern, Entscheidungen und bewährten Lösungen. Pflege über den Skill `/lessons-learned` (Format dort). Dauerhafte Regeln zusätzlich in `docs/coding-guidelines.md` bzw. `.claude/rules/`.
+Erkenntnisse aus Fehlern, Entscheidungen und bewährten Lösungen. Wird während der Arbeit automatisch gepflegt (siehe `CLAUDE.md`), `/my-closeout` konsolidiert. Dauerhafte Regeln zusätzlich in `docs/coding-guidelines.md` bzw. `.claude/rules/`.
+
+**Wann eintragen:** Ursache war nicht offensichtlich oder hat Zeit gekostet · Annahme war falsch · Lösung soll wiederverwendet werden · Entscheidung mit Begründung (Architektur zusätzlich in `docs/architecture.md`). **Nicht:** Triviales, einmalige Tippfehler, schon Dokumentiertes. Vor Arbeiten in Problembereichen (RLS, Auth, Buchungslisten, Zeitzonen) diese Datei überfliegen. Duplikate vermeiden, bestehenden Eintrag erweitern.
+
+**Format** (kurz, faktisch, neueste oben pro Bereich):
+
+```
+### <Kurztitel> (YYYY-MM-DD)
+- **Bereich:** Auth | RLS/Supabase | Expo/RN | UI | Navigation | Tooling | Prozess
+- **Problem:** was sichtbar schieflief
+- **Ursache:** warum
+- **Lösung / Regel:** was getan wurde bzw. was künftig gilt
+- **Vermeidung:** wie es künftig nicht mehr passiert
+- **Andere Projekte:** relevant? (ja/nein + Stichwort)
+- **Referenz:** Datei/Migration/Commit
+```
 
 > Die ersten Einträge wurden bei der Claude-Code-Migration aus `docs/current-status.md`, `TODO.md` und `apps/mobile/AGENTS.md` abgeleitet (keine neuen Beobachtungen). Quellen sind jeweils genannt.
 

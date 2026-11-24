@@ -262,4 +262,4 @@ Deferring these is intentional — document them in roadmap docs, do not build t
 - [ ] Mock fallback still works when env vars are missing
 - [ ] `TODO.md` and `docs/current-status.md` updated for major milestones
 - [ ] `npm run lint` passes (`apps/mobile`)
-- [ ] `/barbergo-review` run for larger changes
+- [ ] `/my-barbergo-review` run for larger changes

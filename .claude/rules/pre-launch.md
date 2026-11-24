@@ -9,7 +9,7 @@ paths:
 
 # Vor dem Go-live (Produktionsreife)
 
-Vollständige Checkliste: `docs/pre-launch-checklist.md`. Für einen kompletten Durchlauf den Skill `pre-launch` verwenden.
+Vollständige Checkliste: `docs/pre-launch-checklist.md`. Für einen kompletten Durchlauf `/my-barbergo-pre-launch` verwenden.
 
 - Wer Env-, Auth- oder RLS-Dateien ändert: prüfen, ob die Änderung die Checkliste berührt, und den Nutzer darauf hinweisen.
 - Bei Stichworten wie „go live“, „production“, „launch“, „release“, „öffentlich“ die Checkliste proaktiv durchgehen und erinnern.

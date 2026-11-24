@@ -30,7 +30,7 @@ Antwort endet mit:
 2. **Wichtige Codeänderungen** (einsteigerfreundlich: was gebaut wurde, wie es zusammenhängt)
 3. **Architekturentscheidungen** (kurz: warum, was verschoben wurde)
 
-Dazu: was zu testen ist und eine **vorgeschlagene Commit-Message** (Conventional Commits). Vor dem Stoppen `TODO.md` und `docs/current-status.md` aktualisieren (Skill `doc-sync`). Bei trivialen Aufgaben keine Doku-Änderungen.
+Dazu: was zu testen ist und eine **vorgeschlagene Commit-Message** (Conventional Commits). Vor dem Stoppen `TODO.md` und `docs/current-status.md` aktualisieren (automatische Doku-Pflege, siehe `CLAUDE.md`). Bei trivialen Aufgaben keine Doku-Änderungen.
 
 ## Git
 

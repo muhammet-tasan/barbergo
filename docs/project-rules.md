@@ -42,7 +42,7 @@ Prefer **iterative progress** and **small working increments** over perfect upfr
 
 ## Session bootstrap
 
-`CLAUDE.md` loads [session-handoff.md](./session-handoff.md) automatically. Run `/continue-project` to verify it against git and get the next task. At the start of a new chat / session, before making changes, read in this order:
+`CLAUDE.md` loads [session-handoff.md](./session-handoff.md) automatically. Run `/my-continue` to verify it against git and get the next task. At the start of a new chat / session, before making changes, read in this order:
 
 1. [session-handoff.md](./session-handoff.md)
 2. [TODO.md](../TODO.md)
@@ -51,7 +51,7 @@ Prefer **iterative progress** and **small working increments** over perfect upfr
 5. [coding-guidelines.md](./coding-guidelines.md)
 6. [lessons-learned.md](./lessons-learned.md) when touching RLS, auth, bookings or timezones
 
-Also run `git status` once before larger edits to understand the working tree (untracked files, uncommitted changes, current branch). At the end of a session run `/session-handoff`.
+Also run `git status` once before larger edits to understand the working tree (untracked files, uncommitted changes, current branch). At the end of a session run `/my-closeout`.
 
 ---
 
@@ -73,7 +73,7 @@ Also run `git status` once before larger edits to understand the working tree (u
 | Dev notifications | [dev-notifications.md](./dev-notifications.md) |
 | Claude Code setup, Cursor migration | [claude-code-setup.md](./claude-code-setup.md) |
 
-Update the owning file; link instead of duplicating. Skill `/doc-sync` maps change types to files.
+Update the owning file; link instead of duplicating. The change-type → document mapping lives in `.claude/rules/docs-ownership.md`; docs are maintained continuously (see `CLAUDE.md`), `/my-closeout` consolidates.
 
 ---
 
@@ -172,7 +172,7 @@ Before stopping, update:
 - **`TODO.md`** — mark completed tasks, add next recommended tasks
 - **`docs/current-status.md`** — must include: current working state, completed features, known issues, next steps, important technical decisions
 
-Keep summaries **concise**. **Avoid duplicate documentation** — update the existing section instead of adding a parallel one; skip doc updates for trivial changes (`/doc-sync`). Then: what to test and a **suggested commit message** (do **not** commit unless the user asks). Notifications are sent by hooks, not by the agent.
+Keep summaries **concise**. **Avoid duplicate documentation** — update the existing section instead of adding a parallel one; skip doc updates for trivial changes (continuous doc upkeep, see `CLAUDE.md`). Then: what to test and a **suggested commit message** (do **not** commit unless the user asks). Notifications are sent by hooks, not by the agent.
 
 ### When changing engineering standards
 
@@ -195,7 +195,7 @@ Keep summaries **concise**. **Avoid duplicate documentation** — update the exi
 ## Claude Code / agent integration
 
 - This file is the detailed source behind **[CLAUDE.md](../CLAUDE.md)** and **`.claude/rules/`** (see [claude-code-setup.md](./claude-code-setup.md)). `AGENTS.md` only points there.
-- Reusable workflows are skills: `/continue-project`, `/session-handoff`, `/doc-sync`, `/barbergo-review`, `/lessons-learned`, `/pre-launch`, `/goal`.
+- Reusable workflows are skills (all prefixed `my-`): universal `/my-continue`, `/my-status`, `/my-closeout`, `/my-list-commands`; project-specific `/my-barbergo-review`, `/my-barbergo-pre-launch`. Convention: [claude-code-setup.md](./claude-code-setup.md).
 - Read **this file** + **[coding-guidelines.md](./coding-guidelines.md)** for all tasks in this repo.
 - Prefer smaller implementation steps; wire Supabase through `services/` only ([coding-guidelines.md](./coding-guidelines.md#supabase-guidelines)).
 

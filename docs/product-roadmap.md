@@ -10,7 +10,27 @@ Produktvision, Feature-Prioritäten und Umsetzungsphasen. Ergänzt die technisch
 | [pre-launch-checklist.md](./pre-launch-checklist.md) | Go-live-Härtung (RLS, Auth, Smoke-Tests) |
 | [TODO.md](../TODO.md) | Operative Aufgaben und Checkboxen für Agenten |
 
-**Legende Status:** `Erledigt` · `Teilweise` · `Live-MVP` · `Später`
+**Legende Feature-Status:** `Erledigt` · `Teilweise` · `Live-MVP` · `Später`. **Meilenstein-Status:** `PLANNED` · `IN PROGRESS` · `BLOCKED` · `DONE` (`DONE` nur, wenn alle Abschlusskriterien belegt erfüllt sind).
+
+---
+
+## Meilensteine
+
+Steuerungsübersicht, abgeleitet aus den [Umsetzungsphasen](#umsetzungsphasen). Details zum Ist-Zustand: [current-status.md](./current-status.md), Aufgaben: [TODO.md](../TODO.md). Stand der Einstufung: 2026-11-24, aus Doku abgeleitet (nicht gegen hosted Supabase verifiziert).
+
+| # | Meilenstein | Status | Abschlusskriterien | Abhängigkeit / Blocker |
+|---|---|---|---|---|
+| M1 | Sicherheits- und Datenmodell-Basis (Phase 1) | **BLOCKED** | Migrationen `0006`–`0013` auf hosted Supabase angewendet; `verify-rls`, `verify-guest-insert`, `verify-book-slot` bestanden; Admin ohne Login ohne Zugriff | Braucht User-Zugang (`.env`, hosted Supabase) |
+| M2 | Kundenverwaltung light (Phase 2) | **IN PROGRESS** | Registrierung, „Meine Termine“, Storno per manueller E2E nach [e2e-checklist.md](./e2e-checklist.md) bestanden | Code vorhanden, E2E nicht belegt; hängt an M1 |
+| M3 | Barber-Profil & Vertrauen (Phase 3) | **IN PROGRESS** | Profil bearbeitbar, Avatar, Card-UI, Servicegebiet | Basis-Profilseiten und `/account` vorhanden, Card-UI offen |
+| M4 | Barber-Alltag (Phase 4) | **PLANNED** | Verfügbarkeit/Blockzeiten und Services in der App pflegbar, Tages-/Kalenderansicht | Nächster Entwicklungsschritt laut Handoff, nach M1 |
+| M5 | Bewertungen (Phase 5) | **PLANNED** | Bewertung nach `completed`, Durchschnitt im Profil | Hängt an M2 |
+| M6 | Go-live | **PLANNED** | `/my-barbergo-pre-launch` = GO, Supabase-Auth-Settings gesetzt ([supabase-auth-settings.md](./supabase-auth-settings.md)) | Hängt an M1, M2 |
+| M7 | Spätere Erweiterungen (Phase 6) | **PLANNED** | Nicht im ersten Live-MVP | Produktentscheidungen offen |
+
+### Roadmap-Vorschläge (nicht beschlossen)
+
+_Keine._ Neue Anforderungen oder Zieländerungen hier als Vorschlag notieren, nie eigenmächtig in Meilensteine übernehmen.
 
 ---
 
