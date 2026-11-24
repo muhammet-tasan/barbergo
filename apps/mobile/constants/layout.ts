@@ -16,6 +16,8 @@ export const layout = {
   inputGroupGap: 16,
   inputHeight: 52,
   buttonHeightMain: 56,
+  /** Web/desktop: maximum width of the app column (headers, lists, forms). */
+  maxContentWidth: 720,
 } as const;
 
 /** Tailwind class helpers — form/detail screens only (not home hero). */

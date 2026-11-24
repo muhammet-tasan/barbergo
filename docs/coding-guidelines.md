@@ -86,10 +86,14 @@ apps/mobile/
   | `AppInput` | Form fields with label + error |
   | `ServiceCard` | Selectable service row |
   | `StatusBadge` | Booking status chip |
-  | `ScreenHeader` | Consistent screen title + back |
+  | `ScreenHeader` | Consistent screen title + back (text wraps below buttons when narrow) |
+  | `AppShell` | Web: centered max-width column around the whole app |
 
   Extract new shared UI when the same pattern appears **twice** (e.g. a `PriceSummary` block for booking totals).
 
+- **Web / desktop** — the whole app sits in a centered column (`AppShell`, `layout.maxContentWidth` = 720 px, in `app/_layout.tsx`); never build screens that stretch edge to edge. The page background is dark everywhere (`app/+html.tsx`: html/body/#root + `theme-color`), so no white shows on mobile browsers. Layout values must not depend on `useWindowDimensions()` in the first render of a statically exported route, use `useWindowWidth()`.
+- **Header text vs. buttons** — `ScreenHeader` measures the text and the auth buttons; when they do not fit side by side the text moves below the buttons, full width (home: welcome text; subpages: title). Do not give the auth slot a fixed width.
+- **No spinner instead of buttons** — buttons that only depend on the session (header auth, guest actions) render immediately; a spinner is only for data that really has to be loaded (e.g. the profile of a signed-in user).
 - **Consistent spacing** — prefer Tailwind scale (`px-4`, `gap-3`, `mb-6`).
 - **Consistent border radius** — cards and buttons match existing components.
 - **Consistent font sizes** — titles `text-lg` / `text-xl`, body `text-base`, hints `text-sm text-slate-400`.

@@ -4,6 +4,7 @@ import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
 
+import { AppShell } from '@/components/AppShell';
 import { AuthProvider } from '@/contexts/auth-context';
 import { stackFadeOptions, stackScreenOptions } from '@/constants/navigation';
 import { colors } from '@/constants/theme';
@@ -26,7 +27,9 @@ function RootStack() {
 export default function RootLayout() {
   return (
     <AuthProvider>
-      <RootStack />
+      <AppShell>
+        <RootStack />
+      </AppShell>
       <StatusBar style="light" backgroundColor={colors.background} />
     </AuthProvider>
   );

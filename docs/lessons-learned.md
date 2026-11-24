@@ -100,3 +100,14 @@ Erkenntnisse aus Fehlern, Entscheidungen und bewährten Lösungen. Wird während
 - **Vermeidung:** Web-Fixes gegen den **statischen Export** testen (`npm run export:web`, `dist/` lokal servieren), nicht nur gegen `expo start`. Nach dem Deploy im Browser die gerenderte Grösse prüfen (`clientWidth > 0`), nicht nur HTTP 200 der Datei.
 - **Andere Projekte:** ja, jedes Expo-Web-Projekt mit `web.output: "static"`.
 - **Referenz:** `apps/mobile/hooks/use-window-width.ts`, `apps/mobile/components/HomeHero.tsx`
+
+### Header: feste Slot-Breite führte zu Überlappung, Messen statt Raten (2026-11-24)
+- **Bereich:** UI
+- **Problem:** Auf schmalen Handys überlappten Willkommenstext/Titel und die Auth-Buttons (Registrieren + Anmelden sind ca. 170 px breit, der Slot war fest 120 px).
+- **Lösung / Regel:** Breiten von Zeile, Buttons und (unsichtbar gemessenem) Text per `onLayout` erfassen. Passt der Text nicht daneben, wird er in eine eigene Zeile unter die Buttons gesetzt. Funktioniert ohne Media-Queries auf Web und nativ.
+- **Vermeidung:** Keine festen Breiten für Slots mit variablem Inhalt.
+- **Referenz:** `apps/mobile/components/ScreenHeader.tsx`
+
+### Test gegen den statischen Export mit sauberen URLs (2026-11-24)
+- **Bereich:** Tooling
+- **Hinweis:** `python -m http.server` kennt keine sauberen URLs (`/barbers` statt `barbers.html`), der Router meldet dann „Unmatched Route“. Für Tests ein kleines Skript mit `.html`-Auflösung nutzen. Laufende Test-Server sperren ihr Verzeichnis (`EBUSY` beim nächsten Export): pro Export ein neues `--output-dir` verwenden.

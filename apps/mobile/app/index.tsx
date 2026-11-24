@@ -30,6 +30,7 @@ export default function HomeScreen() {
     isBarber,
     isBarberPending,
     isCustomer,
+    isAuthenticated,
     profile,
   } = useAuth();
 
@@ -47,7 +48,9 @@ export default function HomeScreen() {
 
       <View className="flex-1 bg-brand-dark">
         <HomeHero
-          loading={loading}
+          // Spinner only while the profile of a signed-in user loads (role decides the buttons).
+          // Guests / session still being restored get the buttons immediately.
+          loading={loading && isAuthenticated}
           variant={variant}
           onBook={() => router.push('/barbers')}
           onBookings={() => {

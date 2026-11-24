@@ -1,4 +1,4 @@
-import { ActivityIndicator, Alert, Platform, Pressable, Text, View } from 'react-native';
+import { Alert, Platform, Pressable, Text, View } from 'react-native';
 import { Link, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
@@ -17,17 +17,12 @@ const webPressableStyle =
 /** Header auth: guest login/register or profile icon + logout for signed-in users. */
 export function AuthActionButton({ compact = false }: AuthActionButtonProps) {
   const router = useRouter();
-  const { session, loading, signOut } = useAuth();
+  const { session, signOut } = useAuth();
   const [busy, setBusy] = useState(false);
 
-  if (loading) {
-    return (
-      <View className="min-h-[36px] min-w-[72px] items-center justify-center">
-        <ActivityIndicator size="small" color={colors.textMuted} />
-      </View>
-    );
-  }
-
+  // No spinner: the buttons depend on the session only (not on the profile). Without a session
+  // (also while it is still being restored) the guest buttons show immediately, including in the
+  // pre-rendered HTML, instead of waiting for the profile request.
   const pillClass = compact
     ? 'rounded-xl border border-brand-border/70 bg-transparent px-2.5 min-h-[36px] justify-center items-center'
     : 'rounded-xl border border-brand-border/70 bg-transparent px-4 min-h-[38px] justify-center items-center';

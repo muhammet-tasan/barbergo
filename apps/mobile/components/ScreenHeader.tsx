@@ -1,11 +1,10 @@
-import { type ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { Image } from 'expo-image';
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, Text, View, type LayoutChangeEvent } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 
 import { AuthActionButton } from '@/components/AuthActionButton';
-import { FadeOutText } from '@/components/FadeOutText';
 import { brandImageAspect, brandImages } from '@/constants/images';
 import { colors } from '@/constants/theme';
 import { useAuth } from '@/contexts/auth-context';
@@ -25,10 +24,28 @@ type ScreenHeaderProps = {
   onBack?: () => void;
 };
 
-const AUTH_SLOT_WIDTH = 120;
-/** Fixed header bar height (home + subpage). */
+/** Minimum bar height (home + subpage); grows when the text moves to its own line. */
 const HEADER_BAR_HEIGHT = 52;
-const WELCOME_LINE_HEIGHT = 20;
+/** Width reserved for the back button (subpage). */
+const BACK_SLOT_WIDTH = 48;
+/** Gap between text and auth buttons that must stay free before the text is moved down. */
+const TEXT_AUTH_GAP = 12;
+
+const HIDDEN_MEASURE_STYLE = {
+  position: 'absolute',
+  top: 0,
+  left: 0,
+  opacity: 0,
+} as const;
+
+function useWidth() {
+  const [width, setWidth] = useState(0);
+  const onLayout = (event: LayoutChangeEvent) => {
+    const next = Math.round(event.nativeEvent.layout.width);
+    setWidth((current) => (current === next ? current : next));
+  };
+  return [width, onLayout] as const;
+}
 
 export function ScreenHeader({
   variant = 'subpage',
@@ -43,6 +60,10 @@ export function ScreenHeader({
   const router = useRouter();
   const { session, profile, loading, isAdmin } = useAuth();
   const isHome = variant === 'home';
+
+  const [rowWidth, onRowLayout] = useWidth();
+  const [authWidth, onAuthLayout] = useWidth();
+  const [textWidth, onTextLayout] = useWidth();
 
   const handleBack = () => {
     if (onBack) {
@@ -70,81 +91,145 @@ export function ScreenHeader({
       </Pressable>
     ) : null);
 
+  const authNode = showAuthAction ? (
+    <View onLayout={onAuthLayout} style={{ alignSelf: 'flex-end' }}>
+      <AuthActionButton compact />
+    </View>
+  ) : null;
+
   if (isHome) {
     const welcome = loading ? '' : getHeaderWelcomeText(session, profile, { isAdmin });
+    const measured = rowWidth > 0 && textWidth > 0;
+    // Text and auth buttons would overlap -> the text moves below the buttons, full width.
+    const stacked = measured && textWidth + authWidth + TEXT_AUTH_GAP > rowWidth;
 
     return (
       <View className="border-b border-brand-border/80 bg-brand-dark">
-        <View
-          className="flex-row items-center px-4 gap-3"
-          style={{ height: HEADER_BAR_HEIGHT }}
-        >
-          <View
-            className="flex-1 min-w-0 justify-center pr-1"
-            style={{ height: WELCOME_LINE_HEIGHT }}
-          >
-            {loading ? (
-              <View style={{ height: WELCOME_LINE_HEIGHT }} />
+        <View className="px-4 py-1.5" style={{ minHeight: HEADER_BAR_HEIGHT, justifyContent: 'center' }}>
+          <View onLayout={onRowLayout} style={{ position: 'relative' }}>
+            {stacked ? (
+              <View style={{ gap: 4 }}>
+                <View style={{ alignItems: 'flex-end' }}>{authNode}</View>
+                <Text className="text-sm font-medium text-brand-text leading-5" selectable={false}>
+                  {welcome}
+                </Text>
+              </View>
             ) : (
-              <FadeOutText className="text-sm font-medium text-brand-text leading-5">
-                {welcome || ' '}
-              </FadeOutText>
+              <View className="flex-row items-center" style={{ gap: TEXT_AUTH_GAP }}>
+                <Text
+                  className="flex-1 min-w-0 text-sm font-medium text-brand-text leading-5"
+                  selectable={false}
+                >
+                  {welcome || ' '}
+                </Text>
+                {authNode}
+              </View>
             )}
-          </View>
-          <View
-            style={{ width: AUTH_SLOT_WIDTH, zIndex: 2 }}
-            className="items-end justify-center shrink-0"
-          >
-            {showAuthAction ? <AuthActionButton compact /> : null}
+
+            {/* Invisible copy to measure the natural (single-line) width of the welcome text. */}
+            <Text
+              pointerEvents="none"
+              accessibilityElementsHidden
+              importantForAccessibility="no-hide-descendants"
+              numberOfLines={1}
+              onLayout={onTextLayout}
+              style={HIDDEN_MEASURE_STYLE}
+              className="text-sm font-medium leading-5"
+              selectable={false}
+            >
+              {welcome}
+            </Text>
           </View>
         </View>
       </View>
     );
   }
 
+  // Subpage: [back] [title] [auth]; a title that does not fit between the sides moves down.
+  const backWidth = showBack ? BACK_SLOT_WIDTH : 0;
+  const rightWidth = showAuthAction ? authWidth : 0;
+  // rowWidth includes the container's horizontal padding (px-3 = 24).
+  const availableForTitle = rowWidth - 24 - backWidth - rightWidth - 8;
+  const titleMeasured = Boolean(title) && rowWidth > 0 && textWidth > 0;
+  const stacked = titleMeasured && textWidth > availableForTitle;
+
+  const backNode = showBack ? (
+    <Pressable
+      onPress={handleBack}
+      className="min-h-[48px] min-w-[40px] items-center justify-center active:opacity-70"
+      accessibilityRole="button"
+      accessibilityLabel="Zurück"
+    >
+      <Ionicons name="chevron-back" size={26} color={colors.accent} />
+    </Pressable>
+  ) : null;
+
+  const titleBlock = title ? (
+    <View className="items-center justify-center max-w-full">
+      <Text
+        className="text-base font-semibold text-brand-text text-center"
+        numberOfLines={stacked ? 3 : 1}
+        accessibilityRole="header"
+      >
+        {title}
+      </Text>
+      {subtitle ? (
+        <Text
+          className="text-xs text-brand-muted text-center mt-0.5"
+          numberOfLines={stacked ? 3 : 1}
+        >
+          {subtitle}
+        </Text>
+      ) : null}
+    </View>
+  ) : (
+    logoNode
+  );
+
   return (
     <View className="border-b border-brand-border/80 bg-brand-dark">
-      <View className="flex-row items-center px-3" style={{ height: HEADER_BAR_HEIGHT }}>
-        <View className="w-[80px] flex-row items-center">
-          {showBack ? (
-            <Pressable
-              onPress={handleBack}
-              className="min-h-[48px] min-w-[40px] items-center justify-center active:opacity-70"
-              accessibilityRole="button"
-              accessibilityLabel="Zurück"
-            >
-              <Ionicons name="chevron-back" size={26} color={colors.accent} />
-            </Pressable>
-          ) : null}
-        </View>
-
-        <View className="flex-1 items-center justify-center px-1 min-w-0">
-          {title ? (
-            <View className="items-center justify-center max-w-full">
-              <Text
-                className="text-base font-semibold text-brand-text text-center"
-                numberOfLines={1}
-                accessibilityRole="header"
-              >
-                {title}
-              </Text>
-              {subtitle ? (
-                <Text className="text-xs text-brand-muted text-center mt-0.5" numberOfLines={1}>
-                  {subtitle}
-                </Text>
-              ) : null}
+      <View
+        className="px-3"
+        style={{ minHeight: HEADER_BAR_HEIGHT, justifyContent: 'center' }}
+        onLayout={onRowLayout}
+      >
+        {stacked ? (
+          <>
+            <View className="flex-row items-center justify-between" style={{ minHeight: HEADER_BAR_HEIGHT }}>
+              <View style={{ width: backWidth }} className="flex-row items-center">
+                {backNode}
+              </View>
+              {authNode}
             </View>
-          ) : (
-            logoNode
-          )}
-        </View>
+            <View className="items-center justify-center pb-2 px-1">{titleBlock}</View>
+          </>
+        ) : (
+          <View className="flex-row items-center" style={{ minHeight: HEADER_BAR_HEIGHT }}>
+            <View style={{ width: backWidth }} className="flex-row items-center">
+              {backNode}
+            </View>
+            <View className="flex-1 items-center justify-center px-1 min-w-0">{titleBlock}</View>
+            <View className="items-end justify-center shrink-0">{authNode}</View>
+          </View>
+        )}
 
-        <View
-          style={{ width: AUTH_SLOT_WIDTH, zIndex: 2 }}
-          className="items-end justify-center shrink-0"
-        >
-          {showAuthAction ? <AuthActionButton compact /> : null}
-        </View>
+        {title ? (
+          <View pointerEvents="none" style={HIDDEN_MEASURE_STYLE} onLayout={onTextLayout}>
+            <Text
+              numberOfLines={1}
+              className="text-base font-semibold"
+              accessibilityElementsHidden
+              importantForAccessibility="no-hide-descendants"
+            >
+              {title}
+            </Text>
+            {subtitle ? (
+              <Text numberOfLines={1} className="text-xs mt-0.5">
+                {subtitle}
+              </Text>
+            ) : null}
+          </View>
+        ) : null}
       </View>
     </View>
   );

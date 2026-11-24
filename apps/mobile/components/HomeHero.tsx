@@ -64,7 +64,13 @@ export function HomeHero({
             style={[styles.homeLogo, { width: logoWidth }]}
           />
 
-          <View style={styles.textGroup}>
+          <View
+            style={[
+              styles.textGroup,
+              // Narrow phones (320 px): logoWidth is wider than the screen, keep the text inside it.
+              { width: Math.min(360, windowWidth - HOME.horizontalPadding * 2) },
+            ]}
+          >
             {isPending ? (
               <Text style={styles.pendingText} selectable={false}>
                 Dein Barber-Profil wird geprüft.
